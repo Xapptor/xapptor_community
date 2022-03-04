@@ -49,7 +49,7 @@ class _ResumeState extends State<Resume> {
           pw.Column(
             children: [
               pw.Container(
-                height: 140,
+                height: 150,
                 child: pw.Row(
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
@@ -158,8 +158,7 @@ class _ResumeState extends State<Resume> {
                                     ),
                                     child: pw.Column(
                                       children: skills_pw.sublist(
-                                          (skills_pw.length / 2).round(),
-                                          skills_pw.length),
+                                          (skills_pw.length / 2).round()),
                                     ),
                                   ),
                                 ),
@@ -363,8 +362,7 @@ class _ResumeState extends State<Resume> {
                     left: 5,
                   ),
                   child: Column(
-                    children: skills.sublist(
-                        (skills.length / 2).round(), skills.length),
+                    children: skills.sublist((skills.length / 2).round()),
                   ),
                 ),
               ),
