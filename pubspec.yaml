@@ -13,9 +13,9 @@ dependencies:
 
   fluttericon: ^2.0.0
   google_fonts: ^2.1.0
-  pdf: ^3.6.0
-  printing: ^5.3.0
   universal_platform: ^1.0.0+1
+  pdf: ^3.7.1
+  printing: ^5.7.2
 
   xapptor_ui: ^0.0.3
 

@@ -33,7 +33,7 @@ class _ResumeState extends State<Resume> {
   download_resume_pdf() async {
     final pdf = pw.Document();
 
-    final profileImage = pw.MemoryImage(
+    final profile_image = pw.MemoryImage(
       (await rootBundle.load(widget.resume.image_src)).buffer.asUint8List(),
     );
 
@@ -62,7 +62,7 @@ class _ResumeState extends State<Resume> {
                         child: pw.ClipRRect(
                           verticalRadius: 14,
                           horizontalRadius: 14,
-                          child: pw.Image(profileImage),
+                          child: pw.Image(profile_image),
                         ),
                       ),
                     ),
