@@ -11,6 +11,7 @@ class Resume {
   final String email;
   final String url;
   final List<ResumeSkill> skills;
+  final List<int> sections_lengths;
   final List<ResumeSection> sections;
   final Color icon_color;
 
@@ -21,6 +22,7 @@ class Resume {
     required this.email,
     required this.url,
     required this.skills,
+    required this.sections_lengths,
     required this.sections,
     required this.icon_color,
   });

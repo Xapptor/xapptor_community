@@ -48,136 +48,132 @@ class _ResumeState extends State<Resume> {
         build: (pw.Context page_context) => [
           pw.Column(
             children: [
-              pw.Container(
-                height: 150,
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: [
-                    pw.Expanded(
-                      flex: 1,
-                      child: pw.Container(
-                        padding: pw.EdgeInsets.only(
-                          right: 0,
-                        ),
-                        child: pw.ClipRRect(
-                          verticalRadius: 14,
-                          horizontalRadius: 14,
-                          child: pw.Image(profile_image),
-                        ),
-                      ),
-                    ),
-                    pw.Expanded(
-                      flex: 2,
-                      child: pw.Container(
-                        padding: pw.EdgeInsets.only(
-                          left: 0,
-                        ),
-                        child: pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: <pw.Widget>[
-                            pw.Text(
-                              widget.resume.name,
-                              textAlign: pw.TextAlign.left,
-                              style: pw.TextStyle(
-                                color: PdfColors.black,
-                                fontSize: 14,
-                                fontWeight: pw.FontWeight.bold,
-                              ),
+                  pw.Container(
+                    height: 150,
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        pw.Expanded(
+                          flex: 1,
+                          child: pw.Container(
+                            padding: pw.EdgeInsets.only(
+                              right: 0,
                             ),
-                            pw.Container(
-                              margin: pw.EdgeInsets.only(
-                                top: 3,
-                              ),
-                              child: pw.Text(
-                                widget.resume.job_title,
-                                textAlign: pw.TextAlign.left,
-                                style: pw.TextStyle(
-                                  color: PdfColors.black,
-                                  fontSize: 12,
-                                  fontWeight: pw.FontWeight.bold,
-                                ),
-                              ),
+                            child: pw.ClipRRect(
+                              verticalRadius: 14,
+                              horizontalRadius: 14,
+                              child: pw.Image(profile_image),
                             ),
-                            pw.Container(
-                              margin: pw.EdgeInsets.only(
-                                top: 3,
-                              ),
-                              child: pw.Row(
-                                children: [
-                                  pw.Expanded(
-                                    flex: 1,
-                                    child: PdfUrlText(
-                                      text: widget.resume.email,
-                                      url: "mailto:${widget.resume.email}",
-                                    ),
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 2,
+                          child: pw.Container(
+                            padding: pw.EdgeInsets.only(
+                              left: 0,
+                            ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: <pw.Widget>[
+                                pw.Text(
+                                  widget.resume.name,
+                                  textAlign: pw.TextAlign.left,
+                                  style: pw.TextStyle(
+                                    color: PdfColors.black,
+                                    fontSize: 14,
+                                    fontWeight: pw.FontWeight.bold,
                                   ),
-                                  pw.Expanded(
-                                    flex: 1,
-                                    child: PdfUrlText(
-                                      text: "My Website " + widget.resume.url,
-                                      url: widget.resume.url,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            pw.Container(
-                              margin: pw.EdgeInsets.only(
-                                top: 3,
-                                bottom: text_bottom_margin,
-                              ),
-                              child: pw.Text(
-                                "Dexterity Points",
-                                textAlign: pw.TextAlign.left,
-                                style: pw.TextStyle(
-                                  color: PdfColors.black,
-                                  fontSize: 10,
-                                  fontWeight: pw.FontWeight.bold,
                                 ),
-                              ),
-                            ),
-                            pw.Row(
-                              children: [
-                                pw.Expanded(
-                                  flex: 1,
-                                  child: pw.Container(
-                                    padding: pw.EdgeInsets.only(
-                                      right: 3,
-                                    ),
-                                    child: pw.Column(
-                                      children: skills_pw.sublist(
-                                          0, (skills_pw.length / 2).round()),
+                                pw.Container(
+                                  margin: pw.EdgeInsets.only(
+                                    top: 3,
+                                  ),
+                                  child: pw.Text(
+                                    widget.resume.job_title,
+                                    textAlign: pw.TextAlign.left,
+                                    style: pw.TextStyle(
+                                      color: PdfColors.black,
+                                      fontSize: 12,
+                                      fontWeight: pw.FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                                pw.Expanded(
-                                  flex: 1,
-                                  child: pw.Container(
-                                    margin: pw.EdgeInsets.only(
-                                      left: 3,
-                                    ),
-                                    child: pw.Column(
-                                      children: skills_pw.sublist(
-                                          (skills_pw.length / 2).round()),
+                                pw.Container(
+                                  margin: pw.EdgeInsets.only(
+                                    top: 3,
+                                  ),
+                                  child: pw.Row(
+                                    children: [
+                                      pw.Expanded(
+                                        flex: 1,
+                                        child: PdfUrlText(
+                                          text: widget.resume.email,
+                                          url: "mailto:${widget.resume.email}",
+                                        ),
+                                      ),
+                                      pw.Expanded(
+                                        flex: 1,
+                                        child: PdfUrlText(
+                                          text:
+                                              "My Website " + widget.resume.url,
+                                          url: widget.resume.url,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                pw.Container(
+                                  margin: pw.EdgeInsets.only(
+                                    top: 3,
+                                    bottom: text_bottom_margin,
+                                  ),
+                                  child: pw.Text(
+                                    "Dexterity Points",
+                                    textAlign: pw.TextAlign.left,
+                                    style: pw.TextStyle(
+                                      color: PdfColors.black,
+                                      fontSize: 10,
+                                      fontWeight: pw.FontWeight.bold,
                                     ),
                                   ),
+                                ),
+                                pw.Row(
+                                  children: [
+                                    pw.Expanded(
+                                      flex: 1,
+                                      child: pw.Container(
+                                        padding: pw.EdgeInsets.only(
+                                          right: 3,
+                                        ),
+                                        child: pw.Column(
+                                          children: skills_pw.sublist(0,
+                                              (skills_pw.length / 2).round()),
+                                        ),
+                                      ),
+                                    ),
+                                    pw.Expanded(
+                                      flex: 1,
+                                      child: pw.Container(
+                                        margin: pw.EdgeInsets.only(
+                                          left: 3,
+                                        ),
+                                        child: pw.Column(
+                                          children: skills_pw.sublist(
+                                              (skills_pw.length / 2).round()),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              pw.Container(
-                margin: pw.EdgeInsets.symmetric(vertical: 10),
-                child: pw.Column(
-                  children: sections_pw,
-                ),
-              ),
-            ],
+                  ),
+                ] +
+                get_sections_by_lengths(),
           )
         ],
       ),
@@ -190,6 +186,27 @@ class _ResumeState extends State<Resume> {
             "resume_${widget.resume.name.toLowerCase().replaceAll(" ", "_")}.pdf",
       );
     });
+  }
+
+  List<pw.Container> get_sections_by_lengths() {
+    var sections = widget.resume.sections;
+    var sections_lengths = widget.resume.sections_lengths;
+    List<pw.Container> widgets = [];
+    int index = 0;
+
+    sections_lengths.forEach((section_length) {
+      widgets.add(
+        pw.Container(
+          margin: pw.EdgeInsets.symmetric(vertical: 10),
+          child: pw.Column(
+            children: sections_pw.sublist(index, index + section_length),
+          ),
+        ),
+      );
+      index += section_length;
+    });
+
+    return widgets;
   }
 
   List<Widget> skills = [];
