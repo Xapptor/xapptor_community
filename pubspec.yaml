@@ -17,9 +17,12 @@ dependencies:
   pdf: ^3.7.1
   printing: ^5.7.2
 
+  xapptor_logic: ^0.0.3
   xapptor_ui: ^0.0.3
 
 dependency_overrides:
+  xapptor_logic:
+    path: ../xapptor_logic
   xapptor_ui:
     path: ../xapptor_ui
 

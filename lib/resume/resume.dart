@@ -181,7 +181,7 @@ class _ResumeState extends State<Resume> {
 
     await pdf.save().then((pdf_bytes) {
       FileDownloader.save(
-        base64_string: base64Encode(pdf_bytes),
+        src: base64Encode(pdf_bytes),
         file_name:
             "resume_${widget.resume.name.toLowerCase().replaceAll(" ", "_")}.pdf",
       );
