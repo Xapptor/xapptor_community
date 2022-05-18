@@ -10,6 +10,7 @@ class Resume {
   final String job_title;
   final String email;
   final String url;
+  final String skills_title;
   final List<ResumeSkill> skills;
   final List<int> sections_lengths;
   final List<ResumeSection> sections;
@@ -21,6 +22,7 @@ class Resume {
     required this.job_title,
     required this.email,
     required this.url,
+    required this.skills_title,
     required this.skills,
     required this.sections_lengths,
     required this.sections,

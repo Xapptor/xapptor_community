@@ -18,6 +18,7 @@ dependencies:
   printing: ^5.7.2
 
   xapptor_logic: ^0.0.3
+  xapptor_translation: ^0.0.3
   xapptor_ui: ^0.0.3
 
 dependency_overrides:
@@ -25,6 +26,8 @@ dependency_overrides:
     path: ../xapptor_logic
   xapptor_ui:
     path: ../xapptor_ui
+  xapptor_translation:
+    path: ../xapptor_translation
 
 dev_dependencies:
   flutter_test:

@@ -1,213 +1,74 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
-import 'package:printing/printing.dart';
-import 'package:xapptor_logic/file_downloader/file_downloader.dart';
+import 'package:xapptor_community/resume/download_resume_pdf.dart';
 import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
 import 'package:xapptor_community/resume/resume_skill.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
+import 'package:xapptor_translation/language_picker.dart';
+import 'package:xapptor_translation/model/text_list.dart';
+import 'package:xapptor_translation/translation_stream.dart';
+import 'package:xapptor_ui/widgets/topbar.dart';
 import 'package:xapptor_ui/widgets/url_text.dart';
 import 'resume_section.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Resume extends StatefulWidget {
-  const Resume({
-    required this.resume,
-    required this.visible,
+  Resume({
+    this.resume,
+    this.language_code = "en",
+    this.text_list,
+    this.color_topbar = Colors.blueGrey,
   });
 
-  final ResumeData.Resume resume;
-  final bool visible;
+  ResumeData.Resume? resume;
+  String language_code;
+  List<String>? text_list;
+  Color color_topbar;
+
   @override
   _ResumeState createState() => _ResumeState();
 }
 
 class _ResumeState extends State<Resume> {
-  double screen_height = 0;
-  double screen_width = 0;
-  double text_bottom_margin = 3;
-
-  // Download resume PDF.
-
-  download_resume_pdf() async {
-    final pdf = pw.Document();
-
-    final profile_image = pw.MemoryImage(
-      (await rootBundle.load(widget.resume.image_src)).buffer.asUint8List(),
-    );
-
-    pdf.addPage(
-      pw.MultiPage(
-        theme: pw.ThemeData.withFont(
-          base: await PdfGoogleFonts.quicksandRegular(),
-          bold: await PdfGoogleFonts.quicksandMedium(),
-          icons: await PdfGoogleFonts.materialIcons(),
-        ),
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context page_context) => [
-          pw.Column(
-            children: [
-                  pw.Container(
-                    height: 150,
-                    child: pw.Row(
-                      crossAxisAlignment: pw.CrossAxisAlignment.center,
-                      children: [
-                        pw.Expanded(
-                          flex: 1,
-                          child: pw.Container(
-                            padding: pw.EdgeInsets.only(
-                              right: 0,
-                            ),
-                            child: pw.ClipRRect(
-                              verticalRadius: 14,
-                              horizontalRadius: 14,
-                              child: pw.Image(profile_image),
-                            ),
-                          ),
-                        ),
-                        pw.Expanded(
-                          flex: 2,
-                          child: pw.Container(
-                            padding: pw.EdgeInsets.only(
-                              left: 0,
-                            ),
-                            child: pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: <pw.Widget>[
-                                pw.Text(
-                                  widget.resume.name,
-                                  textAlign: pw.TextAlign.left,
-                                  style: pw.TextStyle(
-                                    color: PdfColors.black,
-                                    fontSize: 14,
-                                    fontWeight: pw.FontWeight.bold,
-                                  ),
-                                ),
-                                pw.Container(
-                                  margin: pw.EdgeInsets.only(
-                                    top: 3,
-                                  ),
-                                  child: pw.Text(
-                                    widget.resume.job_title,
-                                    textAlign: pw.TextAlign.left,
-                                    style: pw.TextStyle(
-                                      color: PdfColors.black,
-                                      fontSize: 12,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                pw.Container(
-                                  margin: pw.EdgeInsets.only(
-                                    top: 3,
-                                  ),
-                                  child: pw.Row(
-                                    children: [
-                                      pw.Expanded(
-                                        flex: 1,
-                                        child: PdfUrlText(
-                                          text: widget.resume.email,
-                                          url: "mailto:${widget.resume.email}",
-                                        ),
-                                      ),
-                                      pw.Expanded(
-                                        flex: 1,
-                                        child: PdfUrlText(
-                                          text:
-                                              "My Website " + widget.resume.url,
-                                          url: widget.resume.url,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                pw.Container(
-                                  margin: pw.EdgeInsets.only(
-                                    top: 3,
-                                    bottom: text_bottom_margin,
-                                  ),
-                                  child: pw.Text(
-                                    "Dexterity Points",
-                                    textAlign: pw.TextAlign.left,
-                                    style: pw.TextStyle(
-                                      color: PdfColors.black,
-                                      fontSize: 10,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                pw.Row(
-                                  children: [
-                                    pw.Expanded(
-                                      flex: 1,
-                                      child: pw.Container(
-                                        padding: pw.EdgeInsets.only(
-                                          right: 3,
-                                        ),
-                                        child: pw.Column(
-                                          children: skills_pw.sublist(0,
-                                              (skills_pw.length / 2).round()),
-                                        ),
-                                      ),
-                                    ),
-                                    pw.Expanded(
-                                      flex: 1,
-                                      child: pw.Container(
-                                        margin: pw.EdgeInsets.only(
-                                          left: 3,
-                                        ),
-                                        child: pw.Column(
-                                          children: skills_pw.sublist(
-                                              (skills_pw.length / 2).round()),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ] +
-                get_sections_by_lengths(),
-          )
+  TranslationTextListArray text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Present",
         ],
       ),
-    );
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Presente",
+        ],
+      ),
+    ],
+  );
 
-    await pdf.save().then((pdf_bytes) {
-      FileDownloader.save(
-        src: base64Encode(pdf_bytes),
-        file_name:
-            "resume_${widget.resume.name.toLowerCase().replaceAll(" ", "_")}.pdf",
-      );
-    });
+  late TranslationStream translation_stream;
+  List<TranslationStream> translation_stream_list = [];
+
+  int source_language_index = 1;
+
+  update_source_language({
+    required int new_source_language_index,
+  }) {
+    source_language_index = new_source_language_index;
+    setState(() {});
   }
 
-  List<pw.Container> get_sections_by_lengths() {
-    var sections = widget.resume.sections;
-    var sections_lengths = widget.resume.sections_lengths;
-    List<pw.Container> widgets = [];
-    int index = 0;
-
-    sections_lengths.forEach((section_length) {
-      widgets.add(
-        pw.Container(
-          margin: pw.EdgeInsets.symmetric(vertical: 10),
-          child: pw.Column(
-            children: sections_pw.sublist(index, index + section_length),
-          ),
-        ),
-      );
-      index += section_length;
-    });
-
-    return widgets;
+  update_text_list({
+    required int index,
+    required String new_text,
+    required int list_index,
+  }) {
+    text_list.get(source_language_index)[index] = new_text;
+    setState(() {});
   }
+
+  double text_bottom_margin = 3;
 
   List<Widget> skills = [];
   List<pw.Widget> skills_pw = [];
@@ -215,17 +76,23 @@ class _ResumeState extends State<Resume> {
   List<Widget> sections = [];
   List<pw.Widget> sections_pw = [];
 
+  late ResumeData.Resume current_resume;
+
   populate_skills() {
     skills.clear();
     skills_pw.clear();
     sections.clear();
     sections_pw.clear();
 
-    widget.resume.skills.forEach((skill) {
+    if (widget.text_list == null) {
+      widget.text_list = text_list.get(source_language_index);
+    }
+
+    current_resume.skills.forEach((skill) {
       skills.add(
         ResumeSkill(
           skill: skill,
-          apply_variation: widget.resume.skills.indexOf(skill) != 0,
+          apply_variation: current_resume.skills.indexOf(skill) != 0,
         ),
       );
 
@@ -237,57 +104,69 @@ class _ResumeState extends State<Resume> {
       );
     });
 
-    widget.resume.sections.forEach((section) {
+    current_resume.sections.forEach((section) {
       sections.add(
         resume_section(
-          resume: widget.resume,
+          resume: current_resume,
           resume_section: section,
           text_bottom_margin: text_bottom_margin,
           context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
         ),
       );
 
       sections_pw.add(
         resume_section_pw(
-          resume: widget.resume,
+          resume: current_resume,
           resume_section: section,
           text_bottom_margin: text_bottom_margin,
           context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
         ),
       );
     });
   }
 
+  fetch_resume() {
+    populate_skills();
+  }
+
   @override
   void initState() {
     super.initState();
-  }
 
-  bool first_time_populating_skills = true;
+    initializeDateFormatting();
+
+    if (widget.resume == null) {
+      fetch_resume();
+    } else {
+      current_resume = widget.resume!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    screen_height = MediaQuery.of(context).size.height;
-    screen_width = MediaQuery.of(context).size.width;
+    double screen_height = MediaQuery.of(context).size.height;
+    double screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
 
-    if (first_time_populating_skills) {
-      first_time_populating_skills = false;
+    if (widget.resume != null) {
+      current_resume = widget.resume!;
       populate_skills();
     }
 
-    Widget image = AnimatedOpacity(
-      opacity: widget.visible ? 1 : 0,
-      duration: Duration(milliseconds: 600),
-      child: Container(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Image.asset(
-            widget.resume.image_src,
-            fit: BoxFit.contain,
-          ),
-        ),
-      ),
+    Widget image = Container(
+      child: current_resume.image_src.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                current_resume.image_src,
+                fit: BoxFit.contain,
+              ),
+            )
+          : Container(),
     );
 
     Widget name_and_skills = Container(
@@ -301,7 +180,7 @@ class _ResumeState extends State<Resume> {
               top: portrait ? 10 : 0,
             ),
             child: SelectableText(
-              widget.resume.name,
+              current_resume.name,
               textAlign: TextAlign.left,
               style: TextStyle(
                 color: Colors.black,
@@ -315,7 +194,7 @@ class _ResumeState extends State<Resume> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SelectableText(
-                  widget.resume.job_title,
+                  current_resume.job_title,
                   textAlign: TextAlign.left,
                   style: TextStyle(
                     color: Colors.black,
@@ -325,11 +204,16 @@ class _ResumeState extends State<Resume> {
                 ),
                 IconButton(
                   onPressed: () {
-                    download_resume_pdf();
+                    download_resume_pdf(
+                      resume: current_resume,
+                      skills_pw: skills_pw,
+                      sections_pw: sections_pw,
+                      text_bottom_margin: text_bottom_margin,
+                    );
                   },
                   icon: Icon(
                     FontAwesome5.file_download,
-                    color: widget.resume.icon_color,
+                    color: current_resume.icon_color,
                   ),
                 )
               ],
@@ -340,8 +224,8 @@ class _ResumeState extends State<Resume> {
               bottom: 3,
             ),
             child: UrlText(
-              text: widget.resume.email,
-              url: "mailto:${widget.resume.email}",
+              text: current_resume.email,
+              url: "mailto:${current_resume.email}",
             ),
           ),
           Container(
@@ -350,7 +234,7 @@ class _ResumeState extends State<Resume> {
               bottom: text_bottom_margin,
             ),
             child: SelectableText(
-              "Dexterity Points",
+              widget.resume!.skills_title,
               textAlign: TextAlign.left,
               style: TextStyle(
                 color: Colors.black,
@@ -389,45 +273,65 @@ class _ResumeState extends State<Resume> {
       ),
     );
 
-    return FractionallySizedBox(
+    Widget body = FractionallySizedBox(
       widthFactor: portrait ? 0.9 : 0.5,
       child: Container(
+        margin: EdgeInsets.symmetric(
+          vertical: screen_height / 10,
+          horizontal: screen_width * 0.05,
+        ),
         color: Colors.white,
-        child: Container(
-          margin: EdgeInsets.symmetric(
-            vertical: screen_height / 10,
-            horizontal: screen_width * 0.05,
-          ),
-          child: Column(
-            children: [
-              Flex(
-                direction: portrait ? Axis.vertical : Axis.horizontal,
-                children: portrait
-                    ? <Widget>[
-                        image,
-                        name_and_skills,
-                      ]
-                    : <Widget>[
-                        Expanded(
-                          flex: 1,
-                          child: image,
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: name_and_skills,
-                        ),
-                      ],
+        child: Column(
+          children: [
+            Flex(
+              direction: portrait ? Axis.vertical : Axis.horizontal,
+              children: portrait
+                  ? <Widget>[
+                      image,
+                      name_and_skills,
+                    ]
+                  : <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: image,
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: name_and_skills,
+                      ),
+                    ],
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                children: sections,
               ),
-              Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: Column(
-                  children: sections,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+
+    return widget.text_list != null
+        ? body
+        : Scaffold(
+            appBar: TopBar(
+              background_color: widget.color_topbar,
+              has_back_button: false,
+              actions: [
+                Container(
+                  width: 150,
+                  child: LanguagePicker(
+                    translation_stream_list: translation_stream_list,
+                    language_picker_items_text_color: widget.color_topbar,
+                    update_source_language: update_source_language,
+                  ),
+                ),
+              ],
+              custom_leading: null,
+              logo_path: "assets/images/logo.png",
+            ),
+            body: body,
+          );
   }
 }

@@ -4,6 +4,7 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
+import 'package:xapptor_community/resume/get_timeframe_text.dart';
 
 // Resume, descriptive section for PDF.
 
@@ -12,9 +13,21 @@ pw.Widget resume_section_pw({
   required ResumeSection resume_section,
   required double text_bottom_margin,
   required BuildContext context,
+  required String language_code,
+  required List<String> text_list,
 }) {
   double screen_height = MediaQuery.of(context).size.height;
   double screen_width = MediaQuery.of(context).size.width;
+
+  String timeframe_text = "";
+  if (resume_section.begin != null && resume_section.end != null) {
+    timeframe_text = get_timeframe_text(
+      begin: resume_section.begin!,
+      end: resume_section.end!,
+      language_code: language_code,
+      present_text: text_list[0],
+    );
+  }
 
   return pw.Container(
     margin: pw.EdgeInsets.symmetric(vertical: 3),
@@ -70,15 +83,7 @@ pw.Widget resume_section_pw({
                   ? pw.Container(
                       margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
                       child: pw.Text(
-                        DateFormat.yMMMM().format(resume_section.begin!) +
-                            " - " +
-                            (resume_section.end!
-                                        .difference(DateTime.now())
-                                        .inDays ==
-                                    0
-                                ? "Present"
-                                : DateFormat.yMMMM()
-                                    .format(resume_section.end!)),
+                        timeframe_text,
                         textAlign: pw.TextAlign.left,
                         style: pw.TextStyle(
                           color: PdfColors.black,
@@ -115,10 +120,22 @@ resume_section({
   required ResumeSection resume_section,
   required double text_bottom_margin,
   required BuildContext context,
+  required String language_code,
+  required List<String> text_list,
 }) {
   double screen_height = MediaQuery.of(context).size.height;
   double screen_width = MediaQuery.of(context).size.width;
   bool portrait = screen_height > screen_width;
+
+  String timeframe_text = "";
+  if (resume_section.begin != null && resume_section.end != null) {
+    timeframe_text = get_timeframe_text(
+      begin: resume_section.begin!,
+      end: resume_section.end!,
+      language_code: language_code,
+      present_text: text_list[0],
+    );
+  }
 
   return Container(
     margin: EdgeInsets.symmetric(vertical: 10),
@@ -172,15 +189,7 @@ resume_section({
                   ? Container(
                       margin: EdgeInsets.only(bottom: text_bottom_margin),
                       child: SelectableText(
-                        DateFormat.yMMMM().format(resume_section.begin!) +
-                            " - " +
-                            (resume_section.end!
-                                        .difference(DateTime.now())
-                                        .inDays ==
-                                    0
-                                ? "Present"
-                                : DateFormat.yMMMM()
-                                    .format(resume_section.end!)),
+                        timeframe_text,
                         textAlign: TextAlign.left,
                         style: TextStyle(
                           color: Colors.black,
