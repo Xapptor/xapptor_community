@@ -246,7 +246,7 @@ List<pw.Container> resume_available({
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            resume.text_list[1] + " ",
+            resume.text_list[1],
             textAlign: pw.TextAlign.left,
             style: pw.TextStyle(
               color: PdfColors.black,
@@ -257,6 +257,19 @@ List<pw.Container> resume_available({
           PdfUrlText(
             text: resume_link,
             url: resume_link,
+          ),
+          pw.Text(
+            resume.text_list[2],
+            textAlign: pw.TextAlign.left,
+            style: pw.TextStyle(
+              color: PdfColors.black,
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          PdfUrlText(
+            text: resume.text_list[3],
+            url: resume.text_list[3],
           ),
         ],
       ),

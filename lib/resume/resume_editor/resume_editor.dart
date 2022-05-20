@@ -69,6 +69,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Custom Sections",
           "Before adding a new section you must first complete the last one",
           "Resume available online at:",
+          "Resume Developed and Hosted by:",
           "Resume Saved",
           "Save",
         ],
@@ -95,6 +96,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Secciones Personalizadas",
           "Antes de agregar una nueva sección primero debes de completar la última",
           "CV disponible en línea en:",
+          "CV Desarrollado y Alojado por:",
           "CV Guardado",
           "Guardar",
         ],
@@ -980,9 +982,12 @@ class _ResumeEditorState extends State<ResumeEditor> {
       icon_color: current_color,
       language_code: text_list.list[source_language_index].source_language,
       text_list: [
-        text_list.get(source_language_index)[11],
-        text_list.get(source_language_index)[18],
-      ],
+            text_list.get(source_language_index)[11],
+          ] +
+          text_list.get(source_language_index).sublist(18, 20) +
+          [
+            widget.base_url,
+          ],
     );
   }
 }
