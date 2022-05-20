@@ -127,7 +127,7 @@ class _ResumeSkillState extends State<ResumeSkill> {
     double screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
     double current_bar_width = (screen_width * (portrait ? 0.38 : 0.13)) *
-        (current_percentage + percentage_variation);
+        (current_percentage + percentage_variation).clamp(0, screen_width);
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 5),

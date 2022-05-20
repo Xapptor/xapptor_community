@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:xapptor_community/resume/download_resume_pdf.dart';
@@ -78,7 +79,7 @@ class _ResumeState extends State<Resume> {
 
   late ResumeData.Resume current_resume;
 
-  populate_skills() {
+  populate_skills_and_sections() {
     skills.clear();
     skills_pw.clear();
     sections.clear();
@@ -104,7 +105,77 @@ class _ResumeState extends State<Resume> {
       );
     });
 
-    current_resume.sections.forEach((section) {
+    sections.add(
+      resume_section(
+        resume: current_resume,
+        resume_section: current_resume.profile_section,
+        text_bottom_margin: text_bottom_margin,
+        context: context,
+        language_code: widget.language_code,
+        text_list: widget.text_list!,
+      ),
+    );
+
+    sections_pw.add(
+      resume_section_pw(
+        resume: current_resume,
+        resume_section: current_resume.profile_section,
+        text_bottom_margin: text_bottom_margin,
+        context: context,
+        language_code: widget.language_code,
+        text_list: widget.text_list!,
+      ),
+    );
+
+    current_resume.employment_sections.forEach((section) {
+      sections.add(
+        resume_section(
+          resume: current_resume,
+          resume_section: section,
+          text_bottom_margin: text_bottom_margin,
+          context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
+        ),
+      );
+
+      sections_pw.add(
+        resume_section_pw(
+          resume: current_resume,
+          resume_section: section,
+          text_bottom_margin: text_bottom_margin,
+          context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
+        ),
+      );
+    });
+
+    current_resume.education_sections.forEach((section) {
+      sections.add(
+        resume_section(
+          resume: current_resume,
+          resume_section: section,
+          text_bottom_margin: text_bottom_margin,
+          context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
+        ),
+      );
+
+      sections_pw.add(
+        resume_section_pw(
+          resume: current_resume,
+          resume_section: section,
+          text_bottom_margin: text_bottom_margin,
+          context: context,
+          language_code: widget.language_code,
+          text_list: widget.text_list!,
+        ),
+      );
+    });
+
+    current_resume.custom_sections.forEach((section) {
       sections.add(
         resume_section(
           resume: current_resume,
@@ -130,7 +201,7 @@ class _ResumeState extends State<Resume> {
   }
 
   fetch_resume() {
-    populate_skills();
+    populate_skills_and_sections();
   }
 
   @override
@@ -154,17 +225,22 @@ class _ResumeState extends State<Resume> {
 
     if (widget.resume != null) {
       current_resume = widget.resume!;
-      populate_skills();
+      populate_skills_and_sections();
     }
 
     Widget image = Container(
       child: current_resume.image_src.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                current_resume.image_src,
-                fit: BoxFit.contain,
-              ),
+              child: current_resume.image_src.contains(".")
+                  ? Image.asset(
+                      current_resume.image_src,
+                      fit: BoxFit.contain,
+                    )
+                  : Image.memory(
+                      base64Decode(current_resume.image_src),
+                      fit: BoxFit.contain,
+                    ),
             )
           : Container(),
     );

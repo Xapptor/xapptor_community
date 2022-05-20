@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:pdf/widgets.dart' as pw;

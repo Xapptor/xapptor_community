@@ -14,8 +14,10 @@ dependencies:
   fluttericon: ^2.0.0
   google_fonts: ^2.1.0
   universal_platform: ^1.0.0+1
-  pdf: ^3.7.1
-  printing: ^5.7.2
+  pdf: ^3.8.0
+  printing: ^5.9.0
+  file_picker: ^4.5.1
+  flutter_colorpicker: ^1.0.3
 
   xapptor_logic: ^0.0.3
   xapptor_translation: ^0.0.3

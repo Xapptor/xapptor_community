@@ -96,8 +96,8 @@ download_resume_pdf({
                                     pw.Expanded(
                                       flex: 1,
                                       child: PdfUrlText(
-                                        text: "My Website " + resume.url,
-                                        url: resume.url,
+                                        text: "My Website " + resume.website,
+                                        url: resume.website,
                                       ),
                                     ),
                                   ],
@@ -175,8 +175,12 @@ List<pw.Container> get_sections_by_lengths({
   required ResumeData.Resume resume,
   required List<pw.Widget> sections_pw,
 }) {
-  var sections = resume.sections;
-  var sections_lengths = resume.sections_lengths;
+  var sections = [resume.profile_section] +
+      resume.employment_sections +
+      resume.education_sections +
+      resume.custom_sections;
+
+  var sections_lengths = resume.sections_by_page;
   List<pw.Container> widgets = [];
   int index = 0;
 

@@ -1,14 +1,22 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
 import 'package:xapptor_community/resume/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/widgets/topbar.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeEditor extends StatefulWidget {
   const ResumeEditor({
@@ -27,6 +35,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
   TextEditingController email_input_controller = TextEditingController();
   TextEditingController website_input_controller = TextEditingController();
   TextEditingController profile_input_controller = TextEditingController();
+  TextEditingController sections_by_page_input_controller =
+      TextEditingController();
 
   double screen_height = 0;
   double screen_width = 0;
@@ -36,16 +46,25 @@ class _ResumeEditorState extends State<ResumeEditor> {
       TranslationTextList(
         source_language: "en",
         text_list: [
-          "Fullname",
+          "Full Name",
           "Job Title",
           "Email",
           "Website Url",
           "Dexterity Points",
           "Profile",
+          "Resume Preview",
           "Employment History",
+          "Title",
+          "Subtitle",
+          "Description",
           "Present",
+          "Choose Dates",
+          "Choose initial date",
+          "Choose end date",
           "Education",
-          "Technologies",
+          "Custom Sections",
+          "Before adding a new section you must first complete the last one",
+          "Save",
         ],
       ),
       TranslationTextList(
@@ -57,16 +76,135 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Página Web",
           "Puntos de Destreza",
           "Perfil",
+          "Vista Previa del CV",
           "Historial de Empleo",
+          "Título",
+          "Subtítulo",
+          "Descripción",
           "Presente",
+          "Seleccionar Fechas",
+          "Selecciona fecha de inicio",
+          "Selecciona fecha de finalización",
           "Educación",
-          "Tecnologías",
+          "Secciones Personalizadas",
+          "Antes de agregar una nueva sección primero debes de completar la última",
+          "Guardar",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray skill_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Skill",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Habilidad",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray employment_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Job Title",
+          "at",
+          "Company Name",
+          "Job Location",
+          "Responsabilities",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Puesto de Trabajo",
+          "en",
+          "Nombre de la Empresa",
+          "Ubicación de Trabajo",
+          "Responsabilidades",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray education_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Career Name",
+          "Univesrity Name",
+          "Univesrity Location",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Nombre de la Carrera",
+          "Nombre de la Universidad",
+          "Ubicación de la Universidad",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray picker_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Choose Profile Picture",
+          "Choose Main Color",
+          "Choose Color",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Selecciona la Imágen de Perfil",
+          "Selecciona el Color Principal",
+          "Selecciona el Color",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray sections_by_page_text_list =
+      TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Enter the numbers of sections by page separate by comas",
+          "Example: 7, 2",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Ingresa los números de secciones por página separados por comas",
+          "Ejemplo: 7, 2",
         ],
       ),
     ],
   );
 
   late TranslationStream translation_stream;
+  late TranslationStream skill_translation_stream;
+  late TranslationStream employment_translation_stream;
+  late TranslationStream education_translation_stream;
+  late TranslationStream picker_translation_stream;
+  late TranslationStream sections_by_page_translation_stream;
+
   List<TranslationStream> translation_stream_list = [];
 
   int source_language_index = 1;
@@ -83,11 +221,127 @@ class _ResumeEditorState extends State<ResumeEditor> {
     required String new_text,
     required int list_index,
   }) {
-    text_list.get(source_language_index)[index] = new_text;
+    if (list_index == 0) {
+      text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 1) {
+      skill_text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 2) {
+      employment_text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 3) {
+      education_text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 4) {
+      picker_text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 5) {
+      sections_by_page_text_list.get(source_language_index)[index] = new_text;
+    }
+
     setState(() {});
   }
 
-  Color text_color = Colors.black;
+  String chosen_image_path = "";
+
+  List<ResumeSkill> skill_sections = [];
+  List<ResumeSection> employment_sections = [];
+  List<ResumeSection> education_sections = [];
+  List<ResumeSection> custom_sections = [];
+
+  update_item(int item_index, int section_index, dynamic section) {
+    if (section_index == 0) {
+      //
+      if (item_index < skill_sections.length) {
+        skill_sections[item_index] = section;
+      } else {
+        skill_sections.add(section);
+      }
+      //
+    } else if (section_index == 1) {
+      //
+      if (item_index < employment_sections.length) {
+        employment_sections[item_index] = section;
+      } else {
+        employment_sections.add(section);
+      }
+      //
+    } else if (section_index == 2) {
+      //
+      if (item_index < education_sections.length) {
+        education_sections[item_index] = section;
+      } else {
+        education_sections.add(section);
+      }
+      //
+    } else if (section_index == 3) {
+      //
+      if (item_index < custom_sections.length) {
+        custom_sections[item_index] = section;
+      } else {
+        custom_sections.add(section);
+      }
+      //
+    }
+    setState(() {});
+  }
+
+  remove_item(int item_index, int section_index) {
+    if (section_index == 0) {
+      skill_sections.removeAt(item_index);
+    } else if (section_index == 1) {
+      employment_sections.removeAt(item_index);
+    } else if (section_index == 2) {
+      education_sections.removeAt(item_index);
+    } else if (section_index == 3) {
+      custom_sections.removeAt(item_index);
+    }
+    setState(() {});
+  }
+
+  choose_profile_image() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      if (UniversalPlatform.isWeb) {
+        chosen_image_path = base64Encode(result.files.single.bytes!);
+      } else {
+        chosen_image_path = result.files.single.path!;
+      }
+      setState(() {});
+    }
+  }
+
+  Color picker_color = Colors.blue;
+  Color current_color = Colors.blue;
+
+  choose_color() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            picker_text_list.get(source_language_index)[1],
+          ),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: picker_color,
+              onColorChanged: (Color new_color) {
+                picker_color = new_color;
+                setState(() {});
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('Got it'),
+              onPressed: () {
+                setState(() => current_color = picker_color);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  late User current_user;
 
   @override
   void initState() {
@@ -100,7 +354,54 @@ class _ResumeEditorState extends State<ResumeEditor> {
       source_language_index: source_language_index,
     );
 
-    translation_stream_list = [translation_stream];
+    skill_translation_stream = TranslationStream(
+      translation_text_list_array: skill_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 1,
+      source_language_index: source_language_index,
+    );
+
+    employment_translation_stream = TranslationStream(
+      translation_text_list_array: employment_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 2,
+      source_language_index: source_language_index,
+    );
+
+    education_translation_stream = TranslationStream(
+      translation_text_list_array: education_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 3,
+      source_language_index: source_language_index,
+    );
+
+    picker_translation_stream = TranslationStream(
+      translation_text_list_array: picker_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 4,
+      source_language_index: source_language_index,
+    );
+
+    sections_by_page_translation_stream = TranslationStream(
+      translation_text_list_array: sections_by_page_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 5,
+      source_language_index: source_language_index,
+    );
+
+    translation_stream_list = [
+      translation_stream,
+      skill_translation_stream,
+      employment_translation_stream,
+      education_translation_stream,
+      picker_translation_stream,
+      sections_by_page_translation_stream,
+    ];
+
+    Timer(Duration(milliseconds: 400), () {
+      current_user = FirebaseAuth.instance.currentUser!;
+      check_for_remote_resume();
+    });
   }
 
   @override
@@ -136,23 +437,99 @@ class _ResumeEditorState extends State<ResumeEditor> {
               child: Column(
                 children: [
                   SizedBox(
-                    height: sized_box_space,
+                    height: sized_box_space * 4,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          padding: const EdgeInsets.only(right: 5),
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              elevation: MaterialStateProperty.all<double>(
+                                0,
+                              ),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent,
+                              ),
+                              overlayColor: MaterialStateProperty.all<Color>(
+                                Colors.grey.withOpacity(0.2),
+                              ),
+                              shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    MediaQuery.of(context).size.width,
+                                  ),
+                                  side: BorderSide(
+                                    color: widget.color_topbar,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              choose_profile_image();
+                            },
+                            child: Text(
+                              picker_text_list.get(source_language_index)[0],
+                              style: TextStyle(
+                                color: widget.color_topbar,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          padding: const EdgeInsets.only(left: 5),
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              elevation: MaterialStateProperty.all<double>(
+                                0,
+                              ),
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                current_color,
+                              ),
+                              shape: MaterialStateProperty.all<
+                                  RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    MediaQuery.of(context).size.width,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              choose_color();
+                            },
+                            child: Text(
+                              picker_text_list.get(source_language_index)[1],
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   TextFormField(
                     onChanged: (new_value) {
                       setState(() {});
                     },
                     style: TextStyle(
-                      color: text_color,
+                      color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
                       labelText: text_list.get(source_language_index)[0],
                       labelStyle: TextStyle(
-                        color: text_color,
+                        color: widget.color_topbar,
                       ),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                          color: text_color,
+                          color: widget.color_topbar,
                         ),
                       ),
                     ),
@@ -167,16 +544,16 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       setState(() {});
                     },
                     style: TextStyle(
-                      color: text_color,
+                      color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
                       labelText: text_list.get(source_language_index)[1],
                       labelStyle: TextStyle(
-                        color: text_color,
+                        color: widget.color_topbar,
                       ),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                          color: text_color,
+                          color: widget.color_topbar,
                         ),
                       ),
                     ),
@@ -191,16 +568,16 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       setState(() {});
                     },
                     style: TextStyle(
-                      color: text_color,
+                      color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
                       labelText: text_list.get(source_language_index)[2],
                       labelStyle: TextStyle(
-                        color: text_color,
+                        color: widget.color_topbar,
                       ),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                          color: text_color,
+                          color: widget.color_topbar,
                         ),
                       ),
                     ),
@@ -215,16 +592,16 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       setState(() {});
                     },
                     style: TextStyle(
-                      color: text_color,
+                      color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
                       labelText: text_list.get(source_language_index)[3],
                       labelStyle: TextStyle(
-                        color: text_color,
+                        color: widget.color_topbar,
                       ),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                          color: text_color,
+                          color: widget.color_topbar,
                         ),
                       ),
                     ),
@@ -239,16 +616,16 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       setState(() {});
                     },
                     style: TextStyle(
-                      color: text_color,
+                      color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
                       labelText: text_list.get(source_language_index)[5],
                       labelStyle: TextStyle(
-                        color: text_color,
+                        color: widget.color_topbar,
                       ),
                       enabledBorder: UnderlineInputBorder(
                         borderSide: BorderSide(
-                          color: text_color,
+                          color: widget.color_topbar,
                         ),
                       ),
                     ),
@@ -257,21 +634,196 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       value: value!,
                       type: FormFieldValidatorsType.email,
                     ).validate(),
+                    keyboardType: TextInputType.multiline,
+                    maxLines: null,
+                  ),
+                  ResumeSectionForm(
+                    resume_section_form_type: ResumeSectionFormType.skill,
+                    text_list:
+                        text_list.get(source_language_index).sublist(7, 18) +
+                            skill_text_list.get(source_language_index) +
+                            picker_text_list.get(source_language_index) +
+                            text_list.get(source_language_index).sublist(4, 5),
+                    text_color: widget.color_topbar,
+                    language_code:
+                        text_list.list[source_language_index].source_language,
+                    section_index: 0,
+                    update_item: update_item,
+                    remove_item: remove_item,
+                    section_list: skill_sections,
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      sections_by_page_text_list.get(source_language_index)[0],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  TextFormField(
+                    onChanged: (new_value) {
+                      setState(() {});
+                    },
+                    style: TextStyle(
+                      color: widget.color_topbar,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: sections_by_page_text_list
+                          .get(source_language_index)[1],
+                      labelStyle: TextStyle(
+                        color: widget.color_topbar,
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: widget.color_topbar,
+                        ),
+                      ),
+                    ),
+                    controller: sections_by_page_input_controller,
+                    validator: (value) => FormFieldValidators(
+                      value: value!,
+                      type: FormFieldValidatorsType.name,
+                    ).validate(),
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  ResumeSectionForm(
+                    resume_section_form_type:
+                        ResumeSectionFormType.employment_history,
+                    text_list:
+                        text_list.get(source_language_index).sublist(7, 18) +
+                            employment_text_list.get(source_language_index),
+                    text_color: widget.color_topbar,
+                    language_code:
+                        text_list.list[source_language_index].source_language,
+                    section_index: 1,
+                    update_item: update_item,
+                    remove_item: remove_item,
+                    section_list: employment_sections,
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  ResumeSectionForm(
+                    resume_section_form_type: ResumeSectionFormType.education,
+                    text_list:
+                        text_list.get(source_language_index).sublist(7, 18) +
+                            education_text_list.get(source_language_index),
+                    text_color: widget.color_topbar,
+                    language_code:
+                        text_list.list[source_language_index].source_language,
+                    section_index: 2,
+                    update_item: update_item,
+                    remove_item: remove_item,
+                    section_list: education_sections,
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  ResumeSectionForm(
+                    resume_section_form_type: ResumeSectionFormType.custom,
+                    text_list:
+                        text_list.get(source_language_index).sublist(7, 18),
+                    text_color: widget.color_topbar,
+                    language_code:
+                        text_list.list[source_language_index].source_language,
+                    section_index: 3,
+                    update_item: update_item,
+                    remove_item: remove_item,
+                    section_list: custom_sections,
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  Container(
+                    width: screen_width,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.3,
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          elevation: MaterialStateProperty.all<double>(
+                            0,
+                          ),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                            widget.color_topbar,
+                          ),
+                          overlayColor: MaterialStateProperty.all<Color>(
+                            Colors.grey.withOpacity(0.2),
+                          ),
+                          shape:
+                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                MediaQuery.of(context).size.width,
+                              ),
+                            ),
+                          ),
+                        ),
+                        onPressed: () {
+                          save_resume();
+                        },
+                        child: Text(
+                          text_list.get(source_language_index).last,
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: sized_box_space * 4,
                   ),
                 ],
               ),
             ),
             Container(
+              margin: EdgeInsets.all(portrait ? 6 : 16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: Colors.red,
+                  color: Colors.deepOrangeAccent,
+                  width: 6,
                 ),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Resume(
-                resume: generate_resume(),
-                language_code:
-                    text_list.list[source_language_index].source_language,
-                text_list: [text_list.get(source_language_index)[7]],
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: sized_box_space * 2,
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    width: double.maxFinite,
+                    padding: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.deepOrangeAccent,
+                          width: 6,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      text_list.get(source_language_index)[6],
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Resume(
+                    resume: generate_resume(),
+                    language_code:
+                        text_list.list[source_language_index].source_language,
+                    text_list: [text_list.get(source_language_index)[11]],
+                  ),
+                ],
               ),
             ),
           ],
@@ -280,118 +832,96 @@ class _ResumeEditorState extends State<ResumeEditor> {
     );
   }
 
+  save_resume() async {
+    print("Save");
+    print(generate_resume().to_json());
+
+    String resume_doc_id = current_user.uid +
+        "_" +
+        text_list.list[source_language_index].source_language;
+
+    DocumentReference resume_doc =
+        FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
+
+    await resume_doc
+        .set(
+      generate_resume().to_json(),
+      SetOptions(merge: true),
+    )
+        .then((value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: SelectableText(
+            text_list.get(source_language_index)[10],
+          ),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    });
+  }
+
+  check_for_remote_resume() async {
+    String resume_doc_id = current_user.uid +
+        "_" +
+        text_list.list[source_language_index].source_language;
+
+    DocumentSnapshot resume_doc = await FirebaseFirestore.instance
+        .collection("resumes")
+        .doc(resume_doc_id)
+        .get();
+
+    Map? resume_map = resume_doc.data() as Map?;
+
+    if (resume_map != null) {
+      var remote_resume =
+          ResumeData.Resume.from_snapshot(resume_doc_id, resume_map);
+
+      current_color = remote_resume.icon_color;
+
+      name_input_controller.text = remote_resume.name;
+      job_title_input_controller.text = remote_resume.job_title;
+      email_input_controller.text = remote_resume.email;
+      website_input_controller.text = remote_resume.website;
+      profile_input_controller.text =
+          remote_resume.profile_section.description!;
+
+      sections_by_page_input_controller.text =
+          remote_resume.sections_by_page.join(", ");
+
+      skill_sections = remote_resume.skills;
+      employment_sections = remote_resume.employment_sections;
+      education_sections = remote_resume.education_sections;
+      custom_sections = remote_resume.custom_sections;
+
+      setState(() {});
+    }
+  }
+
   ResumeData.Resume generate_resume() {
     return ResumeData.Resume(
-      image_src: "",
+      image_src: chosen_image_path,
       name: name_input_controller.text,
       job_title: job_title_input_controller.text,
       email: email_input_controller.text,
-      url: website_input_controller.text,
+      website: website_input_controller.text,
       skills_title: text_list.get(source_language_index)[4],
-      skills: [
-        ResumeSkill(
-          name: "Experience: 5 years",
-          percentage: 0.5,
-          color: Colors.blue,
-        ),
-        ResumeSkill(
-          name: "Communication",
-          percentage: 0.8,
-          color: Colors.blue,
-        ),
-        ResumeSkill(
-          name: "Cognitive Flexibility",
-          percentage: 0.8,
-          color: Colors.blue,
-        ),
-        ResumeSkill(
-          name: "Negotiation",
-          percentage: 0.7,
-          color: Colors.blue,
-        ),
-        ResumeSkill(
-          name: "Health",
-          percentage: 0.9,
-          color: Colors.blue,
-        ),
-        ResumeSkill(
-          name: "Mana",
-          percentage: 0.8,
-          color: Colors.blue,
-        ),
-      ],
-      sections_lengths: [7, 2],
-      sections: [
-        ResumeSection(
-          icon: Icons.badge,
-          code_point: 0xea67,
-          title: text_list.get(source_language_index)[5],
-          description: profile_input_controller.text,
-        ),
-        ResumeSection(
-          icon: Icons.dvr_rounded,
-          code_point: 0xe1b2,
-          title: text_list.get(source_language_index)[6],
-          subtitle: "Flutter Developer at Wizeline, Remote",
-          begin: DateTime(2022, 2),
-          end: DateTime.now(),
-          description:
-              "Design, development and implementation of software in the mobile applications area (Android and IOS). Use of native and cross-platform frameworks such as IOS Native, Kotlin Native, and Flutter. Implementing development methodologies like Safe, Agile and Scrum.",
-        ),
-        ResumeSection(
-          subtitle: "Software Developer at Keydok, Mexico City",
-          begin: DateTime(2019, 10),
-          end: DateTime(2022, 2),
-          description:
-              "Design, development and implementation of software in the mobile applications area (Android and IOS). Use of native and cross-platform frameworks such as IOS Native, Kotlin Native, Flutter and Kotlin Multi-platform. Implementing development methodologies like Safe, Agile and Scrum.",
-        ),
-        ResumeSection(
-          subtitle: "Software Developer at Ike Asistencia, Mexico City",
-          begin: DateTime(2019, 4),
-          end: DateTime(2019, 10),
-          description:
-              "Design, development and implementation of software in the mobile applications area (Android and IOS). Development of Backend and microservices using Spring Boot and Micronaut framework. Implementing development methodologies like Safe, Agile and Scrum.",
-        ),
-        ResumeSection(
-          subtitle: "Game Developer at Visionaria Games, Mexico City",
-          begin: DateTime(2018, 1),
-          end: DateTime(2019, 4),
-          description:
-              "Design, development and implementation of software in the mobile applications area (Android and IOS). Development of video games, and web application Flow package used for the application of artificial intelligence in characters and their behaviors.",
-        ),
-        ResumeSection(
-          subtitle:
-              "Software Design Professor at Universidad Mexicana de Innovación en Negocios, Metepec",
-          begin: DateTime(2017, 6),
-          end: DateTime(2018, 1),
-          description:
-              "Teaching high school level students on mobile applications and video games.",
-        ),
-        ResumeSection(
-          subtitle: "Freelance Software Developer, Metepec",
-          begin: DateTime(2016, 2),
-          end: DateTime(2017, 6),
-          description:
-              "Development of custom software for the administration of scheduled educational events.",
-        ),
-        ResumeSection(
-          icon: Icons.history_edu_rounded,
-          code_point: 0xea3e,
-          title: "Education",
-          subtitle:
-              "Digital Business Engineer, Universidad Mexicana de Innovación en Negocios, Metepec",
-          begin: DateTime(2014, 7),
-          end: DateTime(2018, 7),
-        ),
-        ResumeSection(
-          icon: Icons.bar_chart_rounded,
-          code_point: 0xe26b,
-          title: "Technologies",
-          description:
-              "Java, JavaScript, C#, Kotlin, Swift, Dart, Flutter, Android Compose, SwiftUI, Micronaut, NodeJs, Google cloud Platform, Firebase, Mysql, Stripe, Playcanvas, Unity, Unreal Engine.",
-        ),
-      ],
-      icon_color: Colors.blue,
+      skills: skill_sections,
+      sections_by_page: sections_by_page_input_controller.text
+          .replaceAll(" ", "")
+          .split(",")
+          .map((e) => int.tryParse(e) ?? 1)
+          .toList(),
+      profile_section: ResumeSection(
+        icon: Icons.badge,
+        code_point: 0xea67,
+        title: text_list.get(source_language_index)[5],
+        description: profile_input_controller.text,
+      ),
+      employment_sections: employment_sections,
+      education_sections: education_sections,
+      custom_sections: custom_sections,
+      icon_color: current_color,
+      language_code: text_list.list[source_language_index].source_language,
     );
   }
 }
