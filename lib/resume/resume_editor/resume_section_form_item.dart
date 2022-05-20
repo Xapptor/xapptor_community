@@ -581,8 +581,8 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           selected_date_1 = picked;
           break;
         case 1:
-          if (picked.year == now.year ||
-              picked.month == now.month ||
+          if (picked.year == now.year &&
+              picked.month == now.month &&
               picked.day == now.day) {
             picked = DateTime(
               picked.year,
