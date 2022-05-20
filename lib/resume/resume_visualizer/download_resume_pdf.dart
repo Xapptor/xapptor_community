@@ -119,7 +119,7 @@ download_resume_pdf({
                                     pw.Expanded(
                                       flex: 1,
                                       child: PdfUrlText(
-                                        text: "My Website " + resume.website,
+                                        text: resume.website,
                                         url: resume.website,
                                       ),
                                     ),
@@ -132,7 +132,7 @@ download_resume_pdf({
                                   bottom: text_bottom_margin,
                                 ),
                                 child: pw.Text(
-                                  "Dexterity Points",
+                                  resume.skills_title,
                                   textAlign: pw.TextAlign.left,
                                   style: pw.TextStyle(
                                     color: PdfColors.black,
@@ -238,7 +238,7 @@ List<pw.Container> resume_available({
 }) {
   return [
     pw.Container(
-      height: (7 - last_section_length) * 110,
+      height: (7 - last_section_length) * 100,
     ),
     pw.Container(
       alignment: pw.Alignment.centerLeft,
