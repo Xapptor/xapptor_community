@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:universal_platform/universal_platform.dart';
-import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
-import 'package:xapptor_community/resume/resume.dart';
+import 'package:xapptor_community/resume/models/resume.dart';
+import 'package:xapptor_community/resume/resume_visualizer.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
@@ -818,7 +818,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       ),
                     ),
                   ),
-                  Resume(
+                  ResumeVisualizer(
                     resume: generate_resume(),
                     language_code:
                         text_list.list[source_language_index].source_language,
@@ -901,8 +901,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
     Map? resume_map = resume_doc.data() as Map?;
 
     if (resume_map != null) {
-      var remote_resume =
-          ResumeData.Resume.from_snapshot(resume_doc_id, resume_map);
+      var remote_resume = Resume.from_snapshot(resume_doc_id, resume_map);
 
       chosen_image_src = remote_resume.image_src;
       current_color = remote_resume.icon_color;
@@ -940,8 +939,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
     }
   }
 
-  ResumeData.Resume generate_resume() {
-    return ResumeData.Resume(
+  Resume generate_resume() {
+    return Resume(
       image_src: chosen_image_src,
       name: name_input_controller.text,
       job_title: job_title_input_controller.text,

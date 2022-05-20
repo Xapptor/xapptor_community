@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:xapptor_community/resume/download_resume_pdf.dart';
-import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
+import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_skill.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:xapptor_translation/language_picker.dart';
@@ -13,24 +13,24 @@ import 'package:xapptor_ui/widgets/url_text.dart';
 import 'resume_section.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-class Resume extends StatefulWidget {
-  Resume({
+class ResumeVisualizer extends StatefulWidget {
+  ResumeVisualizer({
     this.resume,
     this.language_code = "en",
     this.text_list,
     this.color_topbar = Colors.blueGrey,
   });
 
-  ResumeData.Resume? resume;
+  Resume? resume;
   String language_code;
   List<String>? text_list;
   Color color_topbar;
 
   @override
-  _ResumeState createState() => _ResumeState();
+  _ResumeVisualizerState createState() => _ResumeVisualizerState();
 }
 
-class _ResumeState extends State<Resume> {
+class _ResumeVisualizerState extends State<ResumeVisualizer> {
   TranslationTextListArray text_list = TranslationTextListArray(
     [
       TranslationTextList(
@@ -77,7 +77,7 @@ class _ResumeState extends State<Resume> {
   List<Widget> sections = [];
   List<pw.Widget> sections_pw = [];
 
-  late ResumeData.Resume current_resume;
+  late Resume current_resume;
 
   populate_skills_and_sections() {
     skills.clear();

@@ -6,11 +6,11 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
 import 'package:xapptor_ui/widgets/url_text.dart';
-import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
+import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:http/http.dart';
 
 download_resume_pdf({
-  required ResumeData.Resume resume,
+  required Resume resume,
   required List<pw.Widget> skills_pw,
   required List<pw.Widget> sections_pw,
   required double text_bottom_margin,
@@ -194,7 +194,7 @@ download_resume_pdf({
 }
 
 List<pw.Container> get_sections_by_lengths({
-  required ResumeData.Resume resume,
+  required Resume resume,
   required List<pw.Widget> sections_pw,
 }) {
   var sections = [resume.profile_section] +
