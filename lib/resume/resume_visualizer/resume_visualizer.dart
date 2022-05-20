@@ -151,6 +151,9 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
         ? Container(
             color: Colors.white,
             child: ListView(
+              physics: widget.resume == null
+                  ? ScrollPhysics()
+                  : NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               children: [
                 Container(

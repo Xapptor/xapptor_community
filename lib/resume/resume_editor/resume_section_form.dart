@@ -176,6 +176,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
             ],
           ),
           ListView.builder(
+            physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: widget.section_list.length,
             itemBuilder: (context, index) {

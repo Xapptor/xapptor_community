@@ -6,6 +6,7 @@ import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dar
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
+import 'package:xapptor_logic/check_browser_type.dart';
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class ResumeEditor extends StatefulWidget {
   const ResumeEditor({
@@ -351,6 +353,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
   void initState() {
     super.initState();
 
+    initializeDateFormatting();
+
     translation_stream = TranslationStream(
       translation_text_list_array: text_list,
       update_text_list_function: update_text_list,
@@ -401,8 +405,14 @@ class _ResumeEditorState extends State<ResumeEditor> {
       picker_translation_stream,
       sections_by_page_translation_stream,
     ];
+    apply_timer();
+  }
 
-    Timer(Duration(milliseconds: 600), () {
+  apply_timer() async {
+    BrowserType browser_type = await check_browser_type();
+    int timer_duration = browser_type == BrowserType.mobile ? 3000 : 1000;
+
+    Timer(Duration(milliseconds: timer_duration), () {
       current_user = FirebaseAuth.instance.currentUser!;
       check_for_remote_resume();
     });
