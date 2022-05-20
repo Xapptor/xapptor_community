@@ -410,7 +410,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
 
   apply_timer() async {
     BrowserType browser_type = await check_browser_type();
-    int timer_duration = browser_type == BrowserType.mobile ? 3000 : 1000;
+    int timer_duration = browser_type == BrowserType.mobile ? 3000 : 1200;
 
     Timer(Duration(milliseconds: timer_duration), () {
       current_user = FirebaseAuth.instance.currentUser!;
@@ -919,6 +919,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
 
       chosen_image_src = remote_resume.image_src;
       current_color = remote_resume.icon_color;
+      picker_color = remote_resume.icon_color;
 
       name_input_controller.text = remote_resume.name;
       job_title_input_controller.text = remote_resume.job_title;
