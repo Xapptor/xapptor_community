@@ -200,10 +200,6 @@ class _ResumeState extends State<Resume> {
     });
   }
 
-  fetch_resume() {
-    populate_skills_and_sections();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -211,7 +207,7 @@ class _ResumeState extends State<Resume> {
     initializeDateFormatting();
 
     if (widget.resume == null) {
-      fetch_resume();
+      populate_skills_and_sections();
     } else {
       current_resume = widget.resume!;
     }
@@ -232,8 +228,8 @@ class _ResumeState extends State<Resume> {
       child: current_resume.image_src.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: current_resume.image_src.contains(".")
-                  ? Image.asset(
+              child: current_resume.image_src.contains("http")
+                  ? Image.network(
                       current_resume.image_src,
                       fit: BoxFit.contain,
                     )

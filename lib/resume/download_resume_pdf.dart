@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -6,6 +7,7 @@ import 'package:printing/printing.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
 import 'package:xapptor_ui/widgets/url_text.dart';
 import 'package:xapptor_community/resume/models/resume.dart' as ResumeData;
+import 'package:http/http.dart';
 
 download_resume_pdf({
   required ResumeData.Resume resume,
@@ -15,9 +17,29 @@ download_resume_pdf({
 }) async {
   final pdf = pw.Document();
 
-  final profile_image = pw.MemoryImage(
-    (await rootBundle.load(resume.image_src)).buffer.asUint8List(),
-  );
+  var profile_image;
+
+  if (resume.image_src.isNotEmpty) {
+    if (resume.image_src.contains("http")) {
+      //
+      var response = await get(Uri.parse(resume.image_src));
+      Uint8List? bytes = response.bodyBytes;
+      profile_image = pw.MemoryImage(bytes);
+      //
+    } else if (resume.image_src.contains(".")) {
+      //
+      profile_image = pw.MemoryImage(
+        (await rootBundle.load(resume.image_src)).buffer.asUint8List(),
+      );
+      //
+    } else {
+      profile_image = pw.MemoryImage(base64Decode(resume.image_src));
+    }
+
+    profile_image = pw.Image(profile_image);
+  } else {
+    profile_image = pw.Container();
+  }
 
   pdf.addPage(
     pw.MultiPage(
@@ -44,7 +66,7 @@ download_resume_pdf({
                           child: pw.ClipRRect(
                             verticalRadius: 14,
                             horizontalRadius: 14,
-                            child: pw.Image(profile_image),
+                            child: profile_image,
                           ),
                         ),
                       ),

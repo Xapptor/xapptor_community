@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:xapptor_community/resume/get_timeframe_text.dart';
@@ -50,57 +49,20 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
   int selected_date_index = 0;
   String timeframe_text = "";
 
-  int form_items_counter = 1;
-
   remove_item(int item_index, int section_index) {
-    form_items_counter--;
     widget.remove_item(item_index, section_index);
     setState(() {});
   }
 
   @override
   void initState() {
-    form_items_counter =
-        widget.resume_section_form_type == ResumeSectionFormType.custom ? 0 : 1;
-
     super.initState();
-    populate_employment_and_education();
   }
 
-  populate_employment_and_education() {
-    Timer(Duration(milliseconds: 300), () {
-      widget.update_item(
-        0,
-        0,
-        ResumeSkill(
-          name: "",
-          percentage: 0.2,
-          color: Colors.blue,
-        ),
-      );
-
-      Timer(Duration(milliseconds: 300), () {
-        widget.update_item(
-          0,
-          1,
-          ResumeSection(),
-        );
-
-        Timer(Duration(milliseconds: 300), () {
-          widget.update_item(
-            0,
-            2,
-            ResumeSection(),
-          );
-        });
-      });
-    });
-  }
-
-  update_item() {
+  add_item() {
     if (widget.resume_section_form_type == ResumeSectionFormType.skill) {
       widget.update_item(
-        form_items_counter,
+        widget.section_list.length,
         widget.section_index,
         ResumeSkill(
           name: "",
@@ -110,13 +72,11 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
       );
     } else {
       widget.update_item(
-        form_items_counter,
+        widget.section_list.length,
         widget.section_index,
         ResumeSection(),
       );
     }
-
-    form_items_counter++;
     setState(() {});
   }
 
@@ -187,23 +147,25 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
                     if (widget.resume_section_form_type ==
                         ResumeSectionFormType.skill) {
                       ResumeSkill last_section = widget.section_list.last;
+
                       if (last_section.name.isNotEmpty) {
-                        update_item();
+                        add_item();
                       } else {
                         show_snack_bar();
                       }
                     } else {
                       ResumeSection last_section = widget.section_list.last;
-                      if (last_section.title != null &&
-                          last_section.subtitle != null &&
+
+                      if (last_section.title != null ||
+                          last_section.subtitle != null ||
                           last_section.description != null) {
-                        update_item();
+                        add_item();
                       } else {
                         show_snack_bar();
                       }
                     }
                   } else {
-                    update_item();
+                    add_item();
                   }
                 },
                 icon: Icon(
@@ -215,7 +177,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
           ),
           ListView.builder(
             shrinkWrap: true,
-            itemCount: form_items_counter,
+            itemCount: widget.section_list.length,
             itemBuilder: (context, index) {
               return ResumeSectionFormItem(
                 resume_section_form_type: widget.resume_section_form_type,
@@ -227,6 +189,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
                 section_index: widget.section_index,
                 update_item: widget.update_item,
                 remove_item: remove_item,
+                section: widget.section_list[index],
               );
             },
           ),

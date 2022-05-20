@@ -51,32 +51,38 @@ pw.Widget resume_section_pw({
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               resume_section.title != null
-                  ? pw.Container(
-                      margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
-                      child: pw.Text(
-                        resume_section.title!,
-                        textAlign: pw.TextAlign.left,
-                        style: pw.TextStyle(
-                          color: PdfColors.black,
-                          fontSize: 12,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    )
+                  ? resume_section.title!.isNotEmpty
+                      ? pw.Container(
+                          margin:
+                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          child: pw.Text(
+                            resume_section.title!,
+                            textAlign: pw.TextAlign.left,
+                            style: pw.TextStyle(
+                              color: PdfColors.black,
+                              fontSize: 12,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : pw.Container()
                   : pw.Container(),
               resume_section.subtitle != null
-                  ? pw.Container(
-                      margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
-                      child: pw.Text(
-                        resume_section.subtitle!,
-                        textAlign: pw.TextAlign.left,
-                        style: pw.TextStyle(
-                          color: PdfColors.black,
-                          fontSize: 11,
-                          fontWeight: pw.FontWeight.bold,
-                        ),
-                      ),
-                    )
+                  ? resume_section.subtitle!.isNotEmpty
+                      ? pw.Container(
+                          margin:
+                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          child: pw.Text(
+                            resume_section.subtitle!,
+                            textAlign: pw.TextAlign.left,
+                            style: pw.TextStyle(
+                              color: PdfColors.black,
+                              fontSize: 11,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : pw.Container()
                   : pw.Container(),
               resume_section.begin != null && resume_section.end != null
                   ? pw.Container(
@@ -92,17 +98,20 @@ pw.Widget resume_section_pw({
                     )
                   : pw.Container(),
               resume_section.description != null
-                  ? pw.Container(
-                      margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
-                      child: pw.Text(
-                        resume_section.description!,
-                        textAlign: pw.TextAlign.left,
-                        style: pw.TextStyle(
-                          color: PdfColors.black,
-                          fontSize: 10,
-                        ),
-                      ),
-                    )
+                  ? resume_section.description!.isNotEmpty
+                      ? pw.Container(
+                          margin:
+                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          child: pw.Text(
+                            resume_section.description!,
+                            textAlign: pw.TextAlign.left,
+                            style: pw.TextStyle(
+                              color: PdfColors.black,
+                              fontSize: 10,
+                            ),
+                          ),
+                        )
+                      : pw.Container()
                   : pw.Container(),
             ],
           ),
@@ -157,32 +166,36 @@ resume_section({
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               resume_section.title != null
-                  ? Container(
-                      margin: EdgeInsets.only(bottom: text_bottom_margin),
-                      child: SelectableText(
-                        resume_section.title!,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: portrait ? 16 : 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
+                  ? resume_section.title!.isNotEmpty
+                      ? Container(
+                          margin: EdgeInsets.only(bottom: text_bottom_margin),
+                          child: SelectableText(
+                            resume_section.title!,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: portrait ? 16 : 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : Container()
                   : Container(),
               resume_section.subtitle != null
-                  ? Container(
-                      margin: EdgeInsets.only(bottom: text_bottom_margin),
-                      child: SelectableText(
-                        resume_section.subtitle!,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
+                  ? resume_section.subtitle!.isNotEmpty
+                      ? Container(
+                          margin: EdgeInsets.only(bottom: text_bottom_margin),
+                          child: SelectableText(
+                            resume_section.subtitle!,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      : Container()
                   : Container(),
               resume_section.begin != null && resume_section.end != null
                   ? Container(
@@ -198,17 +211,19 @@ resume_section({
                     )
                   : Container(),
               resume_section.description != null
-                  ? Container(
-                      margin: EdgeInsets.only(bottom: text_bottom_margin),
-                      child: SelectableText(
-                        resume_section.description!,
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
-                      ),
-                    )
+                  ? resume_section.description!.isNotEmpty
+                      ? Container(
+                          margin: EdgeInsets.only(bottom: text_bottom_margin),
+                          child: SelectableText(
+                            resume_section.description!,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                            ),
+                          ),
+                        )
+                      : Container()
                   : Container(),
             ],
           ),

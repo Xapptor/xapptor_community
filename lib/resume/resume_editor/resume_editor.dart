@@ -17,6 +17,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ResumeEditor extends StatefulWidget {
   const ResumeEditor({
@@ -64,6 +65,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Education",
           "Custom Sections",
           "Before adding a new section you must first complete the last one",
+          "Resume Saved",
           "Save",
         ],
       ),
@@ -88,6 +90,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Educación",
           "Secciones Personalizadas",
           "Antes de agregar una nueva sección primero debes de completar la última",
+          "CV Guardado",
           "Guardar",
         ],
       ),
@@ -238,7 +241,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
     setState(() {});
   }
 
-  String chosen_image_path = "";
+  String chosen_image_src = "";
+  String chosen_image_ext = "";
 
   List<ResumeSkill> skill_sections = [];
   List<ResumeSection> employment_sections = [];
@@ -298,11 +302,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
   choose_profile_image() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      if (UniversalPlatform.isWeb) {
-        chosen_image_path = base64Encode(result.files.single.bytes!);
-      } else {
-        chosen_image_path = result.files.single.path!;
-      }
+      chosen_image_src = base64Encode(result.files.single.bytes!);
+      chosen_image_ext = result.files.single.extension!;
       setState(() {});
     }
   }
@@ -398,7 +399,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
       sections_by_page_translation_stream,
     ];
 
-    Timer(Duration(milliseconds: 400), () {
+    Timer(Duration(milliseconds: 600), () {
       current_user = FirebaseAuth.instance.currentUser!;
       check_for_remote_resume();
     });
@@ -833,9 +834,30 @@ class _ResumeEditorState extends State<ResumeEditor> {
   }
 
   save_resume() async {
-    print("Save");
-    print(generate_resume().to_json());
+    if (chosen_image_src.isNotEmpty) {
+      if (!chosen_image_src.contains("http")) {
+        Reference profile_image_ref = await FirebaseStorage.instance
+            .ref()
+            .child('users')
+            .child('/' + current_user.uid)
+            .child('/resumes')
+            .child('/profile_image.' + chosen_image_ext);
 
+        await profile_image_ref
+            .putData(base64Decode(chosen_image_src))
+            .then((p0) async {
+          chosen_image_src = await p0.ref.getDownloadURL();
+          set_resume();
+        });
+      } else {
+        set_resume();
+      }
+    } else {
+      set_resume();
+    }
+  }
+
+  set_resume() async {
     String resume_doc_id = current_user.uid +
         "_" +
         text_list.list[source_language_index].source_language;
@@ -849,15 +871,21 @@ class _ResumeEditorState extends State<ResumeEditor> {
       SetOptions(merge: true),
     )
         .then((value) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: SelectableText(
-            text_list.get(source_language_index)[10],
-          ),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      show_saved_snack_bar();
     });
+  }
+
+  show_saved_snack_bar() {
+    int saved_text_index = text_list.get(source_language_index).length - 2;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: SelectableText(
+          text_list.get(source_language_index)[saved_text_index],
+        ),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   check_for_remote_resume() async {
@@ -876,6 +904,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
       var remote_resume =
           ResumeData.Resume.from_snapshot(resume_doc_id, resume_map);
 
+      chosen_image_src = remote_resume.image_src;
       current_color = remote_resume.icon_color;
 
       name_input_controller.text = remote_resume.name;
@@ -894,12 +923,26 @@ class _ResumeEditorState extends State<ResumeEditor> {
       custom_sections = remote_resume.custom_sections;
 
       setState(() {});
+    } else {
+      skill_sections = [
+        ResumeSkill(
+          name: "",
+          percentage: 0.2,
+          color: Colors.blue,
+        ),
+      ];
+      employment_sections = [
+        ResumeSection(),
+      ];
+      education_sections = [
+        ResumeSection(),
+      ];
     }
   }
 
   ResumeData.Resume generate_resume() {
     return ResumeData.Resume(
-      image_src: chosen_image_path,
+      image_src: chosen_image_src,
       name: name_input_controller.text,
       job_title: job_title_input_controller.text,
       email: email_input_controller.text,
