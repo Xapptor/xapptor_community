@@ -21,6 +21,7 @@ class Resume {
   final List<ResumeSection> custom_sections;
   final Color icon_color;
   final String language_code;
+  final List<String> text_list;
 
   const Resume({
     this.id = "",
@@ -38,6 +39,7 @@ class Resume {
     required this.custom_sections,
     required this.icon_color,
     required this.language_code,
+    required this.text_list,
   });
 
   Resume.from_snapshot(
@@ -68,7 +70,9 @@ class Resume {
             .map((section) => ResumeSection.from_snapshot(section))
             .toList(),
         icon_color = HexColor.fromHex(snapshot['icon_color']),
-        language_code = snapshot['language_code'];
+        language_code = snapshot['language_code'],
+        text_list =
+            (snapshot['text_list'] as List).map((e) => e as String).toList();
 
   Map<String, dynamic> to_json() {
     return {
@@ -86,6 +90,7 @@ class Resume {
       'custom_sections': custom_sections.map((e) => e.to_json()),
       'icon_color': icon_color.toHex(),
       'language_code': language_code,
+      'text_list': text_list,
     };
   }
 }

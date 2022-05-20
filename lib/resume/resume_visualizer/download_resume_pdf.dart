@@ -14,6 +14,7 @@ download_resume_pdf({
   required List<pw.Widget> skills_pw,
   required List<pw.Widget> sections_pw,
   required double text_bottom_margin,
+  required String resume_link,
 }) async {
   final pdf = pw.Document();
 
@@ -179,6 +180,7 @@ download_resume_pdf({
               get_sections_by_lengths(
                 resume: resume,
                 sections_pw: sections_pw,
+                resume_link: resume_link,
               ),
         )
       ],
@@ -196,6 +198,7 @@ download_resume_pdf({
 List<pw.Container> get_sections_by_lengths({
   required Resume resume,
   required List<pw.Widget> sections_pw,
+  required String resume_link,
 }) {
   var sections = [resume.profile_section] +
       resume.employment_sections +
@@ -218,5 +221,45 @@ List<pw.Container> get_sections_by_lengths({
     index += section_length;
   });
 
+  widgets = widgets +
+      resume_available(
+        resume: resume,
+        resume_link: resume_link,
+        last_section_length: sections_lengths.last,
+      );
+
   return widgets;
+}
+
+List<pw.Container> resume_available({
+  required Resume resume,
+  required String resume_link,
+  required int last_section_length,
+}) {
+  return [
+    pw.Container(
+      height: (7 - last_section_length) * 110,
+    ),
+    pw.Container(
+      alignment: pw.Alignment.centerLeft,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            resume.text_list[1] + " ",
+            textAlign: pw.TextAlign.left,
+            style: pw.TextStyle(
+              color: PdfColors.black,
+              fontSize: 10,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          PdfUrlText(
+            text: resume_link,
+            url: resume_link,
+          ),
+        ],
+      ),
+    ),
+  ];
 }

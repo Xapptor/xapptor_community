@@ -552,7 +552,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
       }
     }
 
-    final DateTime? picked = await showDatePicker(
+    DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial_date,
       firstDate: first_date,
@@ -581,6 +581,18 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           selected_date_1 = picked;
           break;
         case 1:
+          if (picked.year == now.year ||
+              picked.month == now.month ||
+              picked.day == now.day) {
+            picked = DateTime(
+              picked.year,
+              picked.month,
+              picked.day,
+              10,
+              10,
+              10,
+            );
+          }
           selected_date_2 = picked;
           break;
       }

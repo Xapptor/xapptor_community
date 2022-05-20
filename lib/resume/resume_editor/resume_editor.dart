@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:universal_platform/universal_platform.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_visualizer.dart';
+import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
@@ -22,9 +21,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 class ResumeEditor extends StatefulWidget {
   const ResumeEditor({
     required this.color_topbar,
+    required this.base_url,
   });
 
   final Color color_topbar;
+  final String base_url;
 
   @override
   _ResumeEditorState createState() => _ResumeEditorState();
@@ -65,6 +66,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Education",
           "Custom Sections",
           "Before adding a new section you must first complete the last one",
+          "Resume available online at:",
           "Resume Saved",
           "Save",
         ],
@@ -90,6 +92,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Educación",
           "Secciones Personalizadas",
           "Antes de agregar una nueva sección primero debes de completar la última",
+          "CV disponible en línea en:",
           "CV Guardado",
           "Guardar",
         ],
@@ -417,6 +420,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
         has_back_button: true,
         actions: [
           Container(
+            margin: EdgeInsets.only(right: 20),
             width: 150,
             child: LanguagePicker(
               translation_stream_list: translation_stream_list,
@@ -822,7 +826,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     resume: generate_resume(),
                     language_code:
                         text_list.list[source_language_index].source_language,
-                    text_list: [text_list.get(source_language_index)[11]],
+                    base_url: widget.base_url,
                   ),
                 ],
               ),
@@ -964,6 +968,10 @@ class _ResumeEditorState extends State<ResumeEditor> {
       custom_sections: custom_sections,
       icon_color: current_color,
       language_code: text_list.list[source_language_index].source_language,
+      text_list: [
+        text_list.get(source_language_index)[11],
+        text_list.get(source_language_index)[18],
+      ],
     );
   }
 }

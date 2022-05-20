@@ -4,6 +4,7 @@ import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
 import 'package:xapptor_community/resume/get_timeframe_text.dart';
+import 'package:xapptor_logic/is_portrait.dart';
 
 // Resume, descriptive section for PDF.
 
@@ -13,18 +14,14 @@ pw.Widget resume_section_pw({
   required double text_bottom_margin,
   required BuildContext context,
   required String language_code,
-  required List<String> text_list,
 }) {
-  double screen_height = MediaQuery.of(context).size.height;
-  double screen_width = MediaQuery.of(context).size.width;
-
   String timeframe_text = "";
   if (resume_section.begin != null && resume_section.end != null) {
     timeframe_text = get_timeframe_text(
       begin: resume_section.begin!,
       end: resume_section.end!,
       language_code: language_code,
-      present_text: text_list[0],
+      present_text: resume.text_list[0],
     );
   }
 
@@ -129,11 +126,8 @@ resume_section({
   required double text_bottom_margin,
   required BuildContext context,
   required String language_code,
-  required List<String> text_list,
 }) {
-  double screen_height = MediaQuery.of(context).size.height;
-  double screen_width = MediaQuery.of(context).size.width;
-  bool portrait = screen_height > screen_width;
+  bool portrait = is_portrait(context);
 
   String timeframe_text = "";
   if (resume_section.begin != null && resume_section.end != null) {
@@ -141,7 +135,7 @@ resume_section({
       begin: resume_section.begin!,
       end: resume_section.end!,
       language_code: language_code,
-      present_text: text_list[0],
+      present_text: resume.text_list[0],
     );
   }
 
