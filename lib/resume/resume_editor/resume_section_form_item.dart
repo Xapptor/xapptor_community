@@ -59,9 +59,10 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
 
       case ResumeSectionFormType.employment_history:
         ResumeSection section = widget.section;
+        String at_text = widget.text_list[11];
 
         if (section.subtitle != null) {
-          int at_index = section.subtitle!.indexOf(" at ");
+          int at_index = section.subtitle!.indexOf(" ${at_text} ");
           int coma_index = section.subtitle!.indexOf(", ");
 
           if (at_index > 0) {
