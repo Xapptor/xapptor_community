@@ -224,6 +224,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
   }) {
     source_language_index = new_source_language_index;
     setState(() {});
+    apply_timer();
   }
 
   update_text_list({
