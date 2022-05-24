@@ -429,6 +429,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
 
     return Scaffold(
       appBar: TopBar(
+        context: context,
         background_color: widget.color_topbar,
         has_back_button: true,
         actions: [
