@@ -69,7 +69,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Custom Sections",
           "Before adding a new section you must first complete the last one",
           "Resume available online at:",
-          "Resume Developed and Hosted by:",
+          "Resume Developed and Hosted by American Business Excellence Institute:",
+          "Use Example Resume",
           "Resume Saved",
           "Save",
         ],
@@ -96,7 +97,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Secciones Personalizadas",
           "Antes de agregar una nueva sección primero debes de completar la última",
           "CV disponible en línea en:",
-          "CV Desarrollado y Alojado por:",
+          "CV Desarrollado y Alojado por American Business Excellence Institute:",
+          "Usar CV de Ejemplo",
           "CV Guardado",
           "Guardar",
         ],
@@ -457,6 +459,45 @@ class _ResumeEditorState extends State<ResumeEditor> {
                 children: [
                   SizedBox(
                     height: sized_box_space * 4,
+                  ),
+                  Container(
+                    width: screen_width,
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        elevation: MaterialStateProperty.all<double>(
+                          0,
+                        ),
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                          Colors.transparent,
+                        ),
+                        overlayColor: MaterialStateProperty.all<Color>(
+                          Colors.grey.withOpacity(0.2),
+                        ),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              MediaQuery.of(context).size.width,
+                            ),
+                            side: BorderSide(
+                              color: widget.color_topbar,
+                            ),
+                          ),
+                        ),
+                      ),
+                      onPressed: () {
+                        check_for_remote_resume(load_example: true);
+                      },
+                      child: Text(
+                        text_list.get(source_language_index)[20],
+                        style: TextStyle(
+                          color: widget.color_topbar,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: sized_box_space,
                   ),
                   Row(
                     children: [
@@ -906,10 +947,14 @@ class _ResumeEditorState extends State<ResumeEditor> {
     );
   }
 
-  check_for_remote_resume() async {
-    String resume_doc_id = current_user.uid +
-        "_" +
-        text_list.list[source_language_index].source_language;
+  check_for_remote_resume({
+    bool load_example = false,
+  }) async {
+    String resume_doc_id = load_example
+        ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
+        : (current_user.uid +
+            "_" +
+            text_list.list[source_language_index].source_language);
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance
         .collection("resumes")
@@ -935,12 +980,21 @@ class _ResumeEditorState extends State<ResumeEditor> {
       sections_by_page_input_controller.text =
           remote_resume.sections_by_page.join(", ");
 
-      skill_sections = remote_resume.skills;
-      employment_sections = remote_resume.employment_sections;
-      education_sections = remote_resume.education_sections;
-      custom_sections = remote_resume.custom_sections;
+      if (load_example) {
+        skill_sections.clear();
+        employment_sections.clear();
+        education_sections.clear();
+        custom_sections.clear();
+        setState(() {});
+      }
 
-      setState(() {});
+      Timer(Duration(milliseconds: load_example ? 100 : 0), () {
+        skill_sections = remote_resume.skills;
+        employment_sections = remote_resume.employment_sections;
+        education_sections = remote_resume.education_sections;
+        custom_sections = remote_resume.custom_sections;
+        setState(() {});
+      });
     } else {
       skill_sections = [
         ResumeSkill(
@@ -955,6 +1009,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
       education_sections = [
         ResumeSection(),
       ];
+      setState(() {});
     }
   }
 

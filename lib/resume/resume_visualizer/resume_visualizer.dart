@@ -98,6 +98,14 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
 
   late User current_user;
 
+  Timer populate_skills_timer = Timer(Duration(seconds: 0), () {});
+
+  @override
+  void dispose() {
+    populate_skills_timer.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -111,7 +119,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
       current_user = FirebaseAuth.instance.currentUser!;
       resume_doc_id = current_user.uid + "_" + widget.language_code;
 
-      Timer(Duration(milliseconds: 300), () {
+      populate_skills_timer = Timer(Duration(milliseconds: 300), () {
         populate_skills_and_sections();
       });
     }
