@@ -576,9 +576,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ],
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
@@ -600,9 +597,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ).validate(),
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
@@ -624,9 +618,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ).validate(),
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
@@ -648,9 +639,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ).validate(),
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
@@ -672,9 +660,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ).validate(),
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
@@ -726,9 +711,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ),
                   ),
                   TextFormField(
-                    onChanged: (new_value) {
-                      setState(() {});
-                    },
                     style: TextStyle(
                       color: widget.color_topbar,
                     ),
