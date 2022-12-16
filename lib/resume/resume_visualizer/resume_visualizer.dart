@@ -8,7 +8,7 @@ import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart'
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:xapptor_router/get_current_last_path_segment.dart';
+import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeVisualizer extends StatefulWidget {
@@ -67,7 +67,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
   String resume_doc_id = "";
 
   fetch_resume() async {
-    resume_doc_id = get_current_last_path_segment();
+    resume_doc_id = get_last_path_segment();
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance
         .collection("resumes")
