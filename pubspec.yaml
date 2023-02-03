@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  fluttericon: ^2.0.0
   google_fonts: ^2.1.0
   universal_platform: ^1.0.0+1
   pdf: ^3.8.0
