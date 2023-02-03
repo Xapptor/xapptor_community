@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:xapptor_ui/widgets/url_text.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Widget name_and_skills({
   required Resume resume,
@@ -59,7 +59,7 @@ Widget name_and_skills({
                   );
                 },
                 icon: Icon(
-                  FontAwesome5.file_download,
+                  FontAwesomeIcons.fileArrowDown,
                   color: resume.icon_color,
                 ),
               )

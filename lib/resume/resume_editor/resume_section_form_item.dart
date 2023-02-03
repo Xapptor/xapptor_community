@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:xapptor_community/resume/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ResumeSectionFormItem extends StatefulWidget {
   ResumeSectionFormItem({
@@ -521,7 +521,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       );
                     },
                     icon: Icon(
-                      FontAwesome.trash,
+                      FontAwesomeIcons.trash,
                     ),
                     color: Colors.red,
                   ),
