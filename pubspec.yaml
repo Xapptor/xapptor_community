@@ -19,12 +19,11 @@ dependencies:
   file_picker: ^4.5.1
   flutter_colorpicker: ^1.0.3
 
-  xapptor_logic: ^0.0.3
-  xapptor_router: ^0.0.2
-  xapptor_translation: ^0.0.3
-  xapptor_ui: ^0.0.3
+  # xapptor_logic: ^0.0.3
+  # xapptor_router: ^0.0.2
+  # xapptor_translation: ^0.0.3
+  # xapptor_ui: ^0.0.3
 
-dependency_overrides:
   xapptor_logic:
     path: ../xapptor_logic
   xapptor_router:
