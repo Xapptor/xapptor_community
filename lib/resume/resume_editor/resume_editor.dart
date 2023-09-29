@@ -21,7 +21,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class ResumeEditor extends StatefulWidget {
-  const ResumeEditor({super.key, 
+  const ResumeEditor({
+    super.key,
     required this.color_topbar,
     required this.base_url,
   });
@@ -30,7 +31,7 @@ class ResumeEditor extends StatefulWidget {
   final String base_url;
 
   @override
-  _ResumeEditorState createState() => _ResumeEditorState();
+  State<ResumeEditor> createState() => _ResumeEditorState();
 }
 
 class _ResumeEditorState extends State<ResumeEditor> {
@@ -39,8 +40,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
   TextEditingController email_input_controller = TextEditingController();
   TextEditingController website_input_controller = TextEditingController();
   TextEditingController profile_input_controller = TextEditingController();
-  TextEditingController sections_by_page_input_controller =
-      TextEditingController();
+  TextEditingController sections_by_page_input_controller = TextEditingController();
 
   double screen_height = 0;
   double screen_width = 0;
@@ -190,8 +190,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
     ],
   );
 
-  TranslationTextListArray sections_by_page_text_list =
-      TranslationTextListArray(
+  TranslationTextListArray sections_by_page_text_list = TranslationTextListArray(
     [
       TranslationTextList(
         source_language: "en",
@@ -473,8 +472,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                         overlayColor: MaterialStateProperty.all<Color>(
                           Colors.grey.withOpacity(0.2),
                         ),
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               MediaQuery.of(context).size.width,
@@ -516,8 +514,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                               overlayColor: MaterialStateProperty.all<Color>(
                                 Colors.grey.withOpacity(0.2),
                               ),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     MediaQuery.of(context).size.width,
@@ -552,8 +549,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                               backgroundColor: MaterialStateProperty.all<Color>(
                                 current_color,
                               ),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
+                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     MediaQuery.of(context).size.width,
@@ -684,14 +680,12 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   ),
                   ResumeSectionForm(
                     resume_section_form_type: ResumeSectionFormType.skill,
-                    text_list:
-                        text_list.get(source_language_index).sublist(7, 18) +
-                            skill_text_list.get(source_language_index) +
-                            picker_text_list.get(source_language_index) +
-                            text_list.get(source_language_index).sublist(4, 5),
+                    text_list: text_list.get(source_language_index).sublist(7, 18) +
+                        skill_text_list.get(source_language_index) +
+                        picker_text_list.get(source_language_index) +
+                        text_list.get(source_language_index).sublist(4, 5),
                     text_color: widget.color_topbar,
-                    language_code:
-                        text_list.list[source_language_index].source_language,
+                    language_code: text_list.list[source_language_index].source_language,
                     section_index: 0,
                     update_item: update_item,
                     remove_item: remove_item,
@@ -715,8 +709,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                       color: widget.color_topbar,
                     ),
                     decoration: InputDecoration(
-                      labelText: sections_by_page_text_list
-                          .get(source_language_index)[1],
+                      labelText: sections_by_page_text_list.get(source_language_index)[1],
                       labelStyle: TextStyle(
                         color: widget.color_topbar,
                       ),
@@ -736,14 +729,11 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     height: sized_box_space * 2,
                   ),
                   ResumeSectionForm(
-                    resume_section_form_type:
-                        ResumeSectionFormType.employment_history,
-                    text_list:
-                        text_list.get(source_language_index).sublist(7, 18) +
-                            employment_text_list.get(source_language_index),
+                    resume_section_form_type: ResumeSectionFormType.employment_history,
+                    text_list: text_list.get(source_language_index).sublist(7, 18) +
+                        employment_text_list.get(source_language_index),
                     text_color: widget.color_topbar,
-                    language_code:
-                        text_list.list[source_language_index].source_language,
+                    language_code: text_list.list[source_language_index].source_language,
                     section_index: 1,
                     update_item: update_item,
                     remove_item: remove_item,
@@ -754,12 +744,10 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   ),
                   ResumeSectionForm(
                     resume_section_form_type: ResumeSectionFormType.education,
-                    text_list:
-                        text_list.get(source_language_index).sublist(7, 18) +
-                            education_text_list.get(source_language_index),
+                    text_list: text_list.get(source_language_index).sublist(7, 18) +
+                        education_text_list.get(source_language_index),
                     text_color: widget.color_topbar,
-                    language_code:
-                        text_list.list[source_language_index].source_language,
+                    language_code: text_list.list[source_language_index].source_language,
                     section_index: 2,
                     update_item: update_item,
                     remove_item: remove_item,
@@ -770,11 +758,9 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   ),
                   ResumeSectionForm(
                     resume_section_form_type: ResumeSectionFormType.custom,
-                    text_list:
-                        text_list.get(source_language_index).sublist(7, 18),
+                    text_list: text_list.get(source_language_index).sublist(7, 18),
                     text_color: widget.color_topbar,
-                    language_code:
-                        text_list.list[source_language_index].source_language,
+                    language_code: text_list.list[source_language_index].source_language,
                     section_index: 3,
                     update_item: update_item,
                     remove_item: remove_item,
@@ -798,8 +784,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                           overlayColor: MaterialStateProperty.all<Color>(
                             Colors.grey.withOpacity(0.2),
                           ),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                 MediaQuery.of(context).size.width,
@@ -861,8 +846,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   ),
                   ResumeVisualizer(
                     resume: generate_resume(),
-                    language_code:
-                        text_list.list[source_language_index].source_language,
+                    language_code: text_list.list[source_language_index].source_language,
                     base_url: widget.base_url,
                   ),
                 ],
@@ -884,9 +868,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
             .child('/resumes')
             .child('/profile_image.$chosen_image_ext');
 
-        await profile_image_ref
-            .putData(base64Decode(chosen_image_src))
-            .then((p0) async {
+        await profile_image_ref.putData(base64Decode(chosen_image_src)).then((p0) async {
           chosen_image_src = await p0.ref.getDownloadURL();
           set_resume();
         });
@@ -901,8 +883,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
   set_resume() async {
     String resume_doc_id = "${current_user.uid}_${text_list.list[source_language_index].source_language}";
 
-    DocumentReference resume_doc =
-        FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
+    DocumentReference resume_doc = FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
 
     await resume_doc
         .set(
@@ -934,10 +915,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
         ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
         : ("${current_user.uid}_${text_list.list[source_language_index].source_language}");
 
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance
-        .collection("resumes")
-        .doc(resume_doc_id)
-        .get();
+    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
 
     Map? resume_map = resume_doc.data() as Map?;
 
@@ -952,11 +930,9 @@ class _ResumeEditorState extends State<ResumeEditor> {
       job_title_input_controller.text = remote_resume.job_title;
       email_input_controller.text = remote_resume.email;
       website_input_controller.text = remote_resume.website;
-      profile_input_controller.text =
-          remote_resume.profile_section.description!;
+      profile_input_controller.text = remote_resume.profile_section.description!;
 
-      sections_by_page_input_controller.text =
-          remote_resume.sections_by_page.join(", ");
+      sections_by_page_input_controller.text = remote_resume.sections_by_page.join(", ");
 
       if (load_example) {
         skill_sections.clear();

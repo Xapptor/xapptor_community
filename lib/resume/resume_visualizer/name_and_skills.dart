@@ -16,8 +16,7 @@ Widget name_and_skills({
   required String resume_link,
 }) {
   return Container(
-    margin:
-        EdgeInsets.symmetric(horizontal: portrait ? 0 : (screen_width / 100)),
+    margin: EdgeInsets.symmetric(horizontal: portrait ? 0 : (screen_width / 100)),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -35,36 +34,34 @@ Widget name_and_skills({
             ),
           ),
         ),
-        Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SelectableText(
-                resume.job_title,
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: portrait ? 16 : 20,
-                  fontWeight: FontWeight.bold,
-                ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SelectableText(
+              resume.job_title,
+              textAlign: TextAlign.left,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: portrait ? 16 : 20,
+                fontWeight: FontWeight.bold,
               ),
-              IconButton(
-                onPressed: () {
-                  download_resume_pdf(
-                    resume: resume,
-                    skills_pw: skills_pw,
-                    sections_pw: sections_pw,
-                    text_bottom_margin: text_bottom_margin,
-                    resume_link: resume_link,
-                  );
-                },
-                icon: Icon(
-                  FontAwesomeIcons.fileArrowDown,
-                  color: resume.icon_color,
-                ),
-              )
-            ],
-          ),
+            ),
+            IconButton(
+              onPressed: () {
+                download_resume_pdf(
+                  resume: resume,
+                  skills_pw: skills_pw,
+                  sections_pw: sections_pw,
+                  text_bottom_margin: text_bottom_margin,
+                  resume_link: resume_link,
+                );
+              },
+              icon: Icon(
+                FontAwesomeIcons.fileArrowDown,
+                color: resume.icon_color,
+              ),
+            )
+          ],
         ),
         Container(
           margin: const EdgeInsets.only(

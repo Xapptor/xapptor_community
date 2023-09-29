@@ -1,6 +1,7 @@
 name: xapptor_community
 description: Module to create user communities.
-repository: https://github.com/Xapptor/xapptor_community
+# repository: https://github.com/Xapptor/xapptor_community
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 0.0.1
 
 environment:
@@ -10,12 +11,19 @@ dependencies:
   flutter:
     sdk: flutter
 
+  cloud_firestore: ^4.9.2
+  firebase_auth: ^4.10.0
+  firebase_storage: ^11.2.7
+
   google_fonts: ^6.1.0
   universal_platform: ^1.0.0+1
   pdf: ^3.10.4
   printing: ^5.11.0
   file_picker: ^5.5.0
   flutter_colorpicker: ^1.0.3
+  intl: ^0.18.1
+  http: ^1.1.0
+  font_awesome_flutter: ^10.5.0
 
   # xapptor_logic: ^0.0.3
   # xapptor_router: ^0.0.2

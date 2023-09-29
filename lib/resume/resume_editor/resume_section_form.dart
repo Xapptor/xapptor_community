@@ -14,7 +14,8 @@ enum ResumeSectionFormType {
 }
 
 class ResumeSectionForm extends StatefulWidget {
-  const ResumeSectionForm({super.key, 
+  const ResumeSectionForm({
+    super.key,
     required this.resume_section_form_type,
     required this.text_list,
     required this.text_color,
@@ -30,13 +31,12 @@ class ResumeSectionForm extends StatefulWidget {
   final Color text_color;
   final String language_code;
   final int section_index;
-  final Function(int item_index, int section_index, dynamic section)
-      update_item;
+  final Function(int item_index, int section_index, dynamic section) update_item;
   final Function(int item_index, int section_index) remove_item;
   final List<dynamic> section_list;
 
   @override
-  _ResumeSectionFormState createState() => _ResumeSectionFormState();
+  State<ResumeSectionForm> createState() => _ResumeSectionFormState();
 }
 
 class _ResumeSectionFormState extends State<ResumeSectionForm> {
@@ -93,10 +93,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
 
   @override
   Widget build(BuildContext context) {
-    double screen_height = MediaQuery.of(context).size.height;
-    double screen_width = MediaQuery.of(context).size.width;
-    bool portrait = screen_height > screen_width;
-
     if (selected_date_1 != null && selected_date_2 != null) {
       timeframe_text = get_timeframe_text(
         begin: selected_date_1!,
@@ -125,77 +121,73 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
         break;
     }
 
-    return Container(
-      child: Column(
-        children: [
-          SizedBox(
-            height: sized_box_space * 2,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Column(
+      children: [
+        SizedBox(
+          height: sized_box_space * 2,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              IconButton(
-                onPressed: () {
-                  if (widget.section_list.isNotEmpty) {
-                    if (widget.resume_section_form_type ==
-                        ResumeSectionFormType.skill) {
-                      ResumeSkill last_section = widget.section_list.last;
+            ),
+            IconButton(
+              onPressed: () {
+                if (widget.section_list.isNotEmpty) {
+                  if (widget.resume_section_form_type == ResumeSectionFormType.skill) {
+                    ResumeSkill last_section = widget.section_list.last;
 
-                      if (last_section.name.isNotEmpty) {
-                        add_item();
-                      } else {
-                        show_snack_bar();
-                      }
+                    if (last_section.name.isNotEmpty) {
+                      add_item();
                     } else {
-                      ResumeSection last_section = widget.section_list.last;
-
-                      if (last_section.title != null ||
-                          last_section.subtitle != null ||
-                          last_section.description != null) {
-                        add_item();
-                      } else {
-                        show_snack_bar();
-                      }
+                      show_snack_bar();
                     }
                   } else {
-                    add_item();
+                    ResumeSection last_section = widget.section_list.last;
+
+                    if (last_section.title != null ||
+                        last_section.subtitle != null ||
+                        last_section.description != null) {
+                      add_item();
+                    } else {
+                      show_snack_bar();
+                    }
                   }
-                },
-                icon: const Icon(
-                  FontAwesomeIcons.squarePlus,
-                ),
-                color: Colors.blue,
+                } else {
+                  add_item();
+                }
+              },
+              icon: const Icon(
+                FontAwesomeIcons.squarePlus,
               ),
-            ],
-          ),
-          ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: widget.section_list.length,
-            itemBuilder: (context, index) {
-              return ResumeSectionFormItem(
-                resume_section_form_type: widget.resume_section_form_type,
-                text_list: widget.text_list.sublist(0, 10) +
-                    widget.text_list.sublist(11),
-                text_color: widget.text_color,
-                language_code: widget.language_code,
-                item_index: index,
-                section_index: widget.section_index,
-                update_item: widget.update_item,
-                remove_item: remove_item,
-                section: widget.section_list[index],
-              );
-            },
-          ),
-        ],
-      ),
+              color: Colors.blue,
+            ),
+          ],
+        ),
+        ListView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: widget.section_list.length,
+          itemBuilder: (context, index) {
+            return ResumeSectionFormItem(
+              resume_section_form_type: widget.resume_section_form_type,
+              text_list: widget.text_list.sublist(0, 10) + widget.text_list.sublist(11),
+              text_color: widget.text_color,
+              language_code: widget.language_code,
+              item_index: index,
+              section_index: widget.section_index,
+              update_item: widget.update_item,
+              remove_item: remove_item,
+              section: widget.section_list[index],
+            );
+          },
+        ),
+      ],
     );
   }
 }

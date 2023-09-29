@@ -69,7 +69,8 @@ pw.Widget resume_skill_pw({
 // Resume, skill widget.
 
 class ResumeSkill extends StatefulWidget {
-  const ResumeSkill({super.key, 
+  const ResumeSkill({
+    super.key,
     required this.skill,
     required this.apply_variation,
   });
@@ -78,7 +79,7 @@ class ResumeSkill extends StatefulWidget {
   final bool apply_variation;
 
   @override
-  _ResumeSkillState createState() => _ResumeSkillState();
+  State<ResumeSkill> createState() => _ResumeSkillState();
 }
 
 class _ResumeSkillState extends State<ResumeSkill> {
@@ -97,9 +98,8 @@ class _ResumeSkillState extends State<ResumeSkill> {
 
     if (widget.apply_variation) {
       timer_initial_variation = Timer(const Duration(milliseconds: 3000), () {
-        periodic_timer_variation = Timer.periodic(
-            Duration(milliseconds: random_number_with_range(2000, 3500)),
-            (timer) {
+        periodic_timer_variation =
+            Timer.periodic(Duration(milliseconds: random_number_with_range(2000, 3500)), (timer) {
           percentage_variation = random_number_with_range(-50, 50) / 1000;
           setState(() {});
         });
@@ -126,8 +126,8 @@ class _ResumeSkillState extends State<ResumeSkill> {
     double screen_height = MediaQuery.of(context).size.height;
     double screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
-    double current_bar_width = (screen_width * (portrait ? 0.38 : 0.13)) *
-        (current_percentage + percentage_variation).clamp(0, screen_width);
+    double current_bar_width =
+        (screen_width * (portrait ? 0.38 : 0.13)) * (current_percentage + percentage_variation).clamp(0, screen_width);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),

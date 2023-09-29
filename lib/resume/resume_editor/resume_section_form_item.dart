@@ -34,7 +34,7 @@ class ResumeSectionFormItem extends StatefulWidget {
   final dynamic section;
 
   @override
-  _ResumeSectionFormItemState createState() => _ResumeSectionFormItemState();
+  State<ResumeSectionFormItem> createState() => _ResumeSectionFormItemState();
 }
 
 class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
@@ -239,9 +239,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
 
   @override
   Widget build(BuildContext context) {
-    double screen_height = MediaQuery.of(context).size.height;
     double screen_width = MediaQuery.of(context).size.width;
-    bool portrait = screen_height > screen_width;
 
     if (selected_date_1 != null && selected_date_2 != null) {
       timeframe_text = get_timeframe_text(

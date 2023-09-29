@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -12,7 +14,8 @@ import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeVisualizer extends StatefulWidget {
-  ResumeVisualizer({super.key, 
+  ResumeVisualizer({
+    super.key,
     this.resume,
     this.language_code = "en",
     required this.base_url,
@@ -23,7 +26,7 @@ class ResumeVisualizer extends StatefulWidget {
   String base_url;
 
   @override
-  _ResumeVisualizerState createState() => _ResumeVisualizerState();
+  State<ResumeVisualizer> createState() => _ResumeVisualizerState();
 }
 
 class _ResumeVisualizerState extends State<ResumeVisualizer> {
@@ -69,10 +72,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
   fetch_resume() async {
     resume_doc_id = get_last_path_segment();
 
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance
-        .collection("resumes")
-        .doc(resume_doc_id)
-        .get();
+    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
 
     Map? resume_map = resume_doc.data() as Map?;
     if (resume_map != null) {
@@ -159,9 +159,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
         ? Container(
             color: Colors.white,
             child: ListView(
-              physics: widget.resume == null
-                  ? const ScrollPhysics()
-                  : const NeverScrollableScrollPhysics(),
+              physics: widget.resume == null ? const ScrollPhysics() : const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               children: [
                 Container(
