@@ -10,7 +10,7 @@ List<dynamic> populate_skills({
   List<Widget> skills = [];
   List<pw.Widget> skills_pw = [];
 
-  resume.skills.forEach((skill) {
+  for (var skill in resume.skills) {
     skills.add(
       ResumeSkill(
         skill: skill,
@@ -24,7 +24,7 @@ List<dynamic> populate_skills({
         context: context,
       ),
     );
-  });
+  }
 
   return [skills, skills_pw];
 }

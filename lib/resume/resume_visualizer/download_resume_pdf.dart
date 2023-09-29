@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -61,7 +60,7 @@ download_resume_pdf({
                       pw.Expanded(
                         flex: 1,
                         child: pw.Container(
-                          padding: pw.EdgeInsets.only(
+                          padding: const pw.EdgeInsets.only(
                             right: 0,
                           ),
                           child: pw.ClipRRect(
@@ -74,7 +73,7 @@ download_resume_pdf({
                       pw.Expanded(
                         flex: 2,
                         child: pw.Container(
-                          padding: pw.EdgeInsets.only(
+                          padding: const pw.EdgeInsets.only(
                             left: 0,
                           ),
                           child: pw.Column(
@@ -90,7 +89,7 @@ download_resume_pdf({
                                 ),
                               ),
                               pw.Container(
-                                margin: pw.EdgeInsets.only(
+                                margin: const pw.EdgeInsets.only(
                                   top: 3,
                                 ),
                                 child: pw.Text(
@@ -104,7 +103,7 @@ download_resume_pdf({
                                 ),
                               ),
                               pw.Container(
-                                margin: pw.EdgeInsets.only(
+                                margin: const pw.EdgeInsets.only(
                                   top: 3,
                                 ),
                                 child: pw.Row(
@@ -146,24 +145,22 @@ download_resume_pdf({
                                   pw.Expanded(
                                     flex: 1,
                                     child: pw.Container(
-                                      padding: pw.EdgeInsets.only(
+                                      padding: const pw.EdgeInsets.only(
                                         right: 3,
                                       ),
                                       child: pw.Column(
-                                        children: skills_pw.sublist(
-                                            0, (skills_pw.length / 2).round()),
+                                        children: skills_pw.sublist(0, (skills_pw.length / 2).round()),
                                       ),
                                     ),
                                   ),
                                   pw.Expanded(
                                     flex: 1,
                                     child: pw.Container(
-                                      margin: pw.EdgeInsets.only(
+                                      margin: const pw.EdgeInsets.only(
                                         left: 3,
                                       ),
                                       child: pw.Column(
-                                        children: skills_pw.sublist(
-                                            (skills_pw.length / 2).round()),
+                                        children: skills_pw.sublist((skills_pw.length / 2).round()),
                                       ),
                                     ),
                                   ),
@@ -200,26 +197,24 @@ List<pw.Container> get_sections_by_lengths({
   required List<pw.Widget> sections_pw,
   required String resume_link,
 }) {
-  var sections = [resume.profile_section] +
-      resume.employment_sections +
-      resume.education_sections +
-      resume.custom_sections;
+  var sections =
+      [resume.profile_section] + resume.employment_sections + resume.education_sections + resume.custom_sections;
 
   var sections_lengths = resume.sections_by_page;
   List<pw.Container> widgets = [];
   int index = 0;
 
-  sections_lengths.forEach((section_length) {
+  for (var section_length in sections_lengths) {
     widgets.add(
       pw.Container(
-        margin: pw.EdgeInsets.symmetric(vertical: 10),
+        margin: const pw.EdgeInsets.symmetric(vertical: 10),
         child: pw.Column(
           children: sections_pw.sublist(index, index + section_length),
         ),
       ),
     );
     index += section_length;
-  });
+  }
 
   widgets = widgets +
       resume_available(

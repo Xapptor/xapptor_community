@@ -21,7 +21,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class ResumeEditor extends StatefulWidget {
-  const ResumeEditor({
+  const ResumeEditor({super.key, 
     required this.color_topbar,
     required this.base_url,
   });
@@ -436,7 +436,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
         has_back_button: true,
         actions: [
           Container(
-            margin: EdgeInsets.only(right: 20),
+            margin: const EdgeInsets.only(right: 20),
             width: 150,
             child: LanguagePicker(
               translation_stream_list: translation_stream_list,
@@ -460,7 +460,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   SizedBox(
                     height: sized_box_space * 4,
                   ),
-                  Container(
+                  SizedBox(
                     width: screen_width,
                     child: ElevatedButton(
                       style: ButtonStyle(
@@ -566,7 +566,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                             },
                             child: Text(
                               picker_text_list.get(source_language_index)[1],
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                               ),
                             ),
@@ -704,7 +704,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       sections_by_page_text_list.get(source_language_index)[0],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -783,7 +783,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                   SizedBox(
                     height: sized_box_space * 2,
                   ),
-                  Container(
+                  SizedBox(
                     width: screen_width,
                     child: FractionallySizedBox(
                       widthFactor: 0.3,
@@ -812,7 +812,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                         },
                         child: Text(
                           text_list.get(source_language_index).last,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                           ),
                         ),
@@ -843,7 +843,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     alignment: Alignment.center,
                     width: double.maxFinite,
                     padding: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.deepOrangeAccent,
@@ -853,7 +853,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ),
                     child: Text(
                       text_list.get(source_language_index)[6],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
@@ -877,12 +877,12 @@ class _ResumeEditorState extends State<ResumeEditor> {
   save_resume() async {
     if (chosen_image_src.isNotEmpty) {
       if (!chosen_image_src.contains("http")) {
-        Reference profile_image_ref = await FirebaseStorage.instance
+        Reference profile_image_ref = FirebaseStorage.instance
             .ref()
             .child('users')
-            .child('/' + current_user.uid)
+            .child('/${current_user.uid}')
             .child('/resumes')
-            .child('/profile_image.' + chosen_image_ext);
+            .child('/profile_image.$chosen_image_ext');
 
         await profile_image_ref
             .putData(base64Decode(chosen_image_src))
@@ -899,9 +899,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
   }
 
   set_resume() async {
-    String resume_doc_id = current_user.uid +
-        "_" +
-        text_list.list[source_language_index].source_language;
+    String resume_doc_id = "${current_user.uid}_${text_list.list[source_language_index].source_language}";
 
     DocumentReference resume_doc =
         FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
@@ -924,7 +922,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
         content: SelectableText(
           text_list.get(source_language_index)[saved_text_index],
         ),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -934,9 +932,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
   }) async {
     String resume_doc_id = load_example
         ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
-        : (current_user.uid +
-            "_" +
-            text_list.list[source_language_index].source_language);
+        : ("${current_user.uid}_${text_list.list[source_language_index].source_language}");
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance
         .collection("resumes")
@@ -979,7 +975,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
       });
     } else {
       skill_sections = [
-        ResumeSkill(
+        const ResumeSkill(
           name: "",
           percentage: 0.2,
           color: Colors.blue,

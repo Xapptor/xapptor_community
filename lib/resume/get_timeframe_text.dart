@@ -17,9 +17,5 @@ get_timeframe_text({
           ? present_text
           : DateFormat.yMMMM(language_code).format(end));
 
-  return timeframe_text = begin_text.substring(0, 1).toUpperCase() +
-      begin_text.substring(1) +
-      " - " +
-      end_text.substring(0, 1).toUpperCase() +
-      end_text.substring(1);
+  return timeframe_text = "${begin_text.substring(0, 1).toUpperCase()}${begin_text.substring(1)} - ${end_text.substring(0, 1).toUpperCase()}${end_text.substring(1)}";
 }

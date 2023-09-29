@@ -67,7 +67,7 @@ Widget name_and_skills({
           ),
         ),
         Container(
-          margin: EdgeInsets.only(
+          margin: const EdgeInsets.only(
             bottom: 3,
           ),
           child: UrlText(
@@ -95,7 +95,7 @@ Widget name_and_skills({
             Expanded(
               flex: 1,
               child: Container(
-                padding: EdgeInsets.only(
+                padding: const EdgeInsets.only(
                   right: 5,
                 ),
                 child: Column(
@@ -106,7 +106,7 @@ Widget name_and_skills({
             Expanded(
               flex: 1,
               child: Container(
-                margin: EdgeInsets.only(
+                margin: const EdgeInsets.only(
                   left: 5,
                 ),
                 child: Column(

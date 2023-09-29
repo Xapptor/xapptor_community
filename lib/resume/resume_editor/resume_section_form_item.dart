@@ -10,7 +10,8 @@ import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ResumeSectionFormItem extends StatefulWidget {
-  ResumeSectionFormItem({
+  const ResumeSectionFormItem({
+    super.key,
     required this.resume_section_form_type,
     required this.text_list,
     required this.text_color,
@@ -28,8 +29,7 @@ class ResumeSectionFormItem extends StatefulWidget {
   final String language_code;
   final int item_index;
   final int section_index;
-  final Function(int item_index, int section_index, dynamic section)
-      update_item;
+  final Function(int item_index, int section_index, dynamic section) update_item;
   final Function(int item_index, int section_index) remove_item;
   final dynamic section;
 
@@ -62,24 +62,19 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
         String at_text = widget.text_list[11];
 
         if (section.subtitle != null) {
-          int at_index = section.subtitle!.indexOf(" ${at_text} ");
+          int at_index = section.subtitle!.indexOf(" $at_text ");
           int coma_index = section.subtitle!.indexOf(", ");
 
           if (at_index > 0) {
-            field_1_input_controller.text =
-                section.subtitle!.substring(0, at_index);
+            field_1_input_controller.text = section.subtitle!.substring(0, at_index);
 
-            field_2_input_controller.text =
-                section.subtitle!.substring(at_index + 4, coma_index);
+            field_2_input_controller.text = section.subtitle!.substring(at_index + 4, coma_index);
 
-            field_3_input_controller.text =
-                section.subtitle!.substring(coma_index + 2);
+            field_3_input_controller.text = section.subtitle!.substring(coma_index + 2);
           } else {
-            field_1_input_controller.text =
-                section.subtitle!.substring(0, coma_index);
+            field_1_input_controller.text = section.subtitle!.substring(0, coma_index);
 
-            field_3_input_controller.text =
-                section.subtitle!.substring(coma_index + 2);
+            field_3_input_controller.text = section.subtitle!.substring(coma_index + 2);
           }
         }
 
@@ -96,14 +91,11 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           int coma_index_1 = section.subtitle!.indexOf(", ");
           int coma_index_2 = section.subtitle!.lastIndexOf(", ");
 
-          field_1_input_controller.text =
-              section.subtitle!.substring(0, coma_index_1);
+          field_1_input_controller.text = section.subtitle!.substring(0, coma_index_1);
 
-          field_2_input_controller.text =
-              section.subtitle!.substring(coma_index_1 + 2, coma_index_2);
+          field_2_input_controller.text = section.subtitle!.substring(coma_index_1 + 2, coma_index_2);
 
-          field_3_input_controller.text =
-              section.subtitle!.substring(coma_index_2 + 2);
+          field_3_input_controller.text = section.subtitle!.substring(coma_index_2 + 2);
         }
 
         selected_date_1 = section.begin;
@@ -159,13 +151,8 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
         );
         break;
       case ResumeSectionFormType.employment_history:
-        String subtitle = field_1_input_controller.text +
-            (field_2_input_controller.text.isEmpty
-                ? ""
-                : " ${widget.text_list[11]} ") +
-            field_2_input_controller.text +
-            ", " +
-            field_3_input_controller.text;
+        String subtitle =
+            "${field_1_input_controller.text}${field_2_input_controller.text.isEmpty ? "" : " ${widget.text_list[11]} "}${field_2_input_controller.text}, ${field_3_input_controller.text}";
 
         widget.update_item(
           widget.item_index,
@@ -189,11 +176,8 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
             icon: widget.item_index == 0 ? Icons.history_edu_rounded : null,
             code_point: widget.item_index == 0 ? 0xea3e : null,
             title: widget.item_index == 0 ? title : null,
-            subtitle: field_1_input_controller.text +
-                ", " +
-                field_2_input_controller.text +
-                ", " +
-                field_3_input_controller.text,
+            subtitle:
+                "${field_1_input_controller.text}, ${field_2_input_controller.text}, ${field_3_input_controller.text}",
             begin: selected_date_1,
             end: selected_date_2,
           ),
@@ -391,8 +375,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
                     ),
-                    widget.resume_section_form_type ==
-                            ResumeSectionFormType.employment_history
+                    widget.resume_section_form_type == ResumeSectionFormType.employment_history
                         ? TextFormField(
                             onChanged: (new_value) {
                               update_item();
@@ -436,7 +419,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                         update_item();
                       },
                     ),
-                    Container(
+                    SizedBox(
                       width: screen_width,
                       child: ElevatedButton(
                         style: ButtonStyle(
@@ -446,8 +429,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                           backgroundColor: MaterialStateProperty.all<Color>(
                             current_color,
                           ),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(
                                 MediaQuery.of(context).size.width,
@@ -460,7 +442,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                         },
                         child: Text(
                           widget.text_list[13],
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                           ),
                         ),
@@ -473,7 +455,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           ),
           widget.resume_section_form_type == ResumeSectionFormType.skill
               ? Container()
-              : Container(
+              : SizedBox(
                   width: screen_width,
                   child: ElevatedButton(
                     style: ButtonStyle(
@@ -508,9 +490,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     ),
                   ),
                 ),
-          widget.item_index != 0 ||
-                  widget.resume_section_form_type ==
-                      ResumeSectionFormType.custom
+          widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
               ? Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
@@ -520,7 +500,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                         widget.section_index,
                       );
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       FontAwesomeIcons.trash,
                     ),
                     color: Colors.red,
@@ -532,7 +512,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
     );
   }
 
-  Future<Null> _select_dates() async {
+  Future _select_dates() async {
     DateTime now = DateTime.now();
 
     DateTime first_date = DateTime(
@@ -568,7 +548,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
             ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                primary: widget.text_color,
+                foregroundColor: widget.text_color,
               ),
             ),
           ),
@@ -582,9 +562,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           selected_date_1 = picked;
           break;
         case 1:
-          if (picked.year == now.year &&
-              picked.month == now.month &&
-              picked.day == now.day) {
+          if (picked.year == now.year && picked.month == now.month && picked.day == now.day) {
             picked = DateTime(
               picked.year,
               picked.month,
@@ -598,9 +576,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           break;
       }
 
-      selected_date_index == 0
-          ? selected_date_index++
-          : selected_date_index = 0;
+      selected_date_index == 0 ? selected_date_index++ : selected_date_index = 0;
 
       if (selected_date_index != 0) {
         show_select_date_alert_dialog(widget.text_list[7]);
@@ -619,7 +595,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           title: Text(msg),
           actions: <Widget>[
             TextButton(
-              child: Text("Ok"),
+              child: const Text("Ok"),
               onPressed: () async {
                 Navigator.of(context).pop();
                 _select_dates();

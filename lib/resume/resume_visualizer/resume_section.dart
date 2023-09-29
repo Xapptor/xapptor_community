@@ -26,7 +26,7 @@ pw.Widget resume_section_pw({
   }
 
   return pw.Container(
-    margin: pw.EdgeInsets.symmetric(vertical: 3),
+    margin: const pw.EdgeInsets.symmetric(vertical: 3),
     child: pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -87,7 +87,7 @@ pw.Widget resume_section_pw({
                       child: pw.Text(
                         timeframe_text,
                         textAlign: pw.TextAlign.left,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                           color: PdfColors.black,
                           fontSize: 8,
                         ),
@@ -102,7 +102,7 @@ pw.Widget resume_section_pw({
                           child: pw.Text(
                             resume_section.description!,
                             textAlign: pw.TextAlign.left,
-                            style: pw.TextStyle(
+                            style: const pw.TextStyle(
                               color: PdfColors.black,
                               fontSize: 10,
                             ),
@@ -140,7 +140,7 @@ resume_section({
   }
 
   return Container(
-    margin: EdgeInsets.symmetric(vertical: 10),
+    margin: const EdgeInsets.symmetric(vertical: 10),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -182,7 +182,7 @@ resume_section({
                           child: SelectableText(
                             resume_section.subtitle!,
                             textAlign: TextAlign.left,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -197,7 +197,7 @@ resume_section({
                       child: SelectableText(
                         timeframe_text,
                         textAlign: TextAlign.left,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 12,
                         ),
@@ -211,7 +211,7 @@ resume_section({
                           child: SelectableText(
                             resume_section.description!,
                             textAlign: TextAlign.left,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 14,
                             ),

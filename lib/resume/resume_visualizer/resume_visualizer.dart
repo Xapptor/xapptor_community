@@ -12,7 +12,7 @@ import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeVisualizer extends StatefulWidget {
-  ResumeVisualizer({
+  ResumeVisualizer({super.key, 
     this.resume,
     this.language_code = "en",
     required this.base_url,
@@ -92,13 +92,13 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
       skills_pw: skills_pw,
       sections_pw: sections_pw,
       text_bottom_margin: text_bottom_margin,
-      resume_link: widget.base_url + "/resumes/" + resume_doc_id,
+      resume_link: "${widget.base_url}/resumes/$resume_doc_id",
     );
   }
 
   late User current_user;
 
-  Timer populate_skills_timer = Timer(Duration(seconds: 0), () {});
+  Timer populate_skills_timer = Timer(const Duration(seconds: 0), () {});
 
   @override
   void dispose() {
@@ -117,9 +117,9 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
     } else {
       current_resume = widget.resume!;
       current_user = FirebaseAuth.instance.currentUser!;
-      resume_doc_id = current_user.uid + "_" + widget.language_code;
+      resume_doc_id = "${current_user.uid}_${widget.language_code}";
 
-      populate_skills_timer = Timer(Duration(milliseconds: 300), () {
+      populate_skills_timer = Timer(const Duration(milliseconds: 300), () {
         populate_skills_and_sections();
       });
     }
@@ -160,8 +160,8 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
             color: Colors.white,
             child: ListView(
               physics: widget.resume == null
-                  ? ScrollPhysics()
-                  : NeverScrollableScrollPhysics(),
+                  ? const ScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               children: [
                 Container(
@@ -197,7 +197,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                                 ],
                         ),
                         Container(
-                          margin: EdgeInsets.symmetric(vertical: 10),
+                          margin: const EdgeInsets.symmetric(vertical: 10),
                           child: Column(
                             children: sections,
                           ),

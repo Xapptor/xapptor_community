@@ -14,7 +14,7 @@ enum ResumeSectionFormType {
 }
 
 class ResumeSectionForm extends StatefulWidget {
-  ResumeSectionForm({
+  const ResumeSectionForm({super.key, 
     required this.resume_section_form_type,
     required this.text_list,
     required this.text_color,
@@ -64,7 +64,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
       widget.update_item(
         widget.section_list.length,
         widget.section_index,
-        ResumeSkill(
+        const ResumeSkill(
           name: "",
           percentage: 0.2,
           color: Colors.blue,
@@ -86,7 +86,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
         content: SelectableText(
           widget.text_list[10],
         ),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -136,14 +136,14 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
                 onPressed: () {
-                  if (widget.section_list.length > 0) {
+                  if (widget.section_list.isNotEmpty) {
                     if (widget.resume_section_form_type ==
                         ResumeSectionFormType.skill) {
                       ResumeSkill last_section = widget.section_list.last;
@@ -168,7 +168,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
                     add_item();
                   }
                 },
-                icon: Icon(
+                icon: const Icon(
                   FontAwesomeIcons.squarePlus,
                 ),
                 color: Colors.blue,
@@ -176,7 +176,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
             ],
           ),
           ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: widget.section_list.length,
             itemBuilder: (context, index) {

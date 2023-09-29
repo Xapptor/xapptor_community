@@ -32,7 +32,7 @@ List<dynamic> populate_sections({
     ),
   );
 
-  resume.employment_sections.forEach((section) {
+  for (var section in resume.employment_sections) {
     sections.add(
       resume_section(
         resume: resume,
@@ -52,9 +52,9 @@ List<dynamic> populate_sections({
         language_code: language_code,
       ),
     );
-  });
+  }
 
-  resume.education_sections.forEach((section) {
+  for (var section in resume.education_sections) {
     sections.add(
       resume_section(
         resume: resume,
@@ -74,9 +74,9 @@ List<dynamic> populate_sections({
         language_code: language_code,
       ),
     );
-  });
+  }
 
-  resume.custom_sections.forEach((section) {
+  for (var section in resume.custom_sections) {
     sections.add(
       resume_section(
         resume: resume,
@@ -96,6 +96,6 @@ List<dynamic> populate_sections({
         language_code: language_code,
       ),
     );
-  });
+  }
   return [sections, sections_pw];
 }
