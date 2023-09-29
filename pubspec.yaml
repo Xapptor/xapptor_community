@@ -12,9 +12,9 @@ dependencies:
 
   google_fonts: ^6.1.0
   universal_platform: ^1.0.0+1
-  pdf: ^3.8.0
+  pdf: ^3.10.4
   printing: ^5.11.0
-  file_picker: ^5.3.2
+  file_picker: ^5.5.0
   flutter_colorpicker: ^1.0.3
 
   # xapptor_logic: ^0.0.3
