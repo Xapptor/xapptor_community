@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:xapptor_logic/random_number_with_range.dart';
-import 'package:xapptor_community/resume/models/resume_skill.dart' as SkillData;
+import 'package:xapptor_community/resume/models/resume_skill.dart' as skill_data;
 import 'package:pdf/widgets.dart' as pw;
 
 // Resume, skill widget por PDF.
 
 pw.Widget resume_skill_pw({
-  required SkillData.ResumeSkill skill,
+  required skill_data.ResumeSkill skill,
   required BuildContext context,
 }) {
   double current_bar_width = 165 * skill.percentage;
@@ -75,7 +75,7 @@ class ResumeSkill extends StatefulWidget {
     required this.apply_variation,
   });
 
-  final SkillData.ResumeSkill skill;
+  final skill_data.ResumeSkill skill;
   final bool apply_variation;
 
   @override
