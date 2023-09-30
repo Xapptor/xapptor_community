@@ -197,9 +197,6 @@ List<pw.Container> get_sections_by_lengths({
   required List<pw.Widget> sections_pw,
   required String resume_link,
 }) {
-  var sections =
-      [resume.profile_section] + resume.employment_sections + resume.education_sections + resume.custom_sections;
-
   var sections_lengths = resume.sections_by_page;
   List<pw.Container> widgets = [];
   int index = 0;
