@@ -5,7 +5,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 0.0.1
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: ">=3.1.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -24,6 +24,7 @@ dependencies:
   intl: ^0.18.1
   http: ^1.1.0
   font_awesome_flutter: ^10.5.0
+  flutter_expandable_fab: ^2.0.0
 
   # xapptor_logic: ^0.0.3
   # xapptor_router: ^0.0.2
