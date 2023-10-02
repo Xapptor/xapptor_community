@@ -14,24 +14,24 @@ import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeVisualizer extends StatefulWidget {
-  ResumeVisualizer({
+  final Resume? resume;
+  final String language_code;
+  final String base_url;
+  final double text_bottom_margin_for_section;
+
+  const ResumeVisualizer({
     super.key,
     this.resume,
     this.language_code = "en",
     required this.base_url,
+    this.text_bottom_margin_for_section = 3,
   });
-
-  Resume? resume;
-  String language_code;
-  String base_url;
 
   @override
   State<ResumeVisualizer> createState() => _ResumeVisualizerState();
 }
 
 class _ResumeVisualizerState extends State<ResumeVisualizer> {
-  double text_bottom_margin = 3;
-
   List<Widget> skills = [];
   List<pw.Widget> skills_pw = [];
 
@@ -58,7 +58,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
       resume: current_resume!,
       context: context,
       language_code: widget.language_code,
-      text_bottom_margin: text_bottom_margin,
+      text_bottom_margin: widget.text_bottom_margin_for_section,
     );
 
     sections = sections_data[0];
@@ -89,10 +89,10 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
       portrait: portrait,
       screen_width: screen_width,
       skills: skills,
-      skills_pw: skills_pw,
-      sections_pw: sections_pw,
-      text_bottom_margin: text_bottom_margin,
+      text_bottom_margin: widget.text_bottom_margin_for_section,
       resume_link: "${widget.base_url}/resumes/$resume_doc_id",
+      language_code: widget.language_code,
+      context: context,
     );
   }
 
