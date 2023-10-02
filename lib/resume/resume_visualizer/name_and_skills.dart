@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:xapptor_ui/widgets/url_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -10,10 +9,10 @@ Widget name_and_skills({
   required bool portrait,
   required double screen_width,
   required List<Widget> skills,
-  required List<pw.Widget> skills_pw,
-  required List<pw.Widget> sections_pw,
   required double text_bottom_margin,
   required String resume_link,
+  required String language_code,
+  required BuildContext context,
 }) {
   return Container(
     margin: EdgeInsets.symmetric(horizontal: portrait ? 0 : (screen_width / 100)),
@@ -50,10 +49,10 @@ Widget name_and_skills({
               onPressed: () {
                 download_resume_pdf(
                   resume: resume,
-                  skills_pw: skills_pw,
-                  sections_pw: sections_pw,
-                  text_bottom_margin: text_bottom_margin,
+                  text_bottom_margin_for_section: text_bottom_margin,
                   resume_link: resume_link,
+                  context: context,
+                  language_code: language_code,
                 );
               },
               icon: Icon(
