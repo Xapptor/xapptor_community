@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
+import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
 import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
@@ -21,14 +24,16 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class ResumeEditor extends StatefulWidget {
+  final Color color_topbar;
+  final String base_url;
+  final double text_bottom_margin_for_section;
+
   const ResumeEditor({
     super.key,
     required this.color_topbar,
     required this.base_url,
+    this.text_bottom_margin_for_section = 3,
   });
-
-  final Color color_topbar;
-  final String base_url;
 
   @override
   State<ResumeEditor> createState() => _ResumeEditorState();
@@ -72,6 +77,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "Resume Developed and Hosted by American Business Excellence Institute:",
           "Use Example Resume",
           "Resume Saved",
+          "Download",
           "Save",
         ],
       ),
@@ -100,6 +106,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
           "CV Desarrollado y Alojado por American Business Excellence Institute:",
           "Usar CV de Ejemplo",
           "CV Guardado",
+          "Descargar",
           "Guardar",
         ],
       ),
@@ -428,6 +435,8 @@ class _ResumeEditorState extends State<ResumeEditor> {
     screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
 
+    Resume resume = generate_resume();
+
     return Scaffold(
       appBar: TopBar(
         context: context,
@@ -446,6 +455,41 @@ class _ResumeEditorState extends State<ResumeEditor> {
         ],
         custom_leading: null,
         logo_path: "assets/images/logo.png",
+      ),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: ExpandableFab(
+        children: [
+          FloatingActionButton.small(
+            heroTag: null,
+            onPressed: () {
+              download_resume_pdf(
+                resume: resume,
+                text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
+                resume_link: "${widget.base_url}/resumes/${resume.id}",
+                context: context,
+                language_code: text_list.list[source_language_index].source_language,
+              );
+            },
+            backgroundColor: Colors.lightBlue,
+            tooltip: text_list.get(source_language_index)[22],
+            child: const Icon(
+              FontAwesomeIcons.fileArrowDown,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+          FloatingActionButton.small(
+            heroTag: null,
+            onPressed: () => save_resume(),
+            backgroundColor: Colors.green,
+            tooltip: text_list.get(source_language_index).last,
+            child: const Icon(
+              FontAwesomeIcons.fileArrowDown,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+        ],
       ),
       body: Container(
         color: Colors.white,
@@ -767,44 +811,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     section_list: custom_sections,
                   ),
                   SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  SizedBox(
-                    width: screen_width,
-                    child: FractionallySizedBox(
-                      widthFactor: 0.3,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          elevation: MaterialStateProperty.all<double>(
-                            0,
-                          ),
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                            widget.color_topbar,
-                          ),
-                          overlayColor: MaterialStateProperty.all<Color>(
-                            Colors.grey.withOpacity(0.2),
-                          ),
-                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                MediaQuery.of(context).size.width,
-                              ),
-                            ),
-                          ),
-                        ),
-                        onPressed: () {
-                          save_resume();
-                        },
-                        child: Text(
-                          text_list.get(source_language_index).last,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
                     height: sized_box_space * 4,
                   ),
                 ],
@@ -845,7 +851,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
                     ),
                   ),
                   ResumeVisualizer(
-                    resume: generate_resume(),
+                    resume: resume,
                     language_code: text_list.list[source_language_index].source_language,
                     base_url: widget.base_url,
                   ),
@@ -896,12 +902,10 @@ class _ResumeEditorState extends State<ResumeEditor> {
   }
 
   show_saved_snack_bar() {
-    int saved_text_index = text_list.get(source_language_index).length - 2;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: SelectableText(
-          text_list.get(source_language_index)[saved_text_index],
+          text_list.get(source_language_index)[21],
         ),
         duration: const Duration(seconds: 2),
       ),
