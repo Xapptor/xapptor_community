@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:xapptor_community/resume/resume_visualizer/populate_sections.dart';
+import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
 import 'package:xapptor_ui/widgets/url_text.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
@@ -10,12 +13,23 @@ import 'package:http/http.dart';
 
 download_resume_pdf({
   required Resume resume,
-  required List<pw.Widget> skills_pw,
-  required List<pw.Widget> sections_pw,
-  required double text_bottom_margin,
+  required double text_bottom_margin_for_section,
   required String resume_link,
+  required BuildContext context,
+  required String language_code,
 }) async {
   final pdf = pw.Document();
+
+  List<pw.Widget> skills_pw = populate_skills(
+    resume: resume,
+    context: context,
+  )[1];
+  List<pw.Widget> sections_pw = populate_sections(
+    resume: resume,
+    context: context,
+    language_code: language_code,
+    text_bottom_margin: text_bottom_margin_for_section,
+  )[1];
 
   dynamic profile_image;
 
@@ -46,7 +60,11 @@ download_resume_pdf({
       theme: pw.ThemeData.withFont(
         base: await PdfGoogleFonts.quicksandRegular(),
         bold: await PdfGoogleFonts.quicksandMedium(),
-        icons: await PdfGoogleFonts.materialIcons(),
+        icons: await PdfGoogleFonts.notoColorEmoji(),
+        fontFallback: [
+          await PdfGoogleFonts.notoColorEmoji(),
+          await PdfGoogleFonts.materialIcons(),
+        ],
       ),
       pageFormat: PdfPageFormat.a4,
       build: (pw.Context page_context) => [
@@ -128,7 +146,7 @@ download_resume_pdf({
                               pw.Container(
                                 margin: pw.EdgeInsets.only(
                                   top: 3,
-                                  bottom: text_bottom_margin,
+                                  bottom: text_bottom_margin_for_section,
                                 ),
                                 child: pw.Text(
                                   resume.skills_title,
