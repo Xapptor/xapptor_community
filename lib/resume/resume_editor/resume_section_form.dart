@@ -14,6 +14,15 @@ enum ResumeSectionFormType {
 }
 
 class ResumeSectionForm extends StatefulWidget {
+  final ResumeSectionFormType resume_section_form_type;
+  final List<String> text_list;
+  final Color text_color;
+  final String language_code;
+  final int section_index;
+  final Function(int item_index, int section_index, dynamic section) update_item;
+  final Function(int item_index, int section_index) remove_item;
+  final List<dynamic> section_list;
+
   const ResumeSectionForm({
     super.key,
     required this.resume_section_form_type,
@@ -25,15 +34,6 @@ class ResumeSectionForm extends StatefulWidget {
     required this.remove_item,
     required this.section_list,
   });
-
-  final ResumeSectionFormType resume_section_form_type;
-  final List<String> text_list;
-  final Color text_color;
-  final String language_code;
-  final int section_index;
-  final Function(int item_index, int section_index, dynamic section) update_item;
-  final Function(int item_index, int section_index) remove_item;
-  final List<dynamic> section_list;
 
   @override
   State<ResumeSectionForm> createState() => _ResumeSectionFormState();

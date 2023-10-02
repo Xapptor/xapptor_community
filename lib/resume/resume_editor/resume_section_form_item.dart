@@ -63,7 +63,7 @@ class _ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
 
         if (section.subtitle != null) {
           int at_index = section.subtitle!.indexOf(" $at_text ");
-          int coma_index = section.subtitle!.indexOf(", ");
+          int coma_index = section.subtitle!.lastIndexOf(", ");
 
           if (at_index > 0) {
             field_1_input_controller.text = section.subtitle!.substring(0, at_index);

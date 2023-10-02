@@ -17,7 +17,7 @@ download_resume_pdf({
 }) async {
   final pdf = pw.Document();
 
-  var profile_image;
+  dynamic profile_image;
 
   if (resume.image_src.isNotEmpty) {
     if (resume.image_src.contains("http")) {
