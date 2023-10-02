@@ -50,8 +50,7 @@ pw.Widget resume_section_pw({
               resume_section.title != null
                   ? resume_section.title!.isNotEmpty
                       ? pw.Container(
-                          margin:
-                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
                           child: pw.Text(
                             resume_section.title!,
                             textAlign: pw.TextAlign.left,
@@ -67,8 +66,7 @@ pw.Widget resume_section_pw({
               resume_section.subtitle != null
                   ? resume_section.subtitle!.isNotEmpty
                       ? pw.Container(
-                          margin:
-                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
                           child: pw.Text(
                             resume_section.subtitle!,
                             textAlign: pw.TextAlign.left,
@@ -97,8 +95,7 @@ pw.Widget resume_section_pw({
               resume_section.description != null
                   ? resume_section.description!.isNotEmpty
                       ? pw.Container(
-                          margin:
-                              pw.EdgeInsets.only(bottom: text_bottom_margin),
+                          margin: pw.EdgeInsets.only(bottom: text_bottom_margin),
                           child: pw.Text(
                             resume_section.description!,
                             textAlign: pw.TextAlign.left,
@@ -118,7 +115,7 @@ pw.Widget resume_section_pw({
   );
 }
 
-// Resume, descriptive section widget.
+// Resume, descriptive section for visualizer.
 
 resume_section({
   required Resume resume,
