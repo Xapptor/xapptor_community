@@ -3,8 +3,6 @@ import 'resume_section.dart';
 import 'resume_skill.dart';
 import 'package:xapptor_logic/hex_color.dart';
 
-// Resume model.
-
 class Resume {
   final String id;
   final String image_src;
@@ -43,36 +41,26 @@ class Resume {
   });
 
   Resume.from_snapshot(
-    String id,
+    this.id,
     Map<dynamic, dynamic> snapshot,
-  )   : id = id,
-        image_src = snapshot['image_src'],
+  )   : image_src = snapshot['image_src'],
         name = snapshot['name'],
         job_title = snapshot['job_title'],
         email = snapshot['email'],
         website = snapshot['website'],
         skills_title = snapshot['skills_title'],
-        skills = (snapshot['skills'] as List)
-            .map((skill) => ResumeSkill.from_snapshot(skill))
-            .toList(),
-        sections_by_page = (snapshot['sections_by_page'] as List)
-            .map((e) => e as int)
-            .toList(),
-        profile_section =
-            ResumeSection.from_snapshot(snapshot['profile_section']),
-        employment_sections = (snapshot['employment_sections'] as List)
-            .map((section) => ResumeSection.from_snapshot(section))
-            .toList(),
-        education_sections = (snapshot['education_sections'] as List)
-            .map((section) => ResumeSection.from_snapshot(section))
-            .toList(),
-        custom_sections = (snapshot['custom_sections'] as List)
-            .map((section) => ResumeSection.from_snapshot(section))
-            .toList(),
+        skills = (snapshot['skills'] as List).map((skill) => ResumeSkill.from_snapshot(skill)).toList(),
+        sections_by_page = (snapshot['sections_by_page'] as List).map((e) => e as int).toList(),
+        profile_section = ResumeSection.from_snapshot(snapshot['profile_section']),
+        employment_sections =
+            (snapshot['employment_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
+        education_sections =
+            (snapshot['education_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
+        custom_sections =
+            (snapshot['custom_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
         icon_color = HexColor.fromHex(snapshot['icon_color']),
         language_code = snapshot['language_code'],
-        text_list =
-            (snapshot['text_list'] as List).map((e) => e as String).toList();
+        text_list = (snapshot['text_list'] as List).map((e) => e as String).toList();
 
   Map<String, dynamic> to_json() {
     return {
