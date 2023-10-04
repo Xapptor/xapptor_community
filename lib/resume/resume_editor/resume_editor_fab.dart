@@ -5,7 +5,6 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/save_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
-import 'package:xapptor_ui/values/dimensions.dart';
 
 extension ResumeEditorFab on ResumeEditorState {
   resume_editor_fab(Resume resume) {
@@ -33,7 +32,7 @@ extension ResumeEditorFab on ResumeEditorState {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(width: Dimensions.d4),
+              const SizedBox(width: 4),
               const Icon(
                 FontAwesomeIcons.fileArrowDown,
                 color: Colors.white,
@@ -55,7 +54,7 @@ extension ResumeEditorFab on ResumeEditorState {
                   color: Colors.white,
                 ),
               ),
-              const SizedBox(width: Dimensions.d4),
+              const SizedBox(width: 4),
               const Icon(
                 FontAwesomeIcons.cloudArrowUp,
                 color: Colors.white,
