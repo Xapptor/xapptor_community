@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
+import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
 import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
@@ -18,9 +19,7 @@ import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/widgets/topbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class ResumeEditor extends StatefulWidget {
@@ -36,10 +35,10 @@ class ResumeEditor extends StatefulWidget {
   });
 
   @override
-  State<ResumeEditor> createState() => _ResumeEditorState();
+  State<ResumeEditor> createState() => ResumeEditorState();
 }
 
-class _ResumeEditorState extends State<ResumeEditor> {
+class ResumeEditorState extends State<ResumeEditor> {
   TextEditingController name_input_controller = TextEditingController();
   TextEditingController job_title_input_controller = TextEditingController();
   TextEditingController email_input_controller = TextEditingController();
@@ -457,40 +456,7 @@ class _ResumeEditorState extends State<ResumeEditor> {
         logo_path: "assets/images/logo.png",
       ),
       floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: ExpandableFab(
-        children: [
-          FloatingActionButton.small(
-            heroTag: null,
-            onPressed: () {
-              download_resume_pdf(
-                resume: resume,
-                text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
-                resume_link: "${widget.base_url}/resumes/${resume.id}",
-                context: context,
-                language_code: text_list.list[source_language_index].source_language,
-              );
-            },
-            backgroundColor: Colors.lightBlue,
-            tooltip: text_list.get(source_language_index)[22],
-            child: const Icon(
-              FontAwesomeIcons.fileArrowDown,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-          FloatingActionButton.small(
-            heroTag: null,
-            onPressed: () => save_resume(),
-            backgroundColor: Colors.green,
-            tooltip: text_list.get(source_language_index).last,
-            child: const Icon(
-              FontAwesomeIcons.fileArrowDown,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-        ],
-      ),
+      floatingActionButton: resume_editor_fab(resume),
       body: Container(
         color: Colors.white,
         width: double.maxFinite,
@@ -864,43 +830,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
     );
   }
 
-  save_resume() async {
-    if (chosen_image_src.isNotEmpty) {
-      if (!chosen_image_src.contains("http")) {
-        Reference profile_image_ref = FirebaseStorage.instance
-            .ref()
-            .child('users')
-            .child('/${current_user.uid}')
-            .child('/resumes')
-            .child('/profile_image.$chosen_image_ext');
-
-        await profile_image_ref.putData(base64Decode(chosen_image_src)).then((p0) async {
-          chosen_image_src = await p0.ref.getDownloadURL();
-          set_resume();
-        });
-      } else {
-        set_resume();
-      }
-    } else {
-      set_resume();
-    }
-  }
-
-  set_resume() async {
-    String resume_doc_id = "${current_user.uid}_${text_list.list[source_language_index].source_language}";
-
-    DocumentReference resume_doc = FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
-
-    await resume_doc
-        .set(
-      generate_resume().to_json(),
-      SetOptions(merge: true),
-    )
-        .then((value) {
-      show_saved_snack_bar();
-    });
-  }
-
   show_saved_snack_bar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -909,100 +838,6 @@ class _ResumeEditorState extends State<ResumeEditor> {
         ),
         duration: const Duration(seconds: 2),
       ),
-    );
-  }
-
-  check_for_remote_resume({
-    bool load_example = false,
-  }) async {
-    String resume_doc_id = load_example
-        ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
-        : ("${current_user.uid}_${text_list.list[source_language_index].source_language}");
-
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
-
-    Map? resume_map = resume_doc.data() as Map?;
-
-    if (resume_map != null) {
-      var remote_resume = Resume.from_snapshot(resume_doc_id, resume_map);
-
-      chosen_image_src = remote_resume.image_src;
-      current_color = remote_resume.icon_color;
-      picker_color = remote_resume.icon_color;
-
-      name_input_controller.text = remote_resume.name;
-      job_title_input_controller.text = remote_resume.job_title;
-      email_input_controller.text = remote_resume.email;
-      website_input_controller.text = remote_resume.website;
-      profile_input_controller.text = remote_resume.profile_section.description!;
-
-      sections_by_page_input_controller.text = remote_resume.sections_by_page.join(", ");
-
-      if (load_example) {
-        skill_sections.clear();
-        employment_sections.clear();
-        education_sections.clear();
-        custom_sections.clear();
-        setState(() {});
-      }
-
-      Timer(Duration(milliseconds: load_example ? 100 : 0), () {
-        skill_sections = remote_resume.skills;
-        employment_sections = remote_resume.employment_sections;
-        education_sections = remote_resume.education_sections;
-        custom_sections = remote_resume.custom_sections;
-        setState(() {});
-      });
-    } else {
-      skill_sections = [
-        const ResumeSkill(
-          name: "",
-          percentage: 0.2,
-          color: Colors.blue,
-        ),
-      ];
-      employment_sections = [
-        ResumeSection(),
-      ];
-      education_sections = [
-        ResumeSection(),
-      ];
-      setState(() {});
-    }
-  }
-
-  Resume generate_resume() {
-    return Resume(
-      image_src: chosen_image_src,
-      name: name_input_controller.text,
-      job_title: job_title_input_controller.text,
-      email: email_input_controller.text,
-      website: website_input_controller.text,
-      skills_title: text_list.get(source_language_index)[4],
-      skills: skill_sections,
-      sections_by_page: sections_by_page_input_controller.text
-          .replaceAll(" ", "")
-          .split(",")
-          .map((e) => int.tryParse(e) ?? 1)
-          .toList(),
-      profile_section: ResumeSection(
-        icon: Icons.badge,
-        code_point: 0xea67,
-        title: text_list.get(source_language_index)[5],
-        description: profile_input_controller.text,
-      ),
-      employment_sections: employment_sections,
-      education_sections: education_sections,
-      custom_sections: custom_sections,
-      icon_color: current_color,
-      language_code: text_list.list[source_language_index].source_language,
-      text_list: [
-            text_list.get(source_language_index)[11],
-          ] +
-          text_list.get(source_language_index).sublist(18, 20) +
-          [
-            widget.base_url,
-          ],
     );
   }
 }
