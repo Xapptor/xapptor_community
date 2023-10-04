@@ -5,40 +5,66 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/save_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
+import 'package:xapptor_ui/values/dimensions.dart';
 
 extension ResumeEditorFab on ResumeEditorState {
-  resume_editor_fab(Resume resume) => ExpandableFab(
-        children: [
-          FloatingActionButton.small(
-            heroTag: null,
-            onPressed: () {
-              download_resume_pdf(
-                resume: resume,
-                text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
-                resume_link: "${widget.base_url}/resumes/${resume.id}",
-                context: context,
-                language_code: text_list.list[source_language_index].source_language,
-              );
-            },
-            backgroundColor: Colors.lightBlue,
-            tooltip: text_list.get(source_language_index)[22],
-            child: const Icon(
-              FontAwesomeIcons.fileArrowDown,
-              color: Colors.white,
-              size: 16,
-            ),
+  resume_editor_fab(Resume resume) {
+    String download_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 2];
+    String save_label = text_list.get(source_language_index).last;
+
+    return ExpandableFab(
+      children: [
+        FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () => download_resume_pdf(
+            resume: resume,
+            text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
+            resume_link: "${widget.base_url}/resumes/${resume.id}",
+            context: context,
+            language_code: text_list.list[source_language_index].source_language,
           ),
-          FloatingActionButton.small(
-            heroTag: null,
-            onPressed: () => save_resume(),
-            backgroundColor: Colors.green,
-            tooltip: text_list.get(source_language_index).last,
-            child: const Icon(
-              FontAwesomeIcons.fileArrowDown,
-              color: Colors.white,
-              size: 16,
-            ),
+          backgroundColor: Colors.lightBlue,
+          tooltip: download_label,
+          label: Row(
+            children: [
+              Text(
+                download_label,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: Dimensions.d4),
+              const Icon(
+                FontAwesomeIcons.fileArrowDown,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
           ),
-        ],
-      );
+        ),
+        FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () => save_resume(),
+          backgroundColor: Colors.green,
+          tooltip: save_label,
+          label: Row(
+            children: [
+              Text(
+                save_label,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: Dimensions.d4),
+              const Icon(
+                FontAwesomeIcons.cloudArrowUp,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ].reversed.toList(),
+    );
+  }
 }
