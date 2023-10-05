@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
+import 'package:xapptor_community/resume/resume_editor/show_saved_snack_bar.dart';
 
 extension SetResume on ResumeEditorState {
   set_resume() async {
