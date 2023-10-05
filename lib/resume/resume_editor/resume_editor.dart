@@ -1,26 +1,30 @@
-import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
+import 'package:xapptor_community/resume/resume_editor/apply_timer.dart';
 import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/choose_color.dart';
+import 'package:xapptor_community/resume/resume_editor/choose_profile_image.dart';
 import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/remove_item.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
-import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_init_state.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_preview.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_text_field.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_text_lists.dart';
+import 'package:xapptor_community/resume/resume_editor/update_item.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
-import 'package:xapptor_logic/check_browser_type.dart';
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/widgets/topbar.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:xapptor_ui/widgets/text_field/custom_text_field.dart';
+import 'package:xapptor_ui/widgets/text_field/custom_text_field_model.dart';
 
 class ResumeEditor extends StatefulWidget {
   final Color color_topbar;
@@ -46,174 +50,28 @@ class ResumeEditorState extends State<ResumeEditor> {
   TextEditingController profile_input_controller = TextEditingController();
   TextEditingController sections_by_page_input_controller = TextEditingController();
 
+  FocusNode focus_node_1 = FocusNode();
+  FocusNode focus_node_2 = FocusNode();
+  FocusNode focus_node_3 = FocusNode();
+  FocusNode focus_node_4 = FocusNode();
+  FocusNode focus_node_5 = FocusNode();
+  FocusNode focus_node_6 = FocusNode();
+  FocusNode focus_node_7 = FocusNode();
+  FocusNode focus_node_8 = FocusNode();
+  FocusNode focus_node_9 = FocusNode();
+  FocusNode focus_node_10 = FocusNode();
+
   double screen_height = 0;
   double screen_width = 0;
 
-  TranslationTextListArray text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Full Name",
-          "Job Title",
-          "Email",
-          "Website Url",
-          "Dexterity Points",
-          "Profile",
-          "Resume Preview",
-          "Employment History",
-          "Title",
-          "Subtitle",
-          "Description",
-          "Present",
-          "Choose Dates",
-          "Choose initial date",
-          "Choose end date",
-          "Education",
-          "Custom Sections",
-          "Before adding a new section you must first complete the last one",
-          "Resume available online at:",
-          "Resume Developed and Hosted by American Business Excellence Institute:",
-          "Use Example Resume",
-          "Resume Saved",
-          "Download",
-          "Save",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Nombre Completo",
-          "Puesto de Trabajo",
-          "Correo Electrónico",
-          "Página Web",
-          "Puntos de Destreza",
-          "Perfil",
-          "Vista Previa del CV",
-          "Historial de Empleo",
-          "Título",
-          "Subtítulo",
-          "Descripción",
-          "Presente",
-          "Seleccionar Fechas",
-          "Selecciona fecha de inicio",
-          "Selecciona fecha de finalización",
-          "Educación",
-          "Secciones Personalizadas",
-          "Antes de agregar una nueva sección primero debes de completar la última",
-          "CV disponible en línea en:",
-          "CV Desarrollado y Alojado por American Business Excellence Institute:",
-          "Usar CV de Ejemplo",
-          "CV Guardado",
-          "Descargar",
-          "Guardar",
-        ],
-      ),
-    ],
-  );
+  ResumeEditorTextLists resume_editor_text_lists = ResumeEditorTextLists();
 
-  TranslationTextListArray skill_text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Skill",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Habilidad",
-        ],
-      ),
-    ],
-  );
-
-  TranslationTextListArray employment_text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Job Title",
-          "at",
-          "Company Name",
-          "Job Location",
-          "Responsabilities",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Puesto de Trabajo",
-          "en",
-          "Nombre de la Empresa",
-          "Ubicación de Trabajo",
-          "Responsabilidades",
-        ],
-      ),
-    ],
-  );
-
-  TranslationTextListArray education_text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Career Name",
-          "Univesrity Name",
-          "Univesrity Location",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Nombre de la Carrera",
-          "Nombre de la Universidad",
-          "Ubicación de la Universidad",
-        ],
-      ),
-    ],
-  );
-
-  TranslationTextListArray picker_text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Choose Profile Picture",
-          "Choose Main Color",
-          "Choose Color",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Selecciona la Imágen de Perfil",
-          "Selecciona el Color Principal",
-          "Selecciona el Color",
-        ],
-      ),
-    ],
-  );
-
-  TranslationTextListArray sections_by_page_text_list = TranslationTextListArray(
-    [
-      TranslationTextList(
-        source_language: "en",
-        text_list: [
-          "Enter the numbers of sections by page separate by comas",
-          "Example: 7, 2",
-        ],
-      ),
-      TranslationTextList(
-        source_language: "es",
-        text_list: [
-          "Ingresa los números de secciones por página separados por comas",
-          "Ejemplo: 7, 2",
-        ],
-      ),
-    ],
-  );
+  TranslationTextListArray text_list = ResumeEditorTextLists().text_list;
+  TranslationTextListArray skill_text_list = ResumeEditorTextLists().skill_text_list;
+  TranslationTextListArray employment_text_list = ResumeEditorTextLists().employment_text_list;
+  TranslationTextListArray education_text_list = ResumeEditorTextLists().education_text_list;
+  TranslationTextListArray picker_text_list = ResumeEditorTextLists().picker_text_list;
+  TranslationTextListArray sections_by_page_text_list = ResumeEditorTextLists().sections_by_page_text_list;
 
   late TranslationStream translation_stream;
   late TranslationStream skill_translation_stream;
@@ -234,28 +92,6 @@ class ResumeEditorState extends State<ResumeEditor> {
     apply_timer();
   }
 
-  update_text_list({
-    required int index,
-    required String new_text,
-    required int list_index,
-  }) {
-    if (list_index == 0) {
-      text_list.get(source_language_index)[index] = new_text;
-    } else if (list_index == 1) {
-      skill_text_list.get(source_language_index)[index] = new_text;
-    } else if (list_index == 2) {
-      employment_text_list.get(source_language_index)[index] = new_text;
-    } else if (list_index == 3) {
-      education_text_list.get(source_language_index)[index] = new_text;
-    } else if (list_index == 4) {
-      picker_text_list.get(source_language_index)[index] = new_text;
-    } else if (list_index == 5) {
-      sections_by_page_text_list.get(source_language_index)[index] = new_text;
-    }
-
-    setState(() {});
-  }
-
   String chosen_image_src = "";
   String chosen_image_ext = "";
 
@@ -264,168 +100,15 @@ class ResumeEditorState extends State<ResumeEditor> {
   List<ResumeSection> education_sections = [];
   List<ResumeSection> custom_sections = [];
 
-  update_item(int item_index, int section_index, dynamic section) {
-    if (section_index == 0) {
-      //
-      if (item_index < skill_sections.length) {
-        skill_sections[item_index] = section;
-      } else {
-        skill_sections.add(section);
-      }
-      //
-    } else if (section_index == 1) {
-      //
-      if (item_index < employment_sections.length) {
-        employment_sections[item_index] = section;
-      } else {
-        employment_sections.add(section);
-      }
-      //
-    } else if (section_index == 2) {
-      //
-      if (item_index < education_sections.length) {
-        education_sections[item_index] = section;
-      } else {
-        education_sections.add(section);
-      }
-      //
-    } else if (section_index == 3) {
-      //
-      if (item_index < custom_sections.length) {
-        custom_sections[item_index] = section;
-      } else {
-        custom_sections.add(section);
-      }
-      //
-    }
-    setState(() {});
-  }
-
-  remove_item(int item_index, int section_index) {
-    if (section_index == 0) {
-      skill_sections.removeAt(item_index);
-    } else if (section_index == 1) {
-      employment_sections.removeAt(item_index);
-    } else if (section_index == 2) {
-      education_sections.removeAt(item_index);
-    } else if (section_index == 3) {
-      custom_sections.removeAt(item_index);
-    }
-    setState(() {});
-  }
-
-  choose_profile_image() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      chosen_image_src = base64Encode(result.files.single.bytes!);
-      chosen_image_ext = result.files.single.extension!;
-      setState(() {});
-    }
-  }
-
   Color picker_color = Colors.blue;
   Color current_color = Colors.blue;
-
-  choose_color() async {
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(
-            picker_text_list.get(source_language_index)[1],
-          ),
-          content: SingleChildScrollView(
-            child: ColorPicker(
-              pickerColor: picker_color,
-              onColorChanged: (Color new_color) {
-                picker_color = new_color;
-                setState(() {});
-              },
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              child: const Text('Got it'),
-              onPressed: () {
-                setState(() => current_color = picker_color);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   late User current_user;
 
   @override
   void initState() {
     super.initState();
-
-    initializeDateFormatting();
-
-    translation_stream = TranslationStream(
-      translation_text_list_array: text_list,
-      update_text_list_function: update_text_list,
-      list_index: 0,
-      source_language_index: source_language_index,
-    );
-
-    skill_translation_stream = TranslationStream(
-      translation_text_list_array: skill_text_list,
-      update_text_list_function: update_text_list,
-      list_index: 1,
-      source_language_index: source_language_index,
-    );
-
-    employment_translation_stream = TranslationStream(
-      translation_text_list_array: employment_text_list,
-      update_text_list_function: update_text_list,
-      list_index: 2,
-      source_language_index: source_language_index,
-    );
-
-    education_translation_stream = TranslationStream(
-      translation_text_list_array: education_text_list,
-      update_text_list_function: update_text_list,
-      list_index: 3,
-      source_language_index: source_language_index,
-    );
-
-    picker_translation_stream = TranslationStream(
-      translation_text_list_array: picker_text_list,
-      update_text_list_function: update_text_list,
-      list_index: 4,
-      source_language_index: source_language_index,
-    );
-
-    sections_by_page_translation_stream = TranslationStream(
-      translation_text_list_array: sections_by_page_text_list,
-      update_text_list_function: update_text_list,
-      list_index: 5,
-      source_language_index: source_language_index,
-    );
-
-    translation_stream_list = [
-      translation_stream,
-      skill_translation_stream,
-      employment_translation_stream,
-      education_translation_stream,
-      picker_translation_stream,
-      sections_by_page_translation_stream,
-    ];
-    apply_timer();
-  }
-
-  apply_timer() async {
-    BrowserType browser_type = await check_browser_type();
-    int timer_duration = browser_type == BrowserType.mobile ? 3000 : 1200;
-
-    Timer(Duration(milliseconds: timer_duration), () {
-      current_user = FirebaseAuth.instance.currentUser!;
-      check_for_remote_resume();
-    });
+    resume_editor_init_state();
   }
 
   @override
@@ -581,105 +264,45 @@ class ResumeEditorState extends State<ResumeEditor> {
                       ),
                     ],
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
+                  CustomTextField(
+                    model: CustomTextFieldModel(
+                      title: text_list.get(source_language_index)[0],
+                      hint: text_list.get(source_language_index)[0],
+                      focus_node: focus_node_1,
+                      on_field_submitted: (fieldValue) => focus_node_2.requestFocus(),
+                      controller: name_input_controller,
+                      validator: (value) => FormFieldValidators(
+                        value: value!,
+                        type: FormFieldValidatorsType.name,
+                      ).validate(),
                     ),
-                    decoration: InputDecoration(
-                      labelText: text_list.get(source_language_index)[0],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
-                    controller: name_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.name,
-                    ).validate(),
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: text_list.get(source_language_index)[1],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
+                  resume_editor_text_field(
+                    label_text: text_list.get(source_language_index)[1],
                     controller: job_title_input_controller,
                     validator: (value) => FormFieldValidators(
                       value: value!,
                       type: FormFieldValidatorsType.name,
                     ).validate(),
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: text_list.get(source_language_index)[2],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
+                  resume_editor_text_field(
+                    label_text: text_list.get(source_language_index)[2],
                     controller: email_input_controller,
                     validator: (value) => FormFieldValidators(
                       value: value!,
                       type: FormFieldValidatorsType.email,
                     ).validate(),
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: text_list.get(source_language_index)[3],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
+                  resume_editor_text_field(
+                    label_text: text_list.get(source_language_index)[3],
                     controller: website_input_controller,
                     validator: (value) => FormFieldValidators(
                       value: value!,
                       type: FormFieldValidatorsType.email,
                     ).validate(),
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: text_list.get(source_language_index)[5],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
+                  resume_editor_text_field(
+                    label_text: text_list.get(source_language_index)[5],
                     controller: profile_input_controller,
                     validator: (value) => FormFieldValidators(
                       value: value!,
@@ -714,21 +337,8 @@ class ResumeEditorState extends State<ResumeEditor> {
                       ),
                     ),
                   ),
-                  TextFormField(
-                    style: TextStyle(
-                      color: widget.color_topbar,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: sections_by_page_text_list.get(source_language_index)[1],
-                      labelStyle: TextStyle(
-                        color: widget.color_topbar,
-                      ),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
+                  resume_editor_text_field(
+                    label_text: sections_by_page_text_list.get(source_language_index)[1],
                     controller: sections_by_page_input_controller,
                     validator: (value) => FormFieldValidators(
                       value: value!,
@@ -782,61 +392,15 @@ class ResumeEditorState extends State<ResumeEditor> {
                 ],
               ),
             ),
-            Container(
-              margin: EdgeInsets.all(portrait ? 6 : 16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.deepOrangeAccent,
-                  width: 6,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    width: double.maxFinite,
-                    padding: const EdgeInsets.only(bottom: 20),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.deepOrangeAccent,
-                          width: 6,
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      text_list.get(source_language_index)[6],
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  ResumeVisualizer(
-                    resume: resume,
-                    language_code: text_list.list[source_language_index].source_language,
-                    base_url: widget.base_url,
-                  ),
-                ],
-              ),
+            resume_editor_preview(
+              context: context,
+              portrait: portrait,
+              resume: resume,
+              source_language_index: source_language_index,
+              base_url: widget.base_url,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  show_saved_snack_bar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: SelectableText(
-          text_list.get(source_language_index)[21],
-        ),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
