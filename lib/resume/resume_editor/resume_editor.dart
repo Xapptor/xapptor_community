@@ -1,30 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/apply_timer.dart';
-import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.dart';
-import 'package:xapptor_community/resume/resume_editor/choose_color.dart';
-import 'package:xapptor_community/resume/resume_editor/choose_profile_image.dart';
 import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
-import 'package:xapptor_community/resume/resume_editor/remove_item.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_init_state.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_preview.dart';
-import 'package:xapptor_community/resume/resume_editor/resume_editor_text_field.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_text_fields.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_text_lists.dart';
-import 'package:xapptor_community/resume/resume_editor/update_item.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
-import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_top_option_buttons.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_sections.dart';
+import 'package:xapptor_community/resume/resume_editor/update_source_language.dart';
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
-import 'package:xapptor_ui/values/ui.dart';
-import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/widgets/topbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:xapptor_ui/widgets/text_field/custom_text_field.dart';
-import 'package:xapptor_ui/widgets/text_field/custom_text_field_model.dart';
 
 class ResumeEditor extends StatefulWidget {
   final Color color_topbar;
@@ -84,14 +76,6 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   int source_language_index = 1;
 
-  update_source_language({
-    required int new_source_language_index,
-  }) {
-    source_language_index = new_source_language_index;
-    setState(() {});
-    apply_timer();
-  }
-
   String chosen_image_src = "";
   String chosen_image_ext = "";
 
@@ -149,246 +133,9 @@ class ResumeEditorState extends State<ResumeEditor> {
               widthFactor: portrait ? 0.9 : 0.4,
               child: Column(
                 children: [
-                  SizedBox(
-                    height: sized_box_space * 4,
-                  ),
-                  SizedBox(
-                    width: screen_width,
-                    child: ElevatedButton(
-                      style: ButtonStyle(
-                        elevation: MaterialStateProperty.all<double>(
-                          0,
-                        ),
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.transparent,
-                        ),
-                        overlayColor: MaterialStateProperty.all<Color>(
-                          Colors.grey.withOpacity(0.2),
-                        ),
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              MediaQuery.of(context).size.width,
-                            ),
-                            side: BorderSide(
-                              color: widget.color_topbar,
-                            ),
-                          ),
-                        ),
-                      ),
-                      onPressed: () {
-                        check_for_remote_resume(load_example: true);
-                      },
-                      child: Text(
-                        text_list.get(source_language_index)[20],
-                        style: TextStyle(
-                          color: widget.color_topbar,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: sized_box_space,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              elevation: MaterialStateProperty.all<double>(
-                                0,
-                              ),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                Colors.transparent,
-                              ),
-                              overlayColor: MaterialStateProperty.all<Color>(
-                                Colors.grey.withOpacity(0.2),
-                              ),
-                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    MediaQuery.of(context).size.width,
-                                  ),
-                                  side: BorderSide(
-                                    color: widget.color_topbar,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            onPressed: () {
-                              choose_profile_image();
-                            },
-                            child: Text(
-                              picker_text_list.get(source_language_index)[0],
-                              style: TextStyle(
-                                color: widget.color_topbar,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          padding: const EdgeInsets.only(left: 5),
-                          child: ElevatedButton(
-                            style: ButtonStyle(
-                              elevation: MaterialStateProperty.all<double>(
-                                0,
-                              ),
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                current_color,
-                              ),
-                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    MediaQuery.of(context).size.width,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            onPressed: () {
-                              choose_color();
-                            },
-                            child: Text(
-                              picker_text_list.get(source_language_index)[1],
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  CustomTextField(
-                    model: CustomTextFieldModel(
-                      title: text_list.get(source_language_index)[0],
-                      hint: text_list.get(source_language_index)[0],
-                      focus_node: focus_node_1,
-                      on_field_submitted: (fieldValue) => focus_node_2.requestFocus(),
-                      controller: name_input_controller,
-                      validator: (value) => FormFieldValidators(
-                        value: value!,
-                        type: FormFieldValidatorsType.name,
-                      ).validate(),
-                    ),
-                  ),
-                  resume_editor_text_field(
-                    label_text: text_list.get(source_language_index)[1],
-                    controller: job_title_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.name,
-                    ).validate(),
-                  ),
-                  resume_editor_text_field(
-                    label_text: text_list.get(source_language_index)[2],
-                    controller: email_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.email,
-                    ).validate(),
-                  ),
-                  resume_editor_text_field(
-                    label_text: text_list.get(source_language_index)[3],
-                    controller: website_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.email,
-                    ).validate(),
-                  ),
-                  resume_editor_text_field(
-                    label_text: text_list.get(source_language_index)[5],
-                    controller: profile_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.email,
-                    ).validate(),
-                    keyboardType: TextInputType.multiline,
-                    maxLines: null,
-                  ),
-                  ResumeSectionForm(
-                    resume_section_form_type: ResumeSectionFormType.skill,
-                    text_list: text_list.get(source_language_index).sublist(7, 18) +
-                        skill_text_list.get(source_language_index) +
-                        picker_text_list.get(source_language_index) +
-                        text_list.get(source_language_index).sublist(4, 5),
-                    text_color: widget.color_topbar,
-                    language_code: text_list.list[source_language_index].source_language,
-                    section_index: 0,
-                    update_item: update_item,
-                    remove_item: remove_item,
-                    section_list: skill_sections,
-                  ),
-                  SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      sections_by_page_text_list.get(source_language_index)[0],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  resume_editor_text_field(
-                    label_text: sections_by_page_text_list.get(source_language_index)[1],
-                    controller: sections_by_page_input_controller,
-                    validator: (value) => FormFieldValidators(
-                      value: value!,
-                      type: FormFieldValidatorsType.name,
-                    ).validate(),
-                  ),
-                  SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  ResumeSectionForm(
-                    resume_section_form_type: ResumeSectionFormType.employment_history,
-                    text_list: text_list.get(source_language_index).sublist(7, 18) +
-                        employment_text_list.get(source_language_index),
-                    text_color: widget.color_topbar,
-                    language_code: text_list.list[source_language_index].source_language,
-                    section_index: 1,
-                    update_item: update_item,
-                    remove_item: remove_item,
-                    section_list: employment_sections,
-                  ),
-                  SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  ResumeSectionForm(
-                    resume_section_form_type: ResumeSectionFormType.education,
-                    text_list: text_list.get(source_language_index).sublist(7, 18) +
-                        education_text_list.get(source_language_index),
-                    text_color: widget.color_topbar,
-                    language_code: text_list.list[source_language_index].source_language,
-                    section_index: 2,
-                    update_item: update_item,
-                    remove_item: remove_item,
-                    section_list: education_sections,
-                  ),
-                  SizedBox(
-                    height: sized_box_space * 2,
-                  ),
-                  ResumeSectionForm(
-                    resume_section_form_type: ResumeSectionFormType.custom,
-                    text_list: text_list.get(source_language_index).sublist(7, 18),
-                    text_color: widget.color_topbar,
-                    language_code: text_list.list[source_language_index].source_language,
-                    section_index: 3,
-                    update_item: update_item,
-                    remove_item: remove_item,
-                    section_list: custom_sections,
-                  ),
-                  SizedBox(
-                    height: sized_box_space * 4,
-                  ),
+                  resume_editor_top_option_buttons(),
+                  resume_editor_text_fields(),
+                  resume_sections(),
                 ],
               ),
             ),
