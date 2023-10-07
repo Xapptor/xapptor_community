@@ -5,7 +5,7 @@ import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/widgets/text_field/custom_text_field.dart';
 import 'package:xapptor_ui/widgets/text_field/custom_text_field_model.dart';
 
-extension ResumeEditorTextFields on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_editor_text_fields() => Column(
         children: [
           CustomTextField(

@@ -4,7 +4,7 @@ import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.d
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_logic/check_browser_type.dart';
 
-extension ApplyTimer on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   apply_timer() async {
     BrowserType browser_type = await check_browser_type();
     int timer_duration = browser_type == BrowserType.mobile ? 3000 : 1200;

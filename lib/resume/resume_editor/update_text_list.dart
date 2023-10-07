@@ -2,7 +2,7 @@
 
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension RemoveItem on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   update_text_list({
     required int index,
     required String new_text,

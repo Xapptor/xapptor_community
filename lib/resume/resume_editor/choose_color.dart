@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension ChooseColor on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   choose_color() async {
     await showDialog(
       context: context,

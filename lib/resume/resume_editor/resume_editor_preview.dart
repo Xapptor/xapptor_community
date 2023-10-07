@@ -4,7 +4,7 @@ import 'package:xapptor_community/resume/resume_visualizer/resume_visualizer.dar
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
-extension RemoveItem on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_editor_preview({
     required BuildContext context,
     required bool portrait,

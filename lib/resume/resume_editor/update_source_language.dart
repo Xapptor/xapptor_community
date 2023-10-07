@@ -3,7 +3,7 @@
 import 'package:xapptor_community/resume/resume_editor/apply_timer.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension ResumeEditorStateExtension on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   update_source_language({
     required int new_source_language_index,
   }) {

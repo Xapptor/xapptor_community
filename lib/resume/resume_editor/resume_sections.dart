@@ -7,7 +7,7 @@ import 'package:xapptor_community/resume/resume_editor/update_item.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
-extension ResumeSections on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_sections() => Column(
         children: [
           ResumeSectionForm(

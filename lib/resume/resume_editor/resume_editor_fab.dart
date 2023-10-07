@@ -6,7 +6,7 @@ import 'package:xapptor_community/resume/models/save_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
 
-extension ResumeEditorFab on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_editor_fab(Resume resume) {
     String download_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 2];
     String save_label = text_list.get(source_language_index).last;

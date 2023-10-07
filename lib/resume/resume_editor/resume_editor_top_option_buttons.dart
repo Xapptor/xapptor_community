@@ -5,7 +5,7 @@ import 'package:xapptor_community/resume/resume_editor/choose_profile_image.dart
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
-extension ResumeEditorStateExtension on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_editor_top_option_buttons() => Column(
         children: [
           SizedBox(

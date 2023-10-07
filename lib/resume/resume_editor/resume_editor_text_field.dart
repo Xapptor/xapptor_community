@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension ResumeEditorTextField on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   resume_editor_text_field({
     required String label_text,
     required TextEditingController controller,

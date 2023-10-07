@@ -3,7 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/set_resume.dart';
 
-extension SaveResume on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   save_resume() async {
     if (chosen_image_src.isNotEmpty) {
       if (!chosen_image_src.contains("http")) {

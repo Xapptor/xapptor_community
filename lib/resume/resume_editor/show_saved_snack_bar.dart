@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension ShowSavedSnackBar on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   show_saved_snack_bar() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -2,7 +2,7 @@
 
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension UpdateItem on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   update_item(int item_index, int section_index, dynamic section) {
     if (section_index == 0) {
       //

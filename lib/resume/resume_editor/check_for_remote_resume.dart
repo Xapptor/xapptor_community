@@ -8,7 +8,7 @@ import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension CheckForRemoteResume on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   check_for_remote_resume({
     bool load_example = false,
   }) async {

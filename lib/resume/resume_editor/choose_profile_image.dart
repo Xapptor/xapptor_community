@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension ChooseProfileImage on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   choose_profile_image() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {

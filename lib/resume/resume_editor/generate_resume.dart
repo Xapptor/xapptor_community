@@ -3,7 +3,7 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-extension GenerateResume on ResumeEditorState {
+extension StateExtension on ResumeEditorState {
   Resume generate_resume() {
     return Resume(
       image_src: chosen_image_src,
