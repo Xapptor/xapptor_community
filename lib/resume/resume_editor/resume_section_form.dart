@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
-import 'package:xapptor_community/resume/resume_editor/resume_section_form_item.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/resume_section_form_item.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
