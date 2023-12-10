@@ -19,7 +19,7 @@ dependencies:
   universal_platform: ^1.0.0+1
   pdf: ^3.10.4
   printing: ^5.11.0
-  file_picker: ^5.5.0
+  file_picker: ^6.1.1
   flutter_colorpicker: ^1.0.3
   intl: ^0.18.1
   http: ^1.1.0
