@@ -204,7 +204,7 @@ download_resume_pdf({
 
   await pdf.save().then((pdf_bytes) {
     FileDownloader.save(
-      src: base64Encode(pdf_bytes),
+      src: pdf_bytes,
       file_name: "resume_${resume.name.toLowerCase().replaceAll(" ", "_")}.pdf",
     );
   });
