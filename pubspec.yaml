@@ -11,9 +11,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cloud_firestore: ^4.9.2
-  firebase_auth: ^4.10.0
-  firebase_storage: ^11.2.7
+  cloud_firestore: ^4.14.0
+  firebase_auth: ^4.16.0
+  firebase_storage: ^11.6.0
 
   google_fonts: ^6.1.0
   universal_platform: ^1.0.0+1
@@ -22,8 +22,8 @@ dependencies:
   file_picker: ^6.1.1
   flutter_colorpicker: ^1.0.3
   intl: ^0.18.1
-  http: ^1.1.0
-  font_awesome_flutter: ^10.5.0
+  http: ^1.1.2
+  font_awesome_flutter: ^10.6.0
   flutter_expandable_fab: ^2.0.0
 
   # xapptor_logic: ^0.0.3
@@ -43,7 +43,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.3
+  flutter_lints: ^3.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
