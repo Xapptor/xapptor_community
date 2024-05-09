@@ -7,10 +7,18 @@ get_resumes_labels({
   required ResumeEditorAlertType resume_editor_alert_type,
 }) {
   List<String> labels = [];
+  int loop_limit = resume_editor_alert_type == ResumeEditorAlertType.save ? 3 : backup_resumes.length;
 
-  for (int i = 1; i <= 3; i++) {
+  print("loop_limit: $loop_limit");
+
+  for (int i = 1; i <= loop_limit; i++) {
+    print("loop count");
     bool resume_exists = backup_resumes.any((resume) => resume.slot_index == i);
-    String label = resume_exists ? backup_resumes[i - 1].creation_date.toString() : "$backup_label $i";
+    var current_resume = backup_resumes[i - 1];
+
+    String date_String = DateTime.parse(current_resume.creation_date.toDate().toString()).toString();
+
+    String label = resume_exists ? "${current_resume.slot_index} - $date_String" : "$backup_label $i";
 
     if (resume_editor_alert_type == ResumeEditorAlertType.save) {
       labels.add(label);

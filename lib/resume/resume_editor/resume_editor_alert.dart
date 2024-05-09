@@ -106,7 +106,7 @@ extension StateExtension on ResumeEditorState {
     );
 
     if (resumes_labels.isNotEmpty) {
-      backup_label = resumes_labels.first;
+      backup_value = resumes_labels.first;
     }
 
     showDialog(
@@ -134,10 +134,10 @@ extension StateExtension on ResumeEditorState {
                       ),
                     )
                   : DropdownButton<String>(
-                      value: backup_label,
+                      value: backup_value,
                       onChanged: (String? value) {
                         if (value!.contains(backup_label)) {
-                          backup_index = resumes_labels.indexOf(value);
+                          backup_index = resumes_labels.indexOf(value) + 1;
                         } else {
                           backup_index = backup_resumes
                               .firstWhere((resume) => resume.creation_date.toString() == value)
@@ -145,7 +145,7 @@ extension StateExtension on ResumeEditorState {
                         }
 
                         resume.slot_index = backup_index;
-                        backup_label = value;
+                        backup_value = value;
                         setState(() {});
                       },
                       items: resumes_labels
@@ -177,14 +177,14 @@ extension StateExtension on ResumeEditorState {
                     if (resumes_labels.isNotEmpty) {
                       switch (resume_editor_alert_type) {
                         case ResumeEditorAlertType.save:
-                          load_resume(
-                            load_example: false,
-                            backup_index: backup_index,
+                          save_resume(
+                            resume: resume,
                           );
                           break;
                         case ResumeEditorAlertType.load:
-                          save_resume(
-                            resume: resume,
+                          load_resume(
+                            load_example: false,
+                            backup_index: backup_index,
                           );
                           break;
                       }

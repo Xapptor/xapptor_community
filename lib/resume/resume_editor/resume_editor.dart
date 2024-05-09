@@ -94,7 +94,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   User? current_user;
 
   int? backup_index;
-  String backup_label = "";
+  String backup_value = "";
 
   @override
   void initState() {
