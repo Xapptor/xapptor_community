@@ -1,12 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
-  Resume generate_resume() {
+  Resume generate_resume({
+    required int? slot_index,
+  }) {
     return Resume(
-      image_src: chosen_image_src,
+      image_url: chosen_image_path,
       name: name_input_controller.text,
       job_title: job_title_input_controller.text,
       email: email_input_controller.text,
@@ -36,6 +39,10 @@ extension StateExtension on ResumeEditorState {
           [
             widget.base_url,
           ],
+      creation_date: Timestamp.now(),
+      user_id: current_user!.uid,
+      slot_index: slot_index,
+      chosen_image_bytes: chosen_image_bytes,
     );
   }
 }

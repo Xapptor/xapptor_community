@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
@@ -59,6 +61,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   ResumeEditorTextLists resume_editor_text_lists = ResumeEditorTextLists();
 
   TranslationTextListArray text_list = ResumeEditorTextLists().text_list;
+  TranslationTextListArray alert_text_list = ResumeEditorTextLists().alert_text_list;
   TranslationTextListArray skill_text_list = ResumeEditorTextLists().skill_text_list;
   TranslationTextListArray employment_text_list = ResumeEditorTextLists().employment_text_list;
   TranslationTextListArray education_text_list = ResumeEditorTextLists().education_text_list;
@@ -76,8 +79,9 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   int source_language_index = 1;
 
-  String chosen_image_src = "";
-  String chosen_image_ext = "";
+  String chosen_image_path = "";
+  String chosen_image_url = "";
+  Uint8List? chosen_image_bytes;
 
   List<ResumeSkill> skill_sections = [];
   List<ResumeSection> employment_sections = [];
@@ -87,7 +91,10 @@ class ResumeEditorState extends State<ResumeEditor> {
   Color picker_color = Colors.blue;
   Color current_color = Colors.blue;
 
-  late User current_user;
+  User? current_user;
+
+  int? backup_index;
+  String backup_label = "";
 
   @override
   void initState() {
@@ -101,30 +108,22 @@ class ResumeEditorState extends State<ResumeEditor> {
     screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
 
-    Resume resume = generate_resume();
-
-    return Scaffold(
-      appBar: TopBar(
-        context: context,
-        background_color: widget.color_topbar,
-        has_back_button: true,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 20),
-            width: 150,
-            child: LanguagePicker(
-              translation_stream_list: translation_stream_list,
-              language_picker_items_text_color: widget.color_topbar,
-              update_source_language: update_source_language,
-            ),
-          ),
-        ],
-        custom_leading: null,
-        logo_path: "assets/images/logo.png",
+    Widget body = Container(
+      color: Colors.white,
+      width: double.maxFinite,
+      child: Center(
+        child: CircularProgressIndicator(
+          color: widget.color_topbar,
+        ),
       ),
-      floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: resume_editor_fab(resume),
-      body: Container(
+    );
+
+    late Resume resume;
+
+    if (current_user != null) {
+      resume = generate_resume(slot_index: null);
+
+      body = Container(
         color: Colors.white,
         width: double.maxFinite,
         child: ListView(
@@ -148,7 +147,31 @@ class ResumeEditorState extends State<ResumeEditor> {
             ),
           ],
         ),
+      );
+    }
+
+    return Scaffold(
+      appBar: TopBar(
+        context: context,
+        background_color: widget.color_topbar,
+        has_back_button: true,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 20),
+            width: 150,
+            child: LanguagePicker(
+              translation_stream_list: translation_stream_list,
+              language_picker_items_text_color: widget.color_topbar,
+              update_source_language: update_source_language,
+            ),
+          ),
+        ],
+        custom_leading: null,
+        logo_path: "assets/images/logo.png",
       ),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: current_user != null ? resume_editor_fab(resume) : null,
+      body: body,
     );
   }
 }

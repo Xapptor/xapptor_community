@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_logic/check_browser_type.dart';
 
@@ -11,7 +11,7 @@ extension StateExtension on ResumeEditorState {
 
     Timer(Duration(milliseconds: timer_duration), () {
       current_user = FirebaseAuth.instance.currentUser!;
-      check_for_remote_resume();
+      load_resume();
     });
   }
 }

@@ -9,12 +9,17 @@ import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
-  check_for_remote_resume({
+  load_resume({
     bool load_example = false,
+    int? backup_index,
   }) async {
     String resume_doc_id = load_example
         ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
-        : ("${current_user.uid}_${text_list.list[source_language_index].source_language}");
+        : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
+
+    if (backup_index != null) {
+      resume_doc_id += "_bu_$backup_index";
+    }
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
 
@@ -23,7 +28,7 @@ extension StateExtension on ResumeEditorState {
     if (resume_map != null) {
       var remote_resume = Resume.from_snapshot(resume_doc_id, resume_map);
 
-      chosen_image_src = remote_resume.image_src;
+      chosen_image_url = remote_resume.image_url;
       current_color = remote_resume.icon_color;
       picker_color = remote_resume.icon_color;
 

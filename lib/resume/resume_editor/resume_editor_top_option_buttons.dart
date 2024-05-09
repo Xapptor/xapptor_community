@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/resume_editor/check_for_remote_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/choose_color.dart';
 import 'package:xapptor_community/resume/resume_editor/choose_profile_image.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
@@ -36,7 +36,7 @@ extension StateExtension on ResumeEditorState {
                 ),
               ),
               onPressed: () {
-                check_for_remote_resume(load_example: true);
+                load_resume(load_example: true);
               },
               child: Text(
                 text_list.get(source_language_index)[20],

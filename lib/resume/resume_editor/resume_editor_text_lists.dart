@@ -30,6 +30,7 @@ class ResumeEditorTextLists {
           "Resume Saved",
           "Download",
           "Save",
+          "Backup",
         ],
       ),
       TranslationTextList(
@@ -59,6 +60,46 @@ class ResumeEditorTextLists {
           "CV Guardado",
           "Descargar",
           "Guardar",
+          "Respaldo",
+        ],
+      ),
+    ],
+  );
+
+  TranslationTextListArray alert_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Which backup do you want to load?",
+          "In which slot do you want to save your backup?",
+          "Your Resume has been saved, do you want to save an extra backup?",
+          "No",
+          "Yes",
+          "Cancel",
+          "Load",
+          "Save",
+          "Backup",
+          "You don't have backups at the moment",
+          "First you must save one",
+          "Ok",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "¿Qué respaldo deseas cargar?",
+          "¿En qué ranura deseas guardar tu respaldo?",
+          "Tu CV ha sido guardado, ¿deseas guardar un respaldo extra?",
+          "No",
+          "Sí",
+          "Cancelar",
+          "Cargar",
+          "Guardar",
+          "Respaldo",
+          "Por el momento no posees respaldos",
+          "Primero debes guardar uno",
+          "Ok",
         ],
       ),
     ],

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'resume_section.dart';
 import 'resume_skill.dart';
@@ -5,7 +7,7 @@ import 'package:xapptor_logic/hex_color.dart';
 
 class Resume {
   final String id;
-  final String image_src;
+  String image_url;
   final String name;
   final String job_title;
   final String email;
@@ -20,10 +22,14 @@ class Resume {
   final Color icon_color;
   final String language_code;
   final List<String> text_list;
+  final Timestamp creation_date;
+  final String user_id;
+  int? slot_index;
+  final Uint8List? chosen_image_bytes;
 
-  const Resume({
+  Resume({
     this.id = "",
-    required this.image_src,
+    required this.image_url,
     required this.name,
     required this.job_title,
     required this.email,
@@ -38,12 +44,16 @@ class Resume {
     required this.icon_color,
     required this.language_code,
     required this.text_list,
+    required this.creation_date,
+    required this.user_id,
+    required this.slot_index,
+    required this.chosen_image_bytes,
   });
 
   Resume.from_snapshot(
     this.id,
     Map<dynamic, dynamic> snapshot,
-  )   : image_src = snapshot['image_src'],
+  )   : image_url = snapshot['image_url'],
         name = snapshot['name'],
         job_title = snapshot['job_title'],
         email = snapshot['email'],
@@ -60,11 +70,15 @@ class Resume {
             (snapshot['custom_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
         icon_color = HexColor.fromHex(snapshot['icon_color']),
         language_code = snapshot['language_code'],
-        text_list = (snapshot['text_list'] as List).map((e) => e as String).toList();
+        text_list = (snapshot['text_list'] as List).map((e) => e as String).toList(),
+        creation_date = snapshot['creation_date'],
+        user_id = snapshot['user_id'],
+        slot_index = snapshot['slot_index'],
+        chosen_image_bytes = null;
 
   Map<String, dynamic> to_json() {
     return {
-      'image_src': image_src,
+      'image_url': image_url,
       'name': name,
       'job_title': job_title,
       'email': email,
@@ -79,6 +93,9 @@ class Resume {
       'icon_color': icon_color.toHex(),
       'language_code': language_code,
       'text_list': text_list,
+      'creation_date': creation_date,
+      'user_id': user_id,
+      'slot_index': slot_index,
     };
   }
 }

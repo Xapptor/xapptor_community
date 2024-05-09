@@ -33,21 +33,21 @@ download_resume_pdf({
 
   dynamic profile_image;
 
-  if (resume.image_src.isNotEmpty) {
-    if (resume.image_src.contains("http")) {
+  if (resume.image_url.isNotEmpty) {
+    if (resume.image_url.contains("http")) {
       //
-      var response = await get(Uri.parse(resume.image_src));
+      var response = await get(Uri.parse(resume.image_url));
       Uint8List? bytes = response.bodyBytes;
       profile_image = pw.MemoryImage(bytes);
       //
-    } else if (resume.image_src.contains(".")) {
+    } else if (resume.image_url.contains(".")) {
       //
       profile_image = pw.MemoryImage(
-        (await rootBundle.load(resume.image_src)).buffer.asUint8List(),
+        (await rootBundle.load(resume.image_url)).buffer.asUint8List(),
       );
       //
     } else {
-      profile_image = pw.MemoryImage(base64Decode(resume.image_src));
+      profile_image = pw.MemoryImage(base64Decode(resume.image_url));
     }
 
     profile_image = pw.Image(profile_image);

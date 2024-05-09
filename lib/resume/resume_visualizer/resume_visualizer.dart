@@ -1,7 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:async';
-import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/name_and_skills.dart';
@@ -127,17 +127,19 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
 
   Widget image() {
     if (current_resume != null) {
-      String image_src = current_resume!.image_src;
-      if (image_src.isNotEmpty) {
+      Uint8List? image_bytes = current_resume!.chosen_image_bytes;
+      String image_url = current_resume!.image_url;
+
+      if (image_bytes != null || image_url.isNotEmpty) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(20),
-          child: image_src.contains("http")
-              ? Image.network(
-                  image_src,
+          child: image_bytes != null
+              ? Image.memory(
+                  image_bytes,
                   fit: BoxFit.contain,
                 )
-              : Image.memory(
-                  base64Decode(image_src),
+              : Image.network(
+                  image_url,
                   fit: BoxFit.contain,
                 ),
         );
