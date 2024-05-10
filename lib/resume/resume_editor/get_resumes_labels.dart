@@ -19,7 +19,9 @@ get_resumes_labels({
     String label = "$main_label - $main_date_String";
     labels.add(label);
   } else {
-    labels.add(main_label);
+    if (resume_editor_alert_type != ResumeEditorAlertType.delete) {
+      labels.add(main_label);
+    }
   }
   int loop_limit = 3;
 
