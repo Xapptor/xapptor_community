@@ -4,6 +4,10 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
+// TODO: Create a new Fab button for deleting a resume slot.
+// TODO: Resolve image uploading issue.
+// TODO: Enable the user to change the order of the skills and sections.
+
 extension StateExtension on ResumeEditorState {
   Resume generate_resume({
     required int slot_index,
