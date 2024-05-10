@@ -12,14 +12,16 @@ import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dar
 extension StateExtension on ResumeEditorState {
   load_resume({
     bool load_example = false,
-    required int slot_index,
+    required int new_slot_index,
   }) async {
+    slot_index = new_slot_index;
+
     String resume_doc_id = load_example
         ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
         : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
 
-    if (slot_index != 0 && !load_example) {
-      resume_doc_id += "_bu_$slot_index";
+    if (new_slot_index != 0 && !load_example) {
+      resume_doc_id += "_bu_$new_slot_index";
     }
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
@@ -75,7 +77,7 @@ extension StateExtension on ResumeEditorState {
 
     show_result_snack_bar(
       result_snack_bar_type: ResultSnackBarType.loaded,
-      slot_index: slot_index,
+      slot_index: new_slot_index,
     );
   }
 }

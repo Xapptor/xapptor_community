@@ -240,7 +240,7 @@ extension StateExtension on ResumeEditorState {
 
                           load_resume(
                             load_example: false,
-                            slot_index: slot_index,
+                            new_slot_index: slot_index,
                           );
                           break;
                         case ResumeEditorAlertType.delete:

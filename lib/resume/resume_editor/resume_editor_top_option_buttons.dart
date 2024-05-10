@@ -38,7 +38,7 @@ extension StateExtension on ResumeEditorState {
               onPressed: () {
                 load_resume(
                   load_example: true,
-                  slot_index: 0,
+                  new_slot_index: 0,
                 );
               },
               child: Text(
