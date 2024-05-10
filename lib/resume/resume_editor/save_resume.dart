@@ -18,11 +18,13 @@ extension StateExtension on ResumeEditorState {
         resume.image_url = chosen_image_url;
 
         set_resume(
+          slot_index: slot_index,
           resume: resume,
         );
       });
     } else {
       set_resume(
+        slot_index: slot_index,
         resume: resume,
       );
     }

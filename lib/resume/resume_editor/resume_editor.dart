@@ -98,6 +98,8 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   GlobalKey<ExpandableFabState> expandable_fab_key = GlobalKey<ExpandableFabState>();
 
+  List<Resume> resumes = [];
+
   @override
   void initState() {
     super.initState();

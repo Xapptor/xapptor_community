@@ -7,6 +7,7 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
+import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dart';
 
 extension StateExtension on ResumeEditorState {
   load_resume({
@@ -71,5 +72,10 @@ extension StateExtension on ResumeEditorState {
       ];
       setState(() {});
     }
+
+    show_result_snack_bar(
+      result_snack_bar_type: ResultSnackBarType.loaded,
+      slot_index: slot_index,
+    );
   }
 }

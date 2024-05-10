@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 
-Future<List<Resume>> get_resumes_slots({
+Future<List<Resume>> get_resumes({
   required String resume_doc_id,
   required String user_id,
 }) async {

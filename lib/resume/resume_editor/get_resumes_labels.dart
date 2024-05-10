@@ -11,11 +11,16 @@ get_resumes_labels({
   DateFormat date_format = DateFormat('yyyy/MM/dd, hh:mm a');
   List<String> labels = [];
 
-  Resume main_resume = resumes.firstWhere((resume) => resume.slot_index == 0);
-  String main_date_String = date_format.format(main_resume.creation_date.toDate());
-  String label = "$main_label - $main_date_String";
-  labels.add(label);
+  bool main_resume_exists = resumes.any((resume) => resume.slot_index == 0);
 
+  if (main_resume_exists) {
+    Resume main_resume = resumes.firstWhere((resume) => resume.slot_index == 0);
+    String main_date_String = date_format.format(main_resume.creation_date.toDate());
+    String label = "$main_label - $main_date_String";
+    labels.add(label);
+  } else {
+    labels.add(main_label);
+  }
   int loop_limit = 3;
 
   for (int i = 1; i <= loop_limit; i++) {

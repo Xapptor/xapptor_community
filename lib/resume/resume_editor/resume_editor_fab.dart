@@ -11,9 +11,12 @@ import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.d
 
 extension StateExtension on ResumeEditorState {
   resume_editor_fab() {
-    String download_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 3];
-    String load_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 1];
-    String save_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 2];
+    String load_label = alert_text_list.get(source_language_index)[17];
+    String save_label = alert_text_list.get(source_language_index)[18];
+    String delete_label = alert_text_list.get(source_language_index)[19];
+    String download_label = alert_text_list.get(source_language_index)[20];
+    String menu_label = alert_text_list.get(source_language_index)[21];
+    String close_label = alert_text_list.get(source_language_index)[22];
 
     return ExpandableFab(
       key: expandable_fab_key,
@@ -22,39 +25,37 @@ extension StateExtension on ResumeEditorState {
       overlayStyle: ExpandableFabOverlayStyle(
         blur: 5,
       ),
+      openButtonBuilder: FloatingActionButtonBuilder(
+        size: 20,
+        builder: (context, onPressed, progress) {
+          return FloatingActionButton(
+            heroTag: null,
+            onPressed: onPressed,
+            tooltip: menu_label,
+            child: const Icon(
+              Icons.menu,
+              color: Colors.white,
+            ),
+          );
+        },
+      ),
+      closeButtonBuilder: FloatingActionButtonBuilder(
+        size: 20,
+        builder: (context, onPressed, progress) {
+          return FloatingActionButton(
+            heroTag: null,
+            onPressed: onPressed,
+            tooltip: close_label,
+            child: const Icon(
+              Icons.close,
+              color: Colors.white,
+            ),
+          );
+        },
+      ),
       children: [
-        FloatingActionButton.extended(
-          heroTag: null,
-          onPressed: () {
-            Resume resume = generate_resume(slot_index: slot_index);
+        // LOAD
 
-            download_resume_pdf(
-              resume: resume,
-              text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
-              resume_link: "${widget.base_url}/resumes/${resume.id}",
-              context: context,
-              language_code: text_list.list[source_language_index].source_language,
-            );
-          },
-          backgroundColor: Colors.lightBlue,
-          tooltip: download_label,
-          label: Row(
-            children: [
-              Text(
-                download_label,
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(
-                FontAwesomeIcons.fileArrowDown,
-                color: Colors.white,
-                size: 20,
-              ),
-            ],
-          ),
-        ),
         FloatingActionButton.extended(
           heroTag: null,
           onPressed: () {
@@ -84,6 +85,9 @@ extension StateExtension on ResumeEditorState {
             ],
           ),
         ),
+
+        // SAVE
+
         FloatingActionButton.extended(
           heroTag: null,
           onPressed: () {
@@ -107,6 +111,73 @@ extension StateExtension on ResumeEditorState {
               const SizedBox(width: 4),
               const Icon(
                 FontAwesomeIcons.cloudArrowUp,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+
+        // DELETE
+
+        FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () {
+            Resume resume = generate_resume(slot_index: slot_index);
+
+            resume_editor_alert(
+              resume: resume,
+              resume_editor_alert_type: ResumeEditorAlertType.delete,
+            );
+          },
+          backgroundColor: Colors.red,
+          tooltip: delete_label,
+          label: Row(
+            children: [
+              Text(
+                delete_label,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                FontAwesomeIcons.trash,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+
+        // DOWNLOAD
+
+        FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () {
+            Resume resume = generate_resume(slot_index: slot_index);
+
+            download_resume_pdf(
+              resume: resume,
+              text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
+              resume_link: "${widget.base_url}/resumes/${resume.id}",
+              context: context,
+              language_code: text_list.list[source_language_index].source_language,
+            );
+          },
+          backgroundColor: Colors.lightBlue,
+          tooltip: download_label,
+          label: Row(
+            children: [
+              Text(
+                download_label,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                FontAwesomeIcons.fileArrowDown,
                 color: Colors.white,
                 size: 20,
               ),
