@@ -5,7 +5,6 @@ import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 // TODO: Resolve image uploading issue.
-// TODO: Enable the user to change the order of the skills and sections.
 
 extension StateExtension on ResumeEditorState {
   Resume generate_resume({

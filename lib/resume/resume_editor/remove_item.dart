@@ -3,7 +3,10 @@
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
-  remove_item(int item_index, int section_index) {
+  remove_item({
+    required int item_index,
+    required int section_index,
+  }) {
     if (section_index == 0) {
       skill_sections.removeAt(item_index);
     } else if (section_index == 1) {

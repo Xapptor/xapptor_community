@@ -5,11 +5,36 @@ import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/populate_fields.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/show_select_date_alert_dialog.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/update_item.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ResumeSectionFormItem extends StatefulWidget {
+  final ResumeSectionFormType resume_section_form_type;
+  final List<String> text_list;
+  final Color text_color;
+  final String language_code;
+  final int item_index;
+  final int section_index;
+
+  final Function({
+    required int item_index,
+    required int section_index,
+    required dynamic section,
+    ChangeItemPositionType change_item_position_type,
+  }) update_item;
+
+  final Function({
+    required int item_index,
+    required int section_index,
+  }) remove_item;
+
+  final dynamic section;
+
+  final bool show_up_arrow;
+  final bool show_down_arrow;
+
   const ResumeSectionFormItem({
     super.key,
     required this.resume_section_form_type,
@@ -21,17 +46,9 @@ class ResumeSectionFormItem extends StatefulWidget {
     required this.update_item,
     required this.remove_item,
     required this.section,
+    required this.show_up_arrow,
+    required this.show_down_arrow,
   });
-
-  final ResumeSectionFormType resume_section_form_type;
-  final List<String> text_list;
-  final Color text_color;
-  final String language_code;
-  final int item_index;
-  final int section_index;
-  final Function(int item_index, int section_index, dynamic section) update_item;
-  final Function(int item_index, int section_index) remove_item;
-  final dynamic section;
 
   @override
   State<ResumeSectionFormItem> createState() => ResumeSectionFormItemState();
@@ -310,23 +327,60 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     ),
                   ),
                 ),
-          widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
-              ? Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () {
-                      widget.remove_item(
-                        widget.item_index,
-                        widget.section_index,
-                      );
-                    },
-                    icon: const Icon(
-                      FontAwesomeIcons.trash,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
+                  ? IconButton(
+                      onPressed: () {
+                        widget.remove_item(
+                          item_index: widget.item_index,
+                          section_index: widget.section_index,
+                        );
+                      },
+                      icon: const Icon(
+                        FontAwesomeIcons.trash,
+                      ),
+                      color: Colors.red,
+                    )
+                  : Container(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (widget.show_up_arrow)
+                    IconButton(
+                      onPressed: () {
+                        widget.update_item(
+                          item_index: widget.item_index,
+                          section_index: widget.section_index,
+                          section: widget.section,
+                          change_item_position_type: ChangeItemPositionType.move_up,
+                        );
+                      },
+                      icon: const Icon(
+                        FontAwesomeIcons.arrowUp,
+                      ),
+                      color: widget.text_color,
                     ),
-                    color: Colors.red,
-                  ),
-                )
-              : Container(),
+                  if (widget.show_down_arrow)
+                    IconButton(
+                      onPressed: () {
+                        widget.update_item(
+                          item_index: widget.item_index,
+                          section_index: widget.section_index,
+                          section: widget.section,
+                          change_item_position_type: ChangeItemPositionType.move_down,
+                        );
+                      },
+                      icon: const Icon(
+                        FontAwesomeIcons.arrowDown,
+                      ),
+                      color: widget.text_color,
+                    ),
+                ],
+              ),
+            ],
+          ),
         ],
       ),
     );

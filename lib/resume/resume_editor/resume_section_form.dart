@@ -3,6 +3,7 @@ import 'package:xapptor_community/resume/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/resume_section_form_item.dart';
+import 'package:xapptor_community/resume/resume_editor/update_item.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -19,8 +20,19 @@ class ResumeSectionForm extends StatefulWidget {
   final Color text_color;
   final String language_code;
   final int section_index;
-  final Function(int item_index, int section_index, dynamic section) update_item;
-  final Function(int item_index, int section_index) remove_item;
+
+  final Function({
+    required int item_index,
+    required int section_index,
+    required dynamic section,
+    ChangeItemPositionType change_item_position_type,
+  }) update_item;
+
+  final Function({
+    required int item_index,
+    required int section_index,
+  }) remove_item;
+
   final List<dynamic> section_list;
 
   const ResumeSectionForm({
@@ -49,8 +61,14 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
   int selected_date_index = 0;
   String timeframe_text = "";
 
-  remove_item(int item_index, int section_index) {
-    widget.remove_item(item_index, section_index);
+  remove_item({
+    required int item_index,
+    required int section_index,
+  }) {
+    widget.remove_item(
+      item_index: item_index,
+      section_index: section_index,
+    );
     setState(() {});
   }
 
@@ -62,9 +80,9 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
   add_item() {
     if (widget.resume_section_form_type == ResumeSectionFormType.skill) {
       widget.update_item(
-        widget.section_list.length,
-        widget.section_index,
-        const ResumeSkill(
+        item_index: widget.section_list.length,
+        section_index: widget.section_index,
+        section: const ResumeSkill(
           name: "",
           percentage: 0.2,
           color: Colors.blue,
@@ -72,9 +90,9 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
       );
     } else {
       widget.update_item(
-        widget.section_list.length,
-        widget.section_index,
-        ResumeSection(),
+        item_index: widget.section_list.length,
+        section_index: widget.section_index,
+        section: ResumeSection(),
       );
     }
     setState(() {});
@@ -174,6 +192,22 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
           shrinkWrap: true,
           itemCount: widget.section_list.length,
           itemBuilder: (context, index) {
+            bool show_up_arrow = true;
+            bool show_down_arrow = true;
+
+            if (index == 0) {
+              show_up_arrow = false;
+            }
+
+            if (index == widget.section_list.length - 1) {
+              show_down_arrow = false;
+            }
+
+            if (widget.section_list.length == 1) {
+              show_up_arrow = false;
+              show_down_arrow = false;
+            }
+
             return ResumeSectionFormItem(
               resume_section_form_type: widget.resume_section_form_type,
               text_list: widget.text_list.sublist(0, 10) + widget.text_list.sublist(11),
@@ -184,6 +218,8 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
               update_item: widget.update_item,
               remove_item: remove_item,
               section: widget.section_list[index],
+              show_up_arrow: show_up_arrow,
+              show_down_arrow: show_down_arrow,
             );
           },
         ),

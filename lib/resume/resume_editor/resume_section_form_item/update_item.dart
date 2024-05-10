@@ -25,9 +25,9 @@ extension StateExtension on ResumeSectionFormItemState {
     switch (widget.resume_section_form_type) {
       case ResumeSectionFormType.skill:
         widget.update_item(
-          widget.item_index,
-          widget.section_index,
-          ResumeSkill(
+          item_index: widget.item_index,
+          section_index: widget.section_index,
+          section: ResumeSkill(
             name: field_1_input_controller.text,
             percentage: current_slider_value / 10,
             color: current_color,
@@ -39,9 +39,9 @@ extension StateExtension on ResumeSectionFormItemState {
             "${field_1_input_controller.text}${field_2_input_controller.text.isEmpty ? "" : " ${widget.text_list[11]} "}${field_2_input_controller.text}, ${field_3_input_controller.text}";
 
         widget.update_item(
-          widget.item_index,
-          widget.section_index,
-          ResumeSection(
+          item_index: widget.item_index,
+          section_index: widget.section_index,
+          section: ResumeSection(
             icon: widget.item_index == 0 ? Icons.dvr_rounded : null,
             code_point: widget.item_index == 0 ? 0xe1b2 : null,
             title: widget.item_index == 0 ? title : null,
@@ -54,9 +54,9 @@ extension StateExtension on ResumeSectionFormItemState {
         break;
       case ResumeSectionFormType.education:
         widget.update_item(
-          widget.item_index,
-          widget.section_index,
-          ResumeSection(
+          item_index: widget.item_index,
+          section_index: widget.section_index,
+          section: ResumeSection(
             icon: widget.item_index == 0 ? Icons.history_edu_rounded : null,
             code_point: widget.item_index == 0 ? 0xea3e : null,
             title: widget.item_index == 0 ? title : null,
@@ -69,9 +69,9 @@ extension StateExtension on ResumeSectionFormItemState {
         break;
       case ResumeSectionFormType.custom:
         widget.update_item(
-          widget.item_index,
-          widget.section_index,
-          ResumeSection(
+          item_index: widget.item_index,
+          section_index: widget.section_index,
+          section: ResumeSection(
             title: field_1_input_controller.text,
             subtitle: field_2_input_controller.text,
             description: field_3_input_controller.text,
