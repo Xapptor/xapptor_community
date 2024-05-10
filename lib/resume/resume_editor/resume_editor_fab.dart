@@ -18,6 +18,7 @@ extension StateExtension on ResumeEditorState {
     return ExpandableFab(
       key: expandable_fab_key,
       distance: 200,
+      duration: const Duration(milliseconds: 150),
       overlayStyle: ExpandableFabOverlayStyle(
         blur: 5,
       ),
@@ -26,6 +27,7 @@ extension StateExtension on ResumeEditorState {
           heroTag: null,
           onPressed: () {
             Resume resume = generate_resume(slot_index: slot_index);
+
             download_resume_pdf(
               resume: resume,
               text_bottom_margin_for_section: widget.text_bottom_margin_for_section,

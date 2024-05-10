@@ -30,7 +30,7 @@ class ResumeEditorTextLists {
           "Resume Saved",
           "Download",
           "Save",
-          "Backup",
+          "Load",
         ],
       ),
       TranslationTextList(
@@ -60,7 +60,7 @@ class ResumeEditorTextLists {
           "CV Guardado",
           "Descargar",
           "Guardar",
-          "Respaldo",
+          "Cargar",
         ],
       ),
     ],
