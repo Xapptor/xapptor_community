@@ -36,7 +36,10 @@ extension StateExtension on ResumeEditorState {
                 ),
               ),
               onPressed: () {
-                load_resume(load_example: true);
+                load_resume(
+                  load_example: true,
+                  slot_index: 0,
+                );
               },
               child: Text(
                 text_list.get(source_language_index)[20],

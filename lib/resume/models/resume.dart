@@ -24,7 +24,7 @@ class Resume {
   final List<String> text_list;
   final Timestamp creation_date;
   final String user_id;
-  int? slot_index;
+  int slot_index;
   final Uint8List? chosen_image_bytes;
 
   Resume({

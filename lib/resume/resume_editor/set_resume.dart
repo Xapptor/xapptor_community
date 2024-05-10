@@ -9,7 +9,7 @@ extension StateExtension on ResumeEditorState {
   }) async {
     String resume_doc_id = "${current_user!.uid}_${text_list.list[source_language_index].source_language}";
 
-    if (resume.slot_index != null) {
+    if (resume.slot_index != 0) {
       resume_doc_id += "_bu_${resume.slot_index}";
     }
 

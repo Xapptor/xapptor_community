@@ -71,7 +71,7 @@ class ResumeEditorTextLists {
       TranslationTextList(
         source_language: "en",
         text_list: [
-          "Which backup do you want to load?",
+          "Which slot do you want to load?",
           "In which slot do you want to save your backup?",
           "Your Resume has been saved, do you want to save an extra backup?",
           "No",
@@ -80,15 +80,17 @@ class ResumeEditorTextLists {
           "Load",
           "Save",
           "Backup",
+          "Main",
           "You don't have backups at the moment",
           "First you must save one",
           "Ok",
+          "Current Slot",
         ],
       ),
       TranslationTextList(
         source_language: "es",
         text_list: [
-          "¿Qué respaldo deseas cargar?",
+          "¿Qué ranura deseas cargar?",
           "¿En qué ranura deseas guardar tu respaldo?",
           "Tu CV ha sido guardado, ¿deseas guardar un respaldo extra?",
           "No",
@@ -97,9 +99,11 @@ class ResumeEditorTextLists {
           "Cargar",
           "Guardar",
           "Respaldo",
+          "Principal",
           "Por el momento no posees respaldos",
           "Primero debes guardar uno",
           "Ok",
+          "Ranura Actual",
         ],
       ),
     ],
@@ -173,7 +177,7 @@ class ResumeEditorTextLists {
       TranslationTextList(
         source_language: "en",
         text_list: [
-          "Choose Profile Picture",
+          "Choose Photo",
           "Choose Main Color",
           "Choose Color",
         ],
@@ -181,7 +185,7 @@ class ResumeEditorTextLists {
       TranslationTextList(
         source_language: "es",
         text_list: [
-          "Selecciona la Imágen de Perfil",
+          "Seleccionar Foto",
           "Selecciona el Color Principal",
           "Selecciona el Color",
         ],

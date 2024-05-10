@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/get_resumes_backups.dart';
+import 'package:xapptor_community/resume/resume_editor/get_resumes_slots.dart';
 import 'package:xapptor_community/resume/resume_editor/get_resumes_labels.dart';
 import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
@@ -18,20 +18,10 @@ extension StateExtension on ResumeEditorState {
     required Resume resume,
     required ResumeEditorAlertType resume_editor_alert_type,
   }) {
-    switch (resume_editor_alert_type) {
-      case ResumeEditorAlertType.save:
-        _asking_for_backup_alert(
-          resume: resume,
-          resume_editor_alert_type: resume_editor_alert_type,
-        );
-        break;
-      case ResumeEditorAlertType.load:
-        _main_alert(
-          resume: resume,
-          resume_editor_alert_type: resume_editor_alert_type,
-        );
-        break;
-    }
+    _main_alert(
+      resume: resume,
+      resume_editor_alert_type: resume_editor_alert_type,
+    );
   }
 
   _asking_for_backup_alert({
@@ -92,15 +82,17 @@ extension StateExtension on ResumeEditorState {
     required Resume resume,
     required ResumeEditorAlertType resume_editor_alert_type,
   }) async {
+    String main_label = alert_text_list.get(source_language_index)[9];
     String backup_label = alert_text_list.get(source_language_index)[8];
 
-    List<Resume> backup_resumes = await get_resumes_backups(
+    List<Resume> backup_resumes = await get_resumes_slots(
       resume_doc_id: resume.id,
       user_id: current_user!.uid,
     );
 
     List<String> resumes_labels = get_resumes_labels(
       backup_resumes: backup_resumes,
+      main_label: alert_text_list.get(source_language_index)[9],
       backup_label: backup_label,
       resume_editor_alert_type: resume_editor_alert_type,
     );
@@ -137,14 +129,12 @@ extension StateExtension on ResumeEditorState {
                       value: backup_value,
                       onChanged: (String? value) {
                         if (value!.contains(backup_label)) {
-                          backup_index = resumes_labels.indexOf(value) + 1;
-                        } else {
-                          backup_index = backup_resumes
-                              .firstWhere((resume) => resume.creation_date.toString() == value)
-                              .slot_index;
+                          slot_index = resumes_labels.indexOf(value);
+                        } else if (value.contains(main_label)) {
+                          slot_index = 0;
                         }
 
-                        resume.slot_index = backup_index;
+                        resume.slot_index = slot_index;
                         backup_value = value;
                         setState(() {});
                       },
@@ -173,6 +163,7 @@ extension StateExtension on ResumeEditorState {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
+                    expandable_fab_key.currentState!.toggle();
 
                     if (resumes_labels.isNotEmpty) {
                       switch (resume_editor_alert_type) {
@@ -184,7 +175,7 @@ extension StateExtension on ResumeEditorState {
                         case ResumeEditorAlertType.load:
                           load_resume(
                             load_example: false,
-                            backup_index: backup_index,
+                            slot_index: slot_index,
                           );
                           break;
                       }

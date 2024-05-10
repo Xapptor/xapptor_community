@@ -93,8 +93,10 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   User? current_user;
 
-  int? backup_index;
+  int slot_index = 0;
   String backup_value = "";
+
+  GlobalKey<ExpandableFabState> expandable_fab_key = GlobalKey<ExpandableFabState>();
 
   @override
   void initState() {
@@ -121,32 +123,52 @@ class ResumeEditorState extends State<ResumeEditor> {
     late Resume resume;
 
     if (current_user != null) {
-      resume = generate_resume(slot_index: null);
+      resume = generate_resume(slot_index: 0);
 
-      body = Container(
-        color: Colors.white,
-        width: double.maxFinite,
-        child: ListView(
-          children: [
-            FractionallySizedBox(
-              widthFactor: portrait ? 0.9 : 0.4,
-              child: Column(
-                children: [
-                  resume_editor_top_option_buttons(),
-                  resume_editor_text_fields(),
-                  resume_sections(),
-                ],
+      body = Stack(
+        children: [
+          Container(
+            color: Colors.white,
+            width: double.maxFinite,
+            child: ListView(
+              children: [
+                FractionallySizedBox(
+                  widthFactor: portrait ? 0.9 : 0.4,
+                  child: Column(
+                    children: [
+                      resume_editor_top_option_buttons(),
+                      resume_editor_text_fields(),
+                      resume_sections(),
+                    ],
+                  ),
+                ),
+                resume_editor_preview(
+                  context: context,
+                  portrait: portrait,
+                  resume: resume,
+                  source_language_index: source_language_index,
+                  base_url: widget.base_url,
+                ),
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+          // Add traslucid message label to specify the current slot
+          Container(
+            color: widget.color_topbar.withOpacity(0.7),
+            width: double.maxFinite,
+            height: 40,
+            child: Center(
+              child: Text(
+                "${alert_text_list.get(source_language_index)[13]}: $slot_index",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
               ),
             ),
-            resume_editor_preview(
-              context: context,
-              portrait: portrait,
-              resume: resume,
-              source_language_index: source_language_index,
-              base_url: widget.base_url,
-            ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
@@ -170,7 +192,7 @@ class ResumeEditorState extends State<ResumeEditor> {
         logo_path: "assets/images/logo.png",
       ),
       floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: current_user != null ? resume_editor_fab(resume) : null,
+      floatingActionButton: current_user != null ? resume_editor_fab() : null,
       body: body,
     );
   }

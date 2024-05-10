@@ -4,17 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
+import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_alert.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
 
 extension StateExtension on ResumeEditorState {
-  resume_editor_fab(Resume resume) {
+  resume_editor_fab() {
     String download_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 3];
-    String load_backup_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 1];
+    String load_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 1];
     String save_label = text_list.get(source_language_index)[text_list.get(source_language_index).length - 2];
 
     return ExpandableFab(
+      key: expandable_fab_key,
       distance: 200,
       overlayStyle: ExpandableFabOverlayStyle(
         blur: 5,
@@ -22,13 +24,16 @@ extension StateExtension on ResumeEditorState {
       children: [
         FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () => download_resume_pdf(
-            resume: resume,
-            text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
-            resume_link: "${widget.base_url}/resumes/${resume.id}",
-            context: context,
-            language_code: text_list.list[source_language_index].source_language,
-          ),
+          onPressed: () {
+            Resume resume = generate_resume(slot_index: slot_index);
+            download_resume_pdf(
+              resume: resume,
+              text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
+              resume_link: "${widget.base_url}/resumes/${resume.id}",
+              context: context,
+              language_code: text_list.list[source_language_index].source_language,
+            );
+          },
           backgroundColor: Colors.lightBlue,
           tooltip: download_label,
           label: Row(
@@ -50,16 +55,20 @@ extension StateExtension on ResumeEditorState {
         ),
         FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () => resume_editor_alert(
-            resume: resume,
-            resume_editor_alert_type: ResumeEditorAlertType.load,
-          ),
+          onPressed: () {
+            Resume resume = generate_resume(slot_index: slot_index);
+
+            resume_editor_alert(
+              resume: resume,
+              resume_editor_alert_type: ResumeEditorAlertType.load,
+            );
+          },
           backgroundColor: Colors.pink,
-          tooltip: load_backup_label,
+          tooltip: load_label,
           label: Row(
             children: [
               Text(
-                load_backup_label,
+                load_label,
                 style: const TextStyle(
                   color: Colors.white,
                 ),
@@ -75,10 +84,14 @@ extension StateExtension on ResumeEditorState {
         ),
         FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () => resume_editor_alert(
-            resume: resume,
-            resume_editor_alert_type: ResumeEditorAlertType.save,
-          ),
+          onPressed: () {
+            Resume resume = generate_resume(slot_index: slot_index);
+
+            resume_editor_alert(
+              resume: resume,
+              resume_editor_alert_type: ResumeEditorAlertType.save,
+            );
+          },
           backgroundColor: Colors.green,
           tooltip: save_label,
           label: Row(

@@ -11,7 +11,7 @@ extension StateExtension on ResumeEditorState {
 
     Timer(Duration(milliseconds: timer_duration), () {
       current_user = FirebaseAuth.instance.currentUser!;
-      load_resume();
+      load_resume(slot_index: 0);
     });
   }
 }

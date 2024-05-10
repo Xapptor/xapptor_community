@@ -6,7 +6,7 @@ import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
   Resume generate_resume({
-    required int? slot_index,
+    required int slot_index,
   }) {
     return Resume(
       image_url: chosen_image_path,

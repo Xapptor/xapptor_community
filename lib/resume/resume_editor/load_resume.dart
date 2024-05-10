@@ -11,14 +11,14 @@ import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 extension StateExtension on ResumeEditorState {
   load_resume({
     bool load_example = false,
-    int? backup_index,
+    required int slot_index,
   }) async {
     String resume_doc_id = load_example
         ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
         : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
 
-    if (backup_index != null) {
-      resume_doc_id += "_bu_$backup_index";
+    if (slot_index != 0 && !load_example) {
+      resume_doc_id += "_bu_$slot_index";
     }
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
