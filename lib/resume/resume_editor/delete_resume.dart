@@ -15,6 +15,7 @@ extension StateExtension on ResumeEditorState {
     await resume_doc_ref.delete().then((value) {
       resumes.removeAt(slot_index);
 
+      slot_index = resumes.first.slot_index;
       load_resume(
         slot_index: resumes.first.slot_index,
       );
