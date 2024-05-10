@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/get_slot_label.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_init_state.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_preview.dart';
@@ -127,6 +128,10 @@ class ResumeEditorState extends State<ResumeEditor> {
     if (current_user != null) {
       resume = generate_resume(slot_index: 0);
 
+      String slot_label = get_slot_label(
+        slot_index: slot_index,
+      );
+
       body = Stack(
         children: [
           Container(
@@ -162,7 +167,7 @@ class ResumeEditorState extends State<ResumeEditor> {
             height: 40,
             child: Center(
               child: Text(
-                "${alert_text_list.get(source_language_index)[13]}: $slot_index",
+                "${alert_text_list.get(source_language_index)[13]}: $slot_label",
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,

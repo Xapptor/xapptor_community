@@ -1,3 +1,4 @@
+import 'package:xapptor_community/resume/resume_editor/get_slot_label.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_ui/utils/show_alert.dart';
 
@@ -13,15 +14,19 @@ extension StateExtension on ResumeEditorState {
     required int slot_index,
   }) {
     String message = "";
+    String slot_label = get_slot_label(
+      slot_index: slot_index,
+    );
+
     switch (result_snack_bar_type) {
       case ResultSnackBarType.loaded:
-        message = "${alert_text_list.get(source_language_index)[14]}: $slot_index";
+        message = "${alert_text_list.get(source_language_index)[14]}: $slot_label";
         break;
       case ResultSnackBarType.saved:
-        message = "${alert_text_list.get(source_language_index)[15]}: $slot_index";
+        message = "${alert_text_list.get(source_language_index)[15]}: $slot_label";
         break;
       case ResultSnackBarType.deleted:
-        message = "${alert_text_list.get(source_language_index)[16]}: $slot_index";
+        message = "${alert_text_list.get(source_language_index)[16]}: $slot_label";
         break;
     }
     show_success_alert(
