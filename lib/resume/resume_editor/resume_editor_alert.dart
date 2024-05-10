@@ -85,20 +85,20 @@ extension StateExtension on ResumeEditorState {
     String main_label = alert_text_list.get(source_language_index)[9];
     String backup_label = alert_text_list.get(source_language_index)[8];
 
-    List<Resume> backup_resumes = await get_resumes_slots(
+    List<Resume> resumes = await get_resumes_slots(
       resume_doc_id: resume.id,
       user_id: current_user!.uid,
     );
 
     List<String> resumes_labels = get_resumes_labels(
-      backup_resumes: backup_resumes,
+      resumes: resumes,
       main_label: alert_text_list.get(source_language_index)[9],
       backup_label: backup_label,
       resume_editor_alert_type: resume_editor_alert_type,
     );
 
     if (resumes_labels.isNotEmpty) {
-      backup_value = resumes_labels.first;
+      slot_value = resumes_labels[slot_index];
     }
 
     showDialog(
@@ -126,7 +126,7 @@ extension StateExtension on ResumeEditorState {
                       ),
                     )
                   : DropdownButton<String>(
-                      value: backup_value,
+                      value: slot_value,
                       onChanged: (String? value) {
                         if (value!.contains(backup_label)) {
                           slot_index = resumes_labels.indexOf(value);
@@ -135,7 +135,7 @@ extension StateExtension on ResumeEditorState {
                         }
 
                         resume.slot_index = slot_index;
-                        backup_value = value;
+                        slot_value = value;
                         setState(() {});
                       },
                       items: resumes_labels

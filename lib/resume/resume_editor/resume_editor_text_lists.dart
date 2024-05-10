@@ -72,7 +72,7 @@ class ResumeEditorTextLists {
         source_language: "en",
         text_list: [
           "Which slot do you want to load?",
-          "In which slot do you want to save your backup?",
+          "In which slot do you want to save your Resume?",
           "Your Resume has been saved, do you want to save an extra backup?",
           "No",
           "Yes",
@@ -91,7 +91,7 @@ class ResumeEditorTextLists {
         source_language: "es",
         text_list: [
           "¿Qué ranura deseas cargar?",
-          "¿En qué ranura deseas guardar tu respaldo?",
+          "¿En qué ranura deseas guardar tu CV?",
           "Tu CV ha sido guardado, ¿deseas guardar un respaldo extra?",
           "No",
           "Sí",

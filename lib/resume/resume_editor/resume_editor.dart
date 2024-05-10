@@ -94,7 +94,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   User? current_user;
 
   int slot_index = 0;
-  String backup_value = "";
+  String slot_value = "";
 
   GlobalKey<ExpandableFabState> expandable_fab_key = GlobalKey<ExpandableFabState>();
 
