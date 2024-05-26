@@ -15,16 +15,16 @@ extension StateExtension on ResumeEditorState {
             width: screen_width,
             child: ElevatedButton(
               style: ButtonStyle(
-                elevation: MaterialStateProperty.all<double>(
+                elevation: WidgetStateProperty.all<double>(
                   0,
                 ),
-                backgroundColor: MaterialStateProperty.all<Color>(
+                backgroundColor: WidgetStateProperty.all<Color>(
                   Colors.transparent,
                 ),
-                overlayColor: MaterialStateProperty.all<Color>(
+                overlayColor: WidgetStateProperty.all<Color>(
                   Colors.grey.withOpacity(0.2),
                 ),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
                       MediaQuery.of(context).size.width,
@@ -60,16 +60,16 @@ extension StateExtension on ResumeEditorState {
                   padding: const EdgeInsets.only(right: 5),
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      elevation: MaterialStateProperty.all<double>(
+                      elevation: WidgetStateProperty.all<double>(
                         0,
                       ),
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                         Colors.transparent,
                       ),
-                      overlayColor: MaterialStateProperty.all<Color>(
+                      overlayColor: WidgetStateProperty.all<Color>(
                         Colors.grey.withOpacity(0.2),
                       ),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             MediaQuery.of(context).size.width,
@@ -98,13 +98,13 @@ extension StateExtension on ResumeEditorState {
                   padding: const EdgeInsets.only(left: 5),
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      elevation: MaterialStateProperty.all<double>(
+                      elevation: WidgetStateProperty.all<double>(
                         0,
                       ),
-                      backgroundColor: MaterialStateProperty.all<Color>(
+                      backgroundColor: WidgetStateProperty.all<Color>(
                         current_color,
                       ),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             MediaQuery.of(context).size.width,

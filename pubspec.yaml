@@ -16,12 +16,12 @@ dependencies:
   firebase_storage: ^11.7.4
 
   google_fonts: ^6.2.1
-  universal_platform: ^1.0.0+1
+  universal_platform: ^1.1.0
   pdf: ^3.10.8
   printing: ^5.12.0
   file_picker: ^8.0.3
   flutter_colorpicker: ^1.0.3
-  intl: ^0.18.1
+  intl: ^0.19.0
   http: ^1.2.0
   font_awesome_flutter: ^10.7.0
   flutter_expandable_fab: ^2.0.0
