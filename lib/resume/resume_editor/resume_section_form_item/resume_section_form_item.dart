@@ -68,7 +68,6 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
   @override
   void initState() {
     super.initState();
-    populate_fields();
   }
 
   double current_slider_value = 2;
@@ -78,6 +77,8 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
 
   @override
   Widget build(BuildContext context) {
+    populate_fields();
+
     double screen_width = MediaQuery.of(context).size.width;
 
     if (selected_date_1 != null && selected_date_2 != null) {

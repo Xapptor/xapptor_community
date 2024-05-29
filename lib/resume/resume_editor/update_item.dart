@@ -3,6 +3,7 @@
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
+import 'package:xapptor_logic/extensions/list.dart';
 
 enum ChangeItemPositionType {
   none,
@@ -29,10 +30,6 @@ extension StateExtension on ResumeEditorState {
       dynamic_sections = custom_sections;
     }
 
-    for (var i = 0; i < dynamic_sections.length; i++) {
-      print(dynamic_sections[i].to_json());
-    }
-
     dynamic_sections = _update_dynamic(
       dynamic_sections: dynamic_sections,
       item_index: item_index,
@@ -41,13 +38,8 @@ extension StateExtension on ResumeEditorState {
       change_item_position_type: change_item_position_type,
     );
 
-    print("");
-
     if (section_index == 0) {
       skill_sections = dynamic_sections as List<ResumeSkill>;
-      for (var i = 0; i < skill_sections.length; i++) {
-        print(skill_sections[i].to_json());
-      }
     } else if (section_index == 1) {
       employment_sections = dynamic_sections as List<ResumeSection>;
     } else if (section_index == 2) {
@@ -79,14 +71,5 @@ extension StateExtension on ResumeEditorState {
       }
     }
     return dynamic_sections;
-  }
-}
-
-// TODO: delete this extension
-extension on List {
-  void swap(int firstIndex, int secondIndex) {
-    final temp = this[firstIndex];
-    this[firstIndex] = this[secondIndex];
-    this[secondIndex] = temp;
   }
 }

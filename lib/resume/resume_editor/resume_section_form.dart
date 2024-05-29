@@ -77,7 +77,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
     super.initState();
   }
 
-  add_item() {
+  _add_item() {
     if (widget.resume_section_form_type == ResumeSectionFormType.skill) {
       widget.update_item(
         item_index: widget.section_list.length,
@@ -161,7 +161,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
                     ResumeSkill last_section = widget.section_list.last;
 
                     if (last_section.name.isNotEmpty) {
-                      add_item();
+                      _add_item();
                     } else {
                       show_snack_bar();
                     }
@@ -171,13 +171,13 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
                     if (last_section.title != null ||
                         last_section.subtitle != null ||
                         last_section.description != null) {
-                      add_item();
+                      _add_item();
                     } else {
                       show_snack_bar();
                     }
                   }
                 } else {
-                  add_item();
+                  _add_item();
                 }
               },
               icon: const Icon(

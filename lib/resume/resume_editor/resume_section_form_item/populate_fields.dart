@@ -69,7 +69,5 @@ extension StateExtension on ResumeSectionFormItemState {
         selected_date_2 = section.end;
         break;
     }
-
-    setState(() {});
   }
 }
