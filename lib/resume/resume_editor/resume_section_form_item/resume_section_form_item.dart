@@ -363,21 +363,25 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       ),
                       color: widget.text_color,
                     ),
-                  if (widget.show_down_arrow)
-                    IconButton(
-                      onPressed: () {
-                        widget.update_item(
-                          item_index: widget.item_index,
-                          section_index: widget.section_index,
-                          section: widget.section,
-                          change_item_position_type: ChangeItemPositionType.move_down,
-                        );
-                      },
-                      icon: const Icon(
-                        FontAwesomeIcons.arrowDown,
-                      ),
-                      color: widget.text_color,
-                    ),
+                  !widget.show_down_arrow
+                      ? const SizedBox(
+                          height: 40,
+                          width: 40,
+                        )
+                      : IconButton(
+                          onPressed: () {
+                            widget.update_item(
+                              item_index: widget.item_index,
+                              section_index: widget.section_index,
+                              section: widget.section,
+                              change_item_position_type: ChangeItemPositionType.move_down,
+                            );
+                          },
+                          icon: const Icon(
+                            FontAwesomeIcons.arrowDown,
+                          ),
+                          color: widget.text_color,
+                        ),
                 ],
               ),
             ],
