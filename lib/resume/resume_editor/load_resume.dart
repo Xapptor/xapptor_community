@@ -24,24 +24,32 @@ extension StateExtension on ResumeEditorState {
       resume_doc_id += "_bu_$new_slot_index";
     }
 
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
+    late Resume? current_resume;
 
-    Map? resume_map = resume_doc.data() as Map?;
+    if (resumes.map((e) => e.id).contains(resume_doc_id)) {
+      current_resume = resumes.firstWhere((element) => element.id == resume_doc_id);
+    } else {
+      DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
 
-    if (resume_map != null) {
-      var remote_resume = Resume.from_snapshot(resume_doc_id, resume_map);
+      Map? resume_map = resume_doc.data() as Map?;
+      if (resume_map != null) {
+        current_resume = Resume.from_snapshot(resume_doc_id, resume_map);
+      }
+    }
 
-      chosen_image_url = remote_resume.image_url;
-      current_color = remote_resume.icon_color;
-      picker_color = remote_resume.icon_color;
+    if (current_resume != null) {
+      chosen_image_url = current_resume.image_url;
 
-      name_input_controller.text = remote_resume.name;
-      job_title_input_controller.text = remote_resume.job_title;
-      email_input_controller.text = remote_resume.email;
-      website_input_controller.text = remote_resume.website;
-      profile_input_controller.text = remote_resume.profile_section.description!;
+      current_color = current_resume.icon_color;
+      picker_color = current_resume.icon_color;
 
-      sections_by_page_input_controller.text = remote_resume.sections_by_page.join(", ");
+      name_input_controller.text = current_resume.name;
+      job_title_input_controller.text = current_resume.job_title;
+      email_input_controller.text = current_resume.email;
+      website_input_controller.text = current_resume.website;
+      profile_input_controller.text = current_resume.profile_section.description!;
+
+      sections_by_page_input_controller.text = current_resume.sections_by_page.join(", ");
 
       if (load_example) {
         skill_sections.clear();
@@ -52,10 +60,10 @@ extension StateExtension on ResumeEditorState {
       }
 
       Timer(Duration(milliseconds: load_example ? 100 : 0), () {
-        skill_sections = remote_resume.skills;
-        employment_sections = remote_resume.employment_sections;
-        education_sections = remote_resume.education_sections;
-        custom_sections = remote_resume.custom_sections;
+        skill_sections = current_resume!.skills;
+        employment_sections = current_resume.employment_sections;
+        education_sections = current_resume.education_sections;
+        custom_sections = current_resume.custom_sections;
         setState(() {});
       });
     } else {

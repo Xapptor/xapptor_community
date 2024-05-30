@@ -125,7 +125,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
     }
   }
 
-  Widget image() {
+  Widget profile_image() {
     if (current_resume != null) {
       Uint8List? image_bytes = current_resume!.chosen_image_bytes;
       String image_url = current_resume!.image_url;
@@ -176,7 +176,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                           direction: portrait ? Axis.vertical : Axis.horizontal,
                           children: portrait
                               ? <Widget>[
-                                  image(),
+                                  profile_image(),
                                   get_name_and_skills(
                                     portrait,
                                     screen_width,
@@ -185,7 +185,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                               : <Widget>[
                                   Expanded(
                                     flex: 1,
-                                    child: image(),
+                                    child: profile_image(),
                                   ),
                                   Expanded(
                                     flex: 2,

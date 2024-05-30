@@ -26,9 +26,7 @@ extension StateExtension on ResumeEditorState {
     );
   }
 
-  _asking_for_deletion_alert({
-    required Resume resume,
-  }) {
+  _asking_for_deletion_alert() {
     String no_label = alert_text_list.get(source_language_index)[5];
     String yes_label = alert_text_list.get(source_language_index)[6];
 
@@ -143,7 +141,6 @@ extension StateExtension on ResumeEditorState {
     String backup_label = alert_text_list.get(source_language_index)[8];
 
     resumes = await get_resumes(
-      resume_doc_id: resume.id,
       user_id: current_user!.uid,
     );
 
@@ -244,9 +241,7 @@ extension StateExtension on ResumeEditorState {
                           );
                           break;
                         case ResumeEditorAlertType.delete:
-                          _asking_for_deletion_alert(
-                            resume: resume,
-                          );
+                          _asking_for_deletion_alert();
                           break;
                       }
                     }

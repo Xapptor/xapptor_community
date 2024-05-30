@@ -7,7 +7,7 @@ extension StateExtension on ResumeEditorState {
   choose_profile_image() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
-      chosen_image_path = 'users/${current_user!.uid}/resumes/${result.files.single.name}';
+      chosen_image_path = 'users/${current_user!.uid}/resumes/resume_profile_image.${result.files.single.extension}';
       chosen_image_bytes = result.files.single.bytes!;
       setState(() {});
     }

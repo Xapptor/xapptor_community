@@ -4,8 +4,6 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
-// TODO: Resolve image uploading issue.
-
 extension StateExtension on ResumeEditorState {
   Resume generate_resume({
     required int slot_index,

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/generate_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/get_slot_label.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_init_state.dart';
@@ -123,11 +122,7 @@ class ResumeEditorState extends State<ResumeEditor> {
       ),
     );
 
-    late Resume resume;
-
-    if (current_user != null) {
-      resume = generate_resume(slot_index: 0);
-
+    if (resumes.isNotEmpty) {
       String slot_label = get_slot_label(
         slot_index: slot_index,
       );
@@ -152,7 +147,7 @@ class ResumeEditorState extends State<ResumeEditor> {
                 resume_editor_preview(
                   context: context,
                   portrait: portrait,
-                  resume: resume,
+                  resume: resumes.first,
                   source_language_index: source_language_index,
                   base_url: widget.base_url,
                 ),

@@ -1,4 +1,3 @@
-import 'package:xapptor_community/resume/resume_editor/apply_timer.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:xapptor_community/resume/resume_editor/update_text_list.dart';
@@ -58,6 +57,5 @@ extension StateExtension on ResumeEditorState {
       picker_translation_stream,
       sections_by_page_translation_stream,
     ];
-    apply_timer();
   }
 }
