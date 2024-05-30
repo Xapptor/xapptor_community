@@ -7,6 +7,7 @@ import 'package:xapptor_community/resume/resume_editor/set_resume.dart';
 extension StateExtension on ResumeEditorState {
   save_resume({
     required Resume resume,
+    Function? callback,
   }) async {
     if (chosen_image_path.isNotEmpty && chosen_image_bytes != null) {
       Reference profile_image_ref = get_profile_image_ref(
@@ -28,5 +29,6 @@ extension StateExtension on ResumeEditorState {
         resume: resume,
       );
     }
+    if (callback != null) callback();
   }
 }

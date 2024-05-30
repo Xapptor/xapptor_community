@@ -100,6 +100,8 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   List<Resume> resumes = [];
 
+  bool asked_for_backup_alert = false;
+
   @override
   void initState() {
     super.initState();

@@ -8,6 +8,7 @@ import 'package:xapptor_community/resume/resume_editor/get_resumes_labels.dart';
 import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/save_resume.dart';
+import 'dart:async';
 
 enum ResumeEditorAlertType {
   save,
@@ -79,11 +80,9 @@ extension StateExtension on ResumeEditorState {
 
   _asking_for_backup_alert({
     required Resume resume,
-    required ResumeEditorAlertType resume_editor_alert_type,
   }) {
     String no_label = alert_text_list.get(source_language_index)[5];
     String yes_label = alert_text_list.get(source_language_index)[6];
-    save_resume(resume: resume);
 
     showDialog(
       context: context,
@@ -93,7 +92,7 @@ extension StateExtension on ResumeEditorState {
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
               title: Text(
-                alert_text_list.get(source_language_index)[2],
+                alert_text_list.get(source_language_index)[4],
                 style: const TextStyle(
                   color: Colors.black,
                 ),
@@ -101,6 +100,7 @@ extension StateExtension on ResumeEditorState {
               actions: [
                 TextButton(
                   onPressed: () {
+                    asked_for_backup_alert = false;
                     Navigator.pop(context);
                   },
                   child: Text(
@@ -115,7 +115,7 @@ extension StateExtension on ResumeEditorState {
                     Navigator.pop(context);
                     _main_alert(
                       resume: resume,
-                      resume_editor_alert_type: resume_editor_alert_type,
+                      resume_editor_alert_type: ResumeEditorAlertType.save,
                     );
                   },
                   child: Text(
@@ -221,7 +221,9 @@ extension StateExtension on ResumeEditorState {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    expandable_fab_key.currentState!.toggle();
+                    if (expandable_fab_key.currentState!.isOpen) {
+                      expandable_fab_key.currentState!.toggle();
+                    }
 
                     if (resumes_labels.isNotEmpty) {
                       switch (resume_editor_alert_type) {
@@ -230,6 +232,19 @@ extension StateExtension on ResumeEditorState {
 
                           save_resume(
                             resume: resume,
+                            callback: () {
+                              if (!asked_for_backup_alert) {
+                                asked_for_backup_alert = true;
+
+                                Timer(const Duration(milliseconds: 2000), () {
+                                  _asking_for_backup_alert(
+                                    resume: resume,
+                                  );
+                                });
+                              } else {
+                                asked_for_backup_alert = false;
+                              }
+                            },
                           );
                           break;
                         case ResumeEditorAlertType.load:
