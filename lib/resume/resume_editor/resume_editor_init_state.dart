@@ -1,6 +1,6 @@
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:xapptor_community/resume/resume_editor/update_text_list.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
 
 extension StateExtension on ResumeEditorState {

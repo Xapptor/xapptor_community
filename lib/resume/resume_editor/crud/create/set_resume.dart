@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/get_resume_ref.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_resume_ref.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dart';
 

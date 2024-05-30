@@ -1,4 +1,4 @@
-import 'package:xapptor_community/resume/resume_editor/get_slot_label.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_slot_label.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_ui/utils/show_alert.dart';
 

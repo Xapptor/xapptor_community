@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
-import 'package:xapptor_community/resume/resume_editor/choose_color.dart';
-import 'package:xapptor_community/resume/resume_editor/choose_profile_image.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/choose_color.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/choose_profile_image.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_ui/values/ui.dart';
 

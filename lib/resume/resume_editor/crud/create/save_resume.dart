@@ -1,8 +1,8 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/get_profile_image_ref.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_profile_image_ref.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
-import 'package:xapptor_community/resume/resume_editor/set_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/create/set_resume.dart';
 
 extension StateExtension on ResumeEditorState {
   save_resume({

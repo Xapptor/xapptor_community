@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_logic/check_browser_type.dart';
-import 'package:xapptor_community/resume/resume_editor/get_resumes.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_resumes.dart';
 
 extension StateExtension on ResumeEditorState {
   apply_timer() async {

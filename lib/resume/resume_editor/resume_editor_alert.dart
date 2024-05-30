@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/delete_resume.dart';
-import 'package:xapptor_community/resume/resume_editor/get_resumes.dart';
-import 'package:xapptor_community/resume/resume_editor/get_resumes_labels.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/delete/delete_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_resumes.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/read/get_resumes_labels.dart';
 import 'package:xapptor_community/resume/resume_editor/load_resume.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
-import 'package:xapptor_community/resume/resume_editor/save_resume.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/create/save_resume.dart';
 import 'dart:async';
 
 enum ResumeEditorAlertType {

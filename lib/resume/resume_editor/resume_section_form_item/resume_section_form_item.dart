@@ -5,7 +5,7 @@ import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/populate_fields.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/show_select_date_alert_dialog.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/update_item.dart';
-import 'package:xapptor_community/resume/resume_editor/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_item.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/resume_editor/remove_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/delete/remove_item.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_text_field.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
-import 'package:xapptor_community/resume/resume_editor/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_item.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/values/ui.dart';
 

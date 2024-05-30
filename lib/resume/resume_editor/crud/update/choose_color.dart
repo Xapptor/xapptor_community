@@ -26,7 +26,8 @@ extension StateExtension on ResumeEditorState {
             ElevatedButton(
               child: const Text('Got it'),
               onPressed: () {
-                setState(() => current_color = picker_color);
+                current_color = picker_color;
+                setState(() => ());
                 Navigator.of(context).pop();
               },
             ),
