@@ -25,20 +25,21 @@ class ResumeSection {
   ResumeSection.from_snapshot(
     Map<dynamic, dynamic> snapshot,
   )   : icon = snapshot['icon'] != null
-            ? IconData(int.parse(snapshot['icon']), fontFamily: "MaterialIcons")
+            ? IconData(
+                int.parse(snapshot['icon']),
+                fontFamily: "MaterialIcons",
+              )
             : null,
         code_point = snapshot['code_point'] != null
-            ? int.parse(snapshot['code_point'])
+            ? int.parse(
+                snapshot['code_point'],
+              )
             : null,
         title = snapshot['title'],
         subtitle = snapshot['subtitle'],
         description = snapshot['description'],
-        begin = snapshot['begin'] != null
-            ? (snapshot['begin'] as Timestamp).toDate()
-            : null,
-        end = snapshot['end'] != null
-            ? (snapshot['end'] as Timestamp).toDate()
-            : null;
+        begin = snapshot['begin'] != null ? (snapshot['begin'] as Timestamp).toDate() : null,
+        end = snapshot['end'] != null ? (snapshot['end'] as Timestamp).toDate() : null;
 
   Map<String, dynamic> to_json() {
     return {
