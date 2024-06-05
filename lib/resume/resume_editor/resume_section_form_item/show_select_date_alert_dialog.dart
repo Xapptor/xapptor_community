@@ -12,7 +12,7 @@ extension StateExtension on ResumeSectionFormItemState {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(msg),
-          actions: <Widget>[
+          actions: [
             TextButton(
               child: const Text("Ok"),
               onPressed: () async {

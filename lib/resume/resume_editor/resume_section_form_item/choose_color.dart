@@ -23,7 +23,7 @@ extension StateExtension on ResumeSectionFormItemState {
               },
             ),
           ),
-          actions: <Widget>[
+          actions: [
             ElevatedButton(
               child: const Text('Ok'),
               onPressed: () {

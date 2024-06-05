@@ -175,14 +175,14 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                         Flex(
                           direction: portrait ? Axis.vertical : Axis.horizontal,
                           children: portrait
-                              ? <Widget>[
+                              ? [
                                   profile_image(),
                                   get_name_and_skills(
                                     portrait,
                                     screen_width,
                                   ),
                                 ]
-                              : <Widget>[
+                              : [
                                   Expanded(
                                     flex: 1,
                                     child: profile_image(),

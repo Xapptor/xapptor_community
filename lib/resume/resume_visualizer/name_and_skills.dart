@@ -18,7 +18,7 @@ Widget name_and_skills({
     margin: EdgeInsets.symmetric(horizontal: portrait ? 0 : (screen_width / 100)),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+      children: [
         Container(
           margin: EdgeInsets.only(
             top: portrait ? 10 : 0,

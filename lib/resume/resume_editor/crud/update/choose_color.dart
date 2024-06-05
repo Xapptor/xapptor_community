@@ -22,7 +22,7 @@ extension StateExtension on ResumeEditorState {
               },
             ),
           ),
-          actions: <Widget>[
+          actions: [
             ElevatedButton(
               child: const Text('Got it'),
               onPressed: () {
