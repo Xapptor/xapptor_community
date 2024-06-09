@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// ResumeSection model.
-
 class ResumeSection {
   IconData? icon;
   int? code_point;

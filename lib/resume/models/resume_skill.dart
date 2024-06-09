@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_logic/color/hex_color.dart';
 
-// ResumeSkill model.
-
 class ResumeSkill {
   final String name;
   final double percentage;
