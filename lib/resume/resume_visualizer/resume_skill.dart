@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
-import 'package:xapptor_logic/random_number_with_range.dart';
+import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart' as skill_data;
 import 'package:pdf/widgets.dart' as pw;
 

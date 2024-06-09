@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_logic/hex_color.dart';
+import 'package:xapptor_logic/color/hex_color.dart';
 
 // ResumeSkill model.
 

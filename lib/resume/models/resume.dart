@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'resume_section.dart';
 import 'resume_skill.dart';
-import 'package:xapptor_logic/hex_color.dart';
+import 'package:xapptor_logic/color/hex_color.dart';
 
 class Resume {
   final String id;
