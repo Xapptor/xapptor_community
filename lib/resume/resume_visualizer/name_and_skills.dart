@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
-import 'package:xapptor_ui/widgets/url_text.dart';
+import 'package:xapptor_ui/widgets/url/url_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 Widget name_and_skills({

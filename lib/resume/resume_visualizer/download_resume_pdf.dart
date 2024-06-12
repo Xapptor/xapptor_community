@@ -7,7 +7,7 @@ import 'package:printing/printing.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_sections.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
-import 'package:xapptor_ui/widgets/url_text.dart';
+import 'package:xapptor_ui/widgets/url/url_text.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:http/http.dart';
 

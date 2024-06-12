@@ -17,7 +17,7 @@ import 'package:xapptor_community/resume/resume_editor/crud/update/update_source
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
-import 'package:xapptor_ui/widgets/topbar.dart';
+import 'package:xapptor_ui/widgets/top_and_bottom/topbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeEditor extends StatefulWidget {
