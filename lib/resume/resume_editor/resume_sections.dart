@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/resume_editor/crud/delete/remove_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/clone_item.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_text_field.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
@@ -21,6 +22,7 @@ extension StateExtension on ResumeEditorState {
             section_index: 0,
             update_item: update_item,
             remove_item: remove_item,
+            clone_item: clone_item,
             section_list: skill_sections,
           ),
           SizedBox(
@@ -56,6 +58,7 @@ extension StateExtension on ResumeEditorState {
             section_index: 1,
             update_item: update_item,
             remove_item: remove_item,
+            clone_item: clone_item,
             section_list: employment_sections,
           ),
           SizedBox(
@@ -70,6 +73,7 @@ extension StateExtension on ResumeEditorState {
             section_index: 2,
             update_item: update_item,
             remove_item: remove_item,
+            clone_item: clone_item,
             section_list: education_sections,
           ),
           SizedBox(
@@ -83,6 +87,7 @@ extension StateExtension on ResumeEditorState {
             section_index: 3,
             update_item: update_item,
             remove_item: remove_item,
+            clone_item: clone_item,
             section_list: custom_sections,
           ),
           SizedBox(

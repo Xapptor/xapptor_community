@@ -33,6 +33,11 @@ class ResumeSectionForm extends StatefulWidget {
     required int section_index,
   }) remove_item;
 
+  final Function({
+    required int item_index,
+    required int section_index,
+  }) clone_item;
+
   final List<dynamic> section_list;
 
   const ResumeSectionForm({
@@ -44,6 +49,7 @@ class ResumeSectionForm extends StatefulWidget {
     required this.section_index,
     required this.update_item,
     required this.remove_item,
+    required this.clone_item,
     required this.section_list,
   });
 
@@ -66,6 +72,17 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
     required int section_index,
   }) {
     widget.remove_item(
+      item_index: item_index,
+      section_index: section_index,
+    );
+    setState(() {});
+  }
+
+  clone_item({
+    required int item_index,
+    required int section_index,
+  }) {
+    widget.clone_item(
       item_index: item_index,
       section_index: section_index,
     );
@@ -217,6 +234,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
               section_index: widget.section_index,
               update_item: widget.update_item,
               remove_item: remove_item,
+              clone_item: clone_item,
               section: widget.section_list[index],
               show_up_arrow: show_up_arrow,
               show_down_arrow: show_down_arrow,

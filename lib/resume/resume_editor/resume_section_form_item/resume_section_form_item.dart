@@ -30,6 +30,11 @@ class ResumeSectionFormItem extends StatefulWidget {
     required int section_index,
   }) remove_item;
 
+  final Function({
+    required int item_index,
+    required int section_index,
+  }) clone_item;
+
   final dynamic section;
 
   final bool show_up_arrow;
@@ -45,6 +50,7 @@ class ResumeSectionFormItem extends StatefulWidget {
     required this.section_index,
     required this.update_item,
     required this.remove_item,
+    required this.clone_item,
     required this.section,
     required this.show_up_arrow,
     required this.show_down_arrow,
@@ -331,20 +337,37 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
-                  ? IconButton(
-                      onPressed: () {
-                        widget.remove_item(
-                          item_index: widget.item_index,
-                          section_index: widget.section_index,
-                        );
-                      },
-                      icon: const Icon(
-                        FontAwesomeIcons.trash,
-                      ),
-                      color: Colors.red,
-                    )
-                  : Container(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
+                      ? IconButton(
+                          onPressed: () {
+                            widget.remove_item(
+                              item_index: widget.item_index,
+                              section_index: widget.section_index,
+                            );
+                          },
+                          icon: const Icon(
+                            FontAwesomeIcons.trash,
+                          ),
+                          color: Colors.red,
+                        )
+                      : Container(),
+                  IconButton(
+                    onPressed: () {
+                      widget.clone_item(
+                        item_index: widget.item_index,
+                        section_index: widget.section_index,
+                      );
+                    },
+                    icon: const Icon(
+                      FontAwesomeIcons.clone,
+                    ),
+                    color: Colors.blueGrey,
+                  ),
+                ],
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
