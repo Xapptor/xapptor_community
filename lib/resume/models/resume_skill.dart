@@ -15,7 +15,7 @@ class ResumeSkill {
   ResumeSkill.from_snapshot(
     Map<dynamic, dynamic> snapshot,
   )   : name = snapshot['name'],
-        percentage = snapshot['percentage'],
+        percentage = snapshot['percentage'].toDouble(),
         color = HexColor.fromHex(snapshot['color']);
 
   Map<String, dynamic> to_json() {

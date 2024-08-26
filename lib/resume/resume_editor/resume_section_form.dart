@@ -3,7 +3,7 @@ import 'package:xapptor_community/resume/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/resume_section_form_item.dart';
-import 'package:xapptor_community/resume/resume_editor/crud/update/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_section.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -26,7 +26,8 @@ class ResumeSectionForm extends StatefulWidget {
     required int section_index,
     required dynamic section,
     ChangeItemPositionType change_item_position_type,
-  }) update_item;
+    bool update_widget,
+  }) update_section;
 
   final Function({
     required int item_index,
@@ -47,7 +48,7 @@ class ResumeSectionForm extends StatefulWidget {
     required this.text_color,
     required this.language_code,
     required this.section_index,
-    required this.update_item,
+    required this.update_section,
     required this.remove_item,
     required this.clone_item,
     required this.section_list,
@@ -96,7 +97,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
 
   _add_item() {
     if (widget.resume_section_form_type == ResumeSectionFormType.skill) {
-      widget.update_item(
+      widget.update_section(
         item_index: widget.section_list.length,
         section_index: widget.section_index,
         section: const ResumeSkill(
@@ -104,14 +105,17 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
           percentage: 0.2,
           color: Colors.blue,
         ),
+        update_widget: true,
       );
     } else {
-      widget.update_item(
+      widget.update_section(
         item_index: widget.section_list.length,
         section_index: widget.section_index,
         section: ResumeSection(),
+        update_widget: true,
       );
     }
+    // TODO: Check if this setState is redundant
     setState(() {});
   }
 
@@ -232,7 +236,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
               language_code: widget.language_code,
               item_index: index,
               section_index: widget.section_index,
-              update_item: widget.update_item,
+              update_item: widget.update_section,
               remove_item: remove_item,
               clone_item: clone_item,
               section: widget.section_list[index],

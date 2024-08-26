@@ -24,12 +24,14 @@ class ResumeEditor extends StatefulWidget {
   final Color color_topbar;
   final String base_url;
   final double text_bottom_margin_for_section;
+  final String organization_name;
 
   const ResumeEditor({
     super.key,
     required this.color_topbar,
     required this.base_url,
     this.text_bottom_margin_for_section = 3,
+    required this.organization_name,
   });
 
   @override
@@ -58,9 +60,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   double screen_height = 0;
   double screen_width = 0;
 
-  ResumeEditorTextLists resume_editor_text_lists = ResumeEditorTextLists();
-
-  TranslationTextListArray text_list = ResumeEditorTextLists().text_list;
+  late TranslationTextListArray text_list;
   TranslationTextListArray alert_text_list = ResumeEditorTextLists().alert_text_list;
   TranslationTextListArray skill_text_list = ResumeEditorTextLists().skill_text_list;
   TranslationTextListArray employment_text_list = ResumeEditorTextLists().employment_text_list;
@@ -104,8 +104,15 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   @override
   void initState() {
+    init_text_lists();
     super.initState();
     resume_editor_init_state();
+  }
+
+  init_text_lists() {
+    text_list = ResumeEditorTextLists().text_list(
+      organization_name: widget.organization_name,
+    );
   }
 
   @override

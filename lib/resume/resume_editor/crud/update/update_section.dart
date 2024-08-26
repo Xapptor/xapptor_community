@@ -12,11 +12,12 @@ enum ChangeItemPositionType {
 }
 
 extension StateExtension on ResumeEditorState {
-  update_item({
+  update_section({
     required int item_index,
     required int section_index,
     required dynamic section,
     ChangeItemPositionType change_item_position_type = ChangeItemPositionType.none,
+    bool update_widget = true,
   }) {
     late List<dynamic> dynamic_sections;
 
@@ -47,7 +48,10 @@ extension StateExtension on ResumeEditorState {
     } else if (section_index == 3) {
       custom_sections = dynamic_sections as List<ResumeSection>;
     }
-    setState(() {});
+
+    if (update_widget) {
+      setState(() {});
+    }
   }
 
   List<dynamic> _update_dynamic({
@@ -64,7 +68,7 @@ extension StateExtension on ResumeEditorState {
         dynamic_sections.swap(item_index, item_index + 1);
       }
     } else {
-      if (item_index < skill_sections.length) {
+      if (item_index < dynamic_sections.length) {
         dynamic_sections[item_index] = section;
       } else {
         dynamic_sections.add(section);

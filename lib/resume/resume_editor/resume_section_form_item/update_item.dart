@@ -5,7 +5,9 @@ import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart'
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/resume_section_form_item.dart';
 
 extension StateExtension on ResumeSectionFormItemState {
-  update_item() {
+  update_item({
+    bool update_widget = true,
+  }) async {
     String title = "";
     switch (widget.resume_section_form_type) {
       case ResumeSectionFormType.skill:
@@ -32,6 +34,7 @@ extension StateExtension on ResumeSectionFormItemState {
             percentage: current_slider_value / 10,
             color: current_color,
           ),
+          update_widget: update_widget,
         );
         break;
       case ResumeSectionFormType.employment_history:
@@ -50,6 +53,7 @@ extension StateExtension on ResumeSectionFormItemState {
             begin: selected_date_1,
             end: selected_date_2,
           ),
+          update_widget: update_widget,
         );
         break;
       case ResumeSectionFormType.education:
@@ -65,6 +69,7 @@ extension StateExtension on ResumeSectionFormItemState {
             begin: selected_date_1,
             end: selected_date_2,
           ),
+          update_widget: update_widget,
         );
         break;
       case ResumeSectionFormType.custom:
@@ -78,6 +83,7 @@ extension StateExtension on ResumeSectionFormItemState {
             begin: selected_date_1,
             end: selected_date_2,
           ),
+          update_widget: update_widget,
         );
         break;
     }

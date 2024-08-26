@@ -5,7 +5,7 @@ import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/populate_fields.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/show_select_date_alert_dialog.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/update_item.dart';
-import 'package:xapptor_community/resume/resume_editor/crud/update/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_section.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -23,6 +23,7 @@ class ResumeSectionFormItem extends StatefulWidget {
     required int section_index,
     required dynamic section,
     ChangeItemPositionType change_item_position_type,
+    bool update_widget,
   }) update_item;
 
   final Function({
@@ -144,7 +145,9 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           ),
           TextFormField(
             onChanged: (new_value) {
-              update_item();
+              update_item(
+                update_widget: false,
+              );
             },
             style: TextStyle(
               color: widget.text_color,
@@ -171,7 +174,9 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                   children: [
                     TextFormField(
                       onChanged: (new_value) {
-                        update_item();
+                        update_item(
+                          update_widget: false,
+                        );
                       },
                       style: TextStyle(
                         color: widget.text_color,
@@ -195,7 +200,9 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     ),
                     TextFormField(
                       onChanged: (new_value) {
-                        update_item();
+                        update_item(
+                          update_widget: false,
+                        );
                       },
                       style: TextStyle(
                         color: widget.text_color,
@@ -222,7 +229,9 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     widget.resume_section_form_type == ResumeSectionFormType.employment_history
                         ? TextFormField(
                             onChanged: (new_value) {
-                              update_item();
+                              update_item(
+                                update_widget: false,
+                              );
                             },
                             style: TextStyle(
                               color: widget.text_color,

@@ -4,7 +4,7 @@ import 'package:xapptor_community/resume/resume_editor/crud/update/clone_item.da
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_text_field.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
-import 'package:xapptor_community/resume/resume_editor/crud/update/update_item.dart';
+import 'package:xapptor_community/resume/resume_editor/crud/update/update_section.dart';
 import 'package:xapptor_logic/form_field_validators.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
@@ -20,7 +20,7 @@ extension StateExtension on ResumeEditorState {
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 0,
-            update_item: update_item,
+            update_section: update_section,
             remove_item: remove_item,
             clone_item: clone_item,
             section_list: skill_sections,
@@ -56,7 +56,7 @@ extension StateExtension on ResumeEditorState {
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 1,
-            update_item: update_item,
+            update_section: update_section,
             remove_item: remove_item,
             clone_item: clone_item,
             section_list: employment_sections,
@@ -71,7 +71,7 @@ extension StateExtension on ResumeEditorState {
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 2,
-            update_item: update_item,
+            update_section: update_section,
             remove_item: remove_item,
             clone_item: clone_item,
             section_list: education_sections,
@@ -85,7 +85,7 @@ extension StateExtension on ResumeEditorState {
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 3,
-            update_item: update_item,
+            update_section: update_section,
             remove_item: remove_item,
             clone_item: clone_item,
             section_list: custom_sections,
