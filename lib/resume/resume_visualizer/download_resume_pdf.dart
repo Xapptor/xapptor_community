@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:xapptor_community/resume/font_configuration.dart';
+import 'package:xapptor_community/resume/models/resume_font.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_sections.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
@@ -56,16 +58,14 @@ download_resume_pdf({
     profile_image = pw.Container();
   }
 
+  ResumeFont font = await current_font();
+
   pdf.addPage(
     pw.MultiPage(
       theme: pw.ThemeData.withFont(
-        base: await PdfGoogleFonts.quicksandRegular(),
-        bold: await PdfGoogleFonts.quicksandMedium(),
-        icons: await PdfGoogleFonts.notoColorEmoji(),
-        fontFallback: [
-          await PdfGoogleFonts.notoColorEmoji(),
-          await PdfGoogleFonts.materialIcons(),
-        ],
+        base: font.base,
+        bold: font.bold,
+        icons: await PdfGoogleFonts.materialIcons(),
       ),
       pageFormat: PdfPageFormat.a4,
       build: (pw.Context page_context) => [
@@ -103,7 +103,7 @@ download_resume_pdf({
                                 textAlign: pw.TextAlign.left,
                                 style: pw.TextStyle(
                                   color: PdfColors.black,
-                                  fontSize: 14,
+                                  fontSize: font_size_name,
                                   fontWeight: pw.FontWeight.bold,
                                 ),
                               ),
@@ -116,7 +116,7 @@ download_resume_pdf({
                                   textAlign: pw.TextAlign.left,
                                   style: pw.TextStyle(
                                     color: PdfColors.black,
-                                    fontSize: 12,
+                                    fontSize: font_size_job_title,
                                     fontWeight: pw.FontWeight.bold,
                                   ),
                                 ),
@@ -154,7 +154,7 @@ download_resume_pdf({
                                   textAlign: pw.TextAlign.left,
                                   style: pw.TextStyle(
                                     color: PdfColors.black,
-                                    fontSize: 10,
+                                    fontSize: font_size_skills_title,
                                     fontWeight: pw.FontWeight.bold,
                                   ),
                                 ),
@@ -272,26 +272,28 @@ List<pw.Container> resume_available_info_text({
             textAlign: pw.TextAlign.left,
             style: pw.TextStyle(
               color: PdfColors.black,
-              fontSize: 10,
+              fontSize: font_size_info_title,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
           PdfUrlText(
             text: resume_link,
             url: resume_link,
+            font_size: font_size_info_url,
           ),
           pw.Text(
             resume.text_list[2],
             textAlign: pw.TextAlign.left,
             style: pw.TextStyle(
               color: PdfColors.black,
-              fontSize: 10,
+              fontSize: font_size_info_title,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
           PdfUrlText(
             text: resume.text_list[3],
             url: resume.text_list[3],
+            font_size: font_size_info_url,
           ),
         ],
       ),
