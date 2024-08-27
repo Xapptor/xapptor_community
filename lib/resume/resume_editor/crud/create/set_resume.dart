@@ -18,6 +18,10 @@ extension StateExtension on ResumeEditorState {
 
     Map resume_json = resume.to_json();
 
+    if (resume_json['image_url'].isEmpty) {
+      resume_json.remove('image_url');
+    }
+
     slot_index = new_slot_index;
     setState(() {});
 

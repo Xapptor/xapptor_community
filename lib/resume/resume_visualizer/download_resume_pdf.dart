@@ -24,6 +24,7 @@ download_resume_pdf({
     resume: resume,
     context: context,
   )[1];
+
   List<pw.Widget> sections_pw = populate_sections(
     resume: resume,
     context: context,
@@ -68,7 +69,7 @@ download_resume_pdf({
       ),
       pageFormat: PdfPageFormat.a4,
       build: (pw.Context page_context) => [
-        pw.Column(
+        pw.Wrap(
           children: [
                 pw.Container(
                   height: 150,
@@ -192,12 +193,25 @@ download_resume_pdf({
                   ),
                 ),
               ] +
-              get_sections_by_lengths(
+              sections_pw.map((section) {
+                return pw.Container(
+                  child: section,
+                );
+              }).toList() +
+              resume_available_info_text(
                 resume: resume,
-                sections_pw: sections_pw,
                 resume_link: resume_link,
               ),
-        )
+
+          // Old Way to manually asign sections in each page
+
+          // ] +
+          // get_sections_by_lengths(
+          //   resume: resume,
+          //   sections_pw: sections_pw,
+          //   resume_link: resume_link,
+          // ),
+        ),
       ],
     ),
   );
@@ -232,26 +246,24 @@ List<pw.Container> get_sections_by_lengths({
   }
 
   widgets = widgets +
-      resume_available(
+      resume_available_info_text(
         resume: resume,
         resume_link: resume_link,
-        last_section_length: sections_lengths.last,
       );
 
   return widgets;
 }
 
-List<pw.Container> resume_available({
+List<pw.Container> resume_available_info_text({
   required Resume resume,
   required String resume_link,
-  required int last_section_length,
 }) {
   return [
     pw.Container(
-      height: (7 - last_section_length) * 100,
-    ),
-    pw.Container(
       alignment: pw.Alignment.centerLeft,
+      margin: const pw.EdgeInsets.only(
+        top: 20,
+      ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
