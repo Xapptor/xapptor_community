@@ -54,13 +54,13 @@ class Resume {
     this.id,
     Map<dynamic, dynamic> snapshot,
   )   : image_url = snapshot['image_url'] ?? '',
-        name = snapshot['name'],
-        job_title = snapshot['job_title'],
-        email = snapshot['email'],
-        website = snapshot['website'],
-        skills_title = snapshot['skills_title'],
-        skills = (snapshot['skills'] as List).map((skill) => ResumeSkill.from_snapshot(skill)).toList(),
-        sections_by_page = (snapshot['sections_by_page'] as List).map((e) => e as int).toList(),
+        name = snapshot['name'] ?? '',
+        job_title = snapshot['job_title'] ?? '',
+        email = snapshot['email'] ?? '',
+        website = snapshot['website'] ?? '',
+        skills_title = snapshot['skills_title'] ?? '',
+        skills = ((snapshot['skills'] ?? []) as List).map((skill) => ResumeSkill.from_snapshot(skill)).toList(),
+        sections_by_page = ((snapshot['sections_by_page'] ?? []) as List).map((e) => e as int).toList(),
         profile_section = ResumeSection.from_snapshot(snapshot['profile_section']),
         employment_sections =
             (snapshot['employment_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
@@ -69,11 +69,11 @@ class Resume {
         custom_sections =
             (snapshot['custom_sections'] as List).map((section) => ResumeSection.from_snapshot(section)).toList(),
         icon_color = HexColor.fromHex(snapshot['icon_color']),
-        language_code = snapshot['language_code'],
+        language_code = snapshot['language_code'] ?? 'en',
         text_list = (snapshot['text_list'] as List).map((e) => e as String).toList(),
-        creation_date = snapshot['creation_date'],
-        user_id = snapshot['user_id'],
-        slot_index = snapshot['slot_index'],
+        creation_date = snapshot['creation_date'] ?? Timestamp.now(),
+        user_id = snapshot['user_id'] ?? '',
+        slot_index = snapshot['slot_index'] ?? 0,
         chosen_image_bytes = null;
 
   Map<String, dynamic> to_json() {
