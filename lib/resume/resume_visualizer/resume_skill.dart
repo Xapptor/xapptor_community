@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
+import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart' as skill_data;
 import 'package:pdf/widgets.dart' as pw;
@@ -33,9 +34,9 @@ pw.Widget resume_skill_pw({
           child: pw.Text(
             skill.name,
             textAlign: pw.TextAlign.left,
-            style: const pw.TextStyle(
+            style: pw.TextStyle(
               color: PdfColors.black,
-              fontSize: 8,
+              fontSize: font_size_skill,
             ),
           ),
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -56,7 +57,7 @@ pw.Widget resume_section_pw({
                             textAlign: pw.TextAlign.left,
                             style: pw.TextStyle(
                               color: PdfColors.black,
-                              fontSize: 12,
+                              fontSize: font_size_section_title,
                               fontWeight: pw.FontWeight.bold,
                             ),
                           ),
@@ -72,7 +73,7 @@ pw.Widget resume_section_pw({
                             textAlign: pw.TextAlign.left,
                             style: pw.TextStyle(
                               color: PdfColors.black,
-                              fontSize: 11,
+                              fontSize: font_size_section_subtitle,
                               fontWeight: pw.FontWeight.bold,
                             ),
                           ),
@@ -85,9 +86,9 @@ pw.Widget resume_section_pw({
                       child: pw.Text(
                         timeframe_text,
                         textAlign: pw.TextAlign.left,
-                        style: const pw.TextStyle(
+                        style: pw.TextStyle(
                           color: PdfColors.black,
-                          fontSize: 8,
+                          fontSize: font_size_section_timeframe,
                         ),
                       ),
                     )
@@ -99,9 +100,9 @@ pw.Widget resume_section_pw({
                           child: pw.Text(
                             resume_section.description!,
                             textAlign: pw.TextAlign.left,
-                            style: const pw.TextStyle(
+                            style: pw.TextStyle(
                               color: PdfColors.black,
-                              fontSize: 10,
+                              fontSize: font_size_section_description,
                             ),
                           ),
                         )
