@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_editor/crud/read/get_slot_label.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_fab.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_init_state.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_preview.dart';
@@ -149,6 +150,7 @@ class ResumeEditorState extends State<ResumeEditor> {
                     children: [
                       resume_editor_top_option_buttons(),
                       resume_editor_text_fields(),
+                      const ResumeEditorAdditionalOptions(),
                       resume_sections(),
                     ],
                   ),
@@ -164,7 +166,6 @@ class ResumeEditorState extends State<ResumeEditor> {
               ],
             ),
           ),
-          // Add traslucid message label to specify the current slot
           Container(
             color: widget.color_topbar.withOpacity(0.7),
             width: double.maxFinite,

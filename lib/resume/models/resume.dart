@@ -53,7 +53,7 @@ class Resume {
   Resume.from_snapshot(
     this.id,
     Map<dynamic, dynamic> snapshot,
-  )   : image_url = snapshot['image_url'],
+  )   : image_url = snapshot['image_url'] ?? '',
         name = snapshot['name'],
         job_title = snapshot['job_title'],
         email = snapshot['email'],
