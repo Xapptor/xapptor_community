@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 
 extension StateExtension on ResumeEditorState {
   Resume generate_resume({
@@ -43,6 +44,8 @@ extension StateExtension on ResumeEditorState {
       user_id: current_user!.uid,
       slot_index: slot_index,
       chosen_image_bytes: chosen_image_bytes,
+      font_name: current_font_value.name,
+      show_time_amount: show_time_amount,
     );
   }
 }

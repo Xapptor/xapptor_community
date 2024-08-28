@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/font_configuration.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:xapptor_community/resume/models/resume_font.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
 bool show_time_amount = true;
+List<ResumeFont> font_families_value = [];
+ResumeFont current_font_value = ResumeFont(
+  name: 'Nunito',
+  base: null,
+  bold: null,
+  google_font_family: GoogleFonts.nunito().fontFamily!,
+);
 
 class ResumeEditorAdditionalOptions extends StatefulWidget {
+  final Function callback;
+
   const ResumeEditorAdditionalOptions({
     super.key,
+    required this.callback,
   });
 
   @override
@@ -17,25 +27,15 @@ class ResumeEditorAdditionalOptions extends StatefulWidget {
 
 class ResumeEditorAdditionalOptionsState extends State<ResumeEditorAdditionalOptions> {
   String font_family_title = """
-Select the Font Family for the PDF Resume:
-Note: Only for PDF File not for Web version.
-""";
+      Select the Font Family for the PDF Resume:
+      Note: Only for PDF File not for Web version.
+    """;
 
   String checkbox_label = 'Show the amount of time at\nthe side of the timeframe';
-
-  List<ResumeFont> font_families_value = [];
-  late ResumeFont current_font_value;
 
   @override
   void initState() {
     super.initState();
-    get_values();
-  }
-
-  get_values() async {
-    font_families_value = await font_families();
-    current_font_value = await current_font();
-    setState(() {});
   }
 
   @override
@@ -55,14 +55,17 @@ Note: Only for PDF File not for Web version.
                     font_family_title,
                   ),
                   if (!portrait) SizedBox(width: sized_box_space),
-
-                  // TODO: change font family for every value in the list as an example
                   DropdownButton<String>(
                     value: current_font_value.name,
                     items: font_families_value.map((ResumeFont font) {
                       return DropdownMenuItem<String>(
                         value: font.name,
-                        child: Text(font.name),
+                        child: Text(
+                          font.name,
+                          style: TextStyle(
+                            fontFamily: font.google_font_family,
+                          ),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? value) {
@@ -85,7 +88,7 @@ Note: Only for PDF File not for Web version.
                     value: show_time_amount,
                     onChanged: (bool? value) {
                       show_time_amount = value!;
-                      setState(() {});
+                      widget.callback();
                     },
                   ),
                 ],

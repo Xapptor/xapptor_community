@@ -26,6 +26,8 @@ class Resume {
   final String user_id;
   int slot_index;
   final Uint8List? chosen_image_bytes;
+  String font_name = 'Nunito';
+  bool show_time_amount = true;
 
   Resume({
     this.id = "",
@@ -48,6 +50,8 @@ class Resume {
     required this.user_id,
     required this.slot_index,
     required this.chosen_image_bytes,
+    required this.font_name,
+    required this.show_time_amount,
   });
 
   Resume.from_snapshot(
@@ -74,7 +78,9 @@ class Resume {
         creation_date = snapshot['creation_date'] ?? Timestamp.now(),
         user_id = snapshot['user_id'] ?? '',
         slot_index = snapshot['slot_index'] ?? 0,
-        chosen_image_bytes = null;
+        chosen_image_bytes = null,
+        font_name = snapshot['font_name'] ?? 'Nunito',
+        show_time_amount = snapshot['show_time_amount'] ?? true;
 
   Map<String, dynamic> to_json() {
     return {
@@ -96,6 +102,8 @@ class Resume {
       'creation_date': creation_date,
       'user_id': user_id,
       'slot_index': slot_index,
+      'font_name': font_name,
+      'show_time_amount': show_time_amount,
     };
   }
 
@@ -120,6 +128,8 @@ class Resume {
       user_id: '',
       slot_index: 0,
       chosen_image_bytes: null,
+      font_name: 'Nunito',
+      show_time_amount: true,
     );
   }
 }

@@ -3,10 +3,13 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
+import 'package:xapptor_community/resume/models/resume_font.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dart';
 
 extension StateExtension on ResumeEditorState {
@@ -58,6 +61,16 @@ extension StateExtension on ResumeEditorState {
         custom_sections.clear();
         setState(() {});
       }
+
+      font_families_value = await font_families();
+
+      current_font_value = font_families_value.first;
+
+      current_font_value = font_families_value.firstWhere(
+        (ResumeFont font) => font.name.toLowerCase() == current_resume.font_name.toLowerCase(),
+      );
+
+      show_time_amount = current_resume.show_time_amount;
 
       Timer(Duration(milliseconds: load_example ? 100 : 0), () {
         skill_sections = current_resume.skills;

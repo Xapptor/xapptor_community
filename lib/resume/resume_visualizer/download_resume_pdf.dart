@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume_font.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_sections.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
@@ -58,7 +59,7 @@ download_resume_pdf({
     profile_image = pw.Container();
   }
 
-  ResumeFont font = await current_font();
+  ResumeFont font = current_font_value;
 
   pdf.addPage(
     pw.MultiPage(
