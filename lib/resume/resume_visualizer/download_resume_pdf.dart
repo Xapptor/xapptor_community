@@ -74,6 +74,9 @@ download_resume_pdf({
           children: [
                 pw.Container(
                   height: 150,
+                  margin: const pw.EdgeInsets.only(
+                    bottom: 10,
+                  ),
                   child: pw.Row(
                     crossAxisAlignment: pw.CrossAxisAlignment.center,
                     children: [

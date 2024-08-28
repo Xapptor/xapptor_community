@@ -168,6 +168,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
               value: value!,
               type: FormFieldValidatorsType.name,
             ).validate(),
+            maxLength: widget.resume_section_form_type == ResumeSectionFormType.skill ? 30 : null,
           ),
           widget.resume_section_form_type != ResumeSectionFormType.skill
               ? Column(
