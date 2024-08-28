@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
+import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/url/url_text.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -66,9 +67,18 @@ Widget name_and_skills({
           margin: const EdgeInsets.only(
             bottom: 3,
           ),
-          child: UrlText(
-            text: resume.email,
-            url: "mailto:${resume.email}",
+          child: Row(
+            children: [
+              UrlText(
+                text: resume.email,
+                url: "mailto:${resume.email}",
+              ),
+              SizedBox(width: sized_box_space),
+              UrlText(
+                text: 'Website',
+                url: resume.website,
+              ),
+            ],
           ),
         ),
         Container(

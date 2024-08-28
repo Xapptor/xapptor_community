@@ -50,8 +50,8 @@ Future<List<ResumeFont>> font_families() async => [
 // FONT FAMILIES FOR VISUALIZER AND PDF
 
 // FONT SIZES FOR VISUALIZER AND PDF
-double font_size_name = 13;
-double font_size_job_title = 12;
+double font_size_name = 12;
+double font_size_job_title = 11;
 double font_size_website_url = 9;
 
 double font_size_skills_title = 10;

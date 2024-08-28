@@ -10,6 +10,7 @@ import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_
 import 'package:xapptor_community/resume/resume_visualizer/populate_sections.dart';
 import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart';
 import 'package:xapptor_logic/file_downloader/file_downloader.dart';
+import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/url/url_text.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:http/http.dart';
@@ -131,19 +132,16 @@ download_resume_pdf({
                                 ),
                                 child: pw.Row(
                                   children: [
-                                    pw.Expanded(
-                                      flex: 1,
-                                      child: PdfUrlText(
-                                        text: resume.email,
-                                        url: "mailto:${resume.email}",
-                                      ),
+                                    PdfUrlText(
+                                      text: resume.email,
+                                      url: "mailto:${resume.email}",
+                                      font_size: font_size_website_url,
                                     ),
-                                    pw.Expanded(
-                                      flex: 1,
-                                      child: PdfUrlText(
-                                        text: resume.website,
-                                        url: resume.website,
-                                      ),
+                                    pw.SizedBox(width: sized_box_space),
+                                    PdfUrlText(
+                                      text: 'Website',
+                                      url: resume.website,
+                                      font_size: font_size_website_url,
                                     ),
                                   ],
                                 ),
