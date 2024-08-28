@@ -98,4 +98,28 @@ class Resume {
       'slot_index': slot_index,
     };
   }
+
+  factory Resume.empty() {
+    return Resume(
+      image_url: '',
+      name: '',
+      job_title: '',
+      email: '',
+      website: '',
+      skills_title: '',
+      skills: [],
+      sections_by_page: [],
+      profile_section: ResumeSection.empty(),
+      employment_sections: [],
+      education_sections: [],
+      custom_sections: [],
+      icon_color: Colors.blue,
+      language_code: 'en',
+      text_list: [],
+      creation_date: Timestamp.now(),
+      user_id: '',
+      slot_index: 0,
+      chosen_image_bytes: null,
+    );
+  }
 }

@@ -50,4 +50,16 @@ class ResumeSection {
       'end': end,
     };
   }
+
+  factory ResumeSection.empty() {
+    return ResumeSection(
+      icon: null,
+      code_point: null,
+      title: "",
+      subtitle: "",
+      description: "",
+      begin: null,
+      end: null,
+    );
+  }
 }

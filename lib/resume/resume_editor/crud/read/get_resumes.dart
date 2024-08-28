@@ -10,5 +10,7 @@ Future<List<Resume>> get_resumes({
   List<Resume> resumes = resumes_snaps.docs.map((doc) => Resume.from_snapshot(doc.id, doc.data())).toList();
 
   resumes = resumes..sort((Resume a, Resume b) => a.slot_index.compareTo(b.slot_index));
+
+  if (resumes.isEmpty) resumes.add(Resume.empty());
   return resumes;
 }

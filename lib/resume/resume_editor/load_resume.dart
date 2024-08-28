@@ -17,14 +17,14 @@ extension StateExtension on ResumeEditorState {
     slot_index = new_slot_index;
 
     String resume_doc_id = load_example
-        ? "CH47ZwgMDrftCTsfnSoTW6KxTwE2_en"
+        ? "FcqQqDVf8FNmF9tw1TsmZhykr8G3_en"
         : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
 
     if (new_slot_index != 0 && !load_example) {
       resume_doc_id += "_bu_$new_slot_index";
     }
 
-    late Resume? current_resume;
+    Resume current_resume = Resume.empty();
 
     if (resumes.map((e) => e.id).contains(resume_doc_id)) {
       current_resume = resumes.firstWhere((element) => element.id == resume_doc_id);
@@ -37,7 +37,7 @@ extension StateExtension on ResumeEditorState {
       }
     }
 
-    if (current_resume != null) {
+    if (current_resume != Resume.empty()) {
       chosen_image_url = current_resume.image_url;
 
       current_color = current_resume.icon_color;
@@ -60,7 +60,7 @@ extension StateExtension on ResumeEditorState {
       }
 
       Timer(Duration(milliseconds: load_example ? 100 : 0), () {
-        skill_sections = current_resume!.skills;
+        skill_sections = current_resume.skills;
         employment_sections = current_resume.employment_sections;
         education_sections = current_resume.education_sections;
         custom_sections = current_resume.custom_sections;

@@ -55,6 +55,8 @@ Note: Only for PDF File not for Web version.
                     font_family_title,
                   ),
                   if (!portrait) SizedBox(width: sized_box_space),
+
+                  // TODO: change font family for every value in the list as an example
                   DropdownButton<String>(
                     value: current_font_value.name,
                     items: font_families_value.map((ResumeFont font) {
