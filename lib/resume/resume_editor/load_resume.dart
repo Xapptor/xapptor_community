@@ -19,24 +19,24 @@ extension StateExtension on ResumeEditorState {
   }) async {
     slot_index = new_slot_index;
 
-    String resume_doc_id = load_example
+    String resume_id = load_example
         ? "FcqQqDVf8FNmF9tw1TsmZhykr8G3_en"
         : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
 
     if (new_slot_index != 0 && !load_example) {
-      resume_doc_id += "_bu_$new_slot_index";
+      resume_id += "_bu_$new_slot_index";
     }
 
     Resume current_resume = Resume.empty();
 
-    if (resumes.map((e) => e.id).contains(resume_doc_id)) {
-      current_resume = resumes.firstWhere((element) => element.id == resume_doc_id);
+    if (resumes.map((e) => e.id).contains(resume_id)) {
+      current_resume = resumes.firstWhere((element) => element.id == resume_id);
     } else {
-      DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
+      DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
 
       Map? resume_map = resume_doc.data() as Map?;
       if (resume_map != null) {
-        current_resume = Resume.from_snapshot(resume_doc_id, resume_map);
+        current_resume = Resume.from_snapshot(resume_id, resume_map);
       }
     }
 

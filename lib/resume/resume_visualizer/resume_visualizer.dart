@@ -14,6 +14,7 @@ import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ResumeVisualizer extends StatefulWidget {
+  final String? resume_id;
   final Resume? resume;
   final String language_code;
   final String base_url;
@@ -21,6 +22,7 @@ class ResumeVisualizer extends StatefulWidget {
 
   const ResumeVisualizer({
     super.key,
+    this.resume_id,
     this.resume,
     this.language_code = "en",
     required this.base_url,
@@ -70,7 +72,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
   String resume_doc_id = "";
 
   fetch_resume() async {
-    resume_doc_id = get_last_path_segment();
+    resume_doc_id = widget.resume_id ?? get_last_path_segment();
 
     DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
 

@@ -6,7 +6,7 @@ import 'resume_skill.dart';
 import 'package:xapptor_logic/color/hex_color.dart';
 
 class Resume {
-  final String id;
+  String id;
   String image_url;
   final String name;
   final String job_title;
