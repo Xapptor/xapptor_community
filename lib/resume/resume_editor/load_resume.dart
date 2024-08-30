@@ -41,6 +41,14 @@ extension StateExtension on ResumeEditorState {
     }
 
     if (current_resume != Resume.empty()) {
+      // SETTING TRANSLATED TITLES
+      current_resume.skills_title = text_list.get(source_language_index)[4];
+      current_resume.profile_section.title = text_list.get(source_language_index)[5];
+      current_resume.employment_sections.first.title = text_list.get(source_language_index)[7];
+      current_resume.education_sections.first.title = text_list.get(source_language_index)[15];
+
+      current_resume_id = current_resume.id;
+
       chosen_image_url = current_resume.image_url;
 
       current_color = current_resume.icon_color;

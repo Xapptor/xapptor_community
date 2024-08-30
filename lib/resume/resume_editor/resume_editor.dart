@@ -105,6 +105,8 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   bool asked_for_backup_alert = false;
 
+  String current_resume_id = "";
+
   @override
   void initState() {
     init_text_lists();
@@ -164,8 +166,7 @@ class ResumeEditorState extends State<ResumeEditor> {
                 resume_editor_preview(
                   context: context,
                   portrait: portrait,
-                  resume: resumes.first,
-                  source_language_index: source_language_index,
+                  resume: resumes.firstWhere((element) => element.id == current_resume_id),
                   base_url: widget.base_url,
                 ),
                 const SizedBox(height: 100),

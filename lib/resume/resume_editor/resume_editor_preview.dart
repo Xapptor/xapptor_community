@@ -9,7 +9,6 @@ extension StateExtension on ResumeEditorState {
     required BuildContext context,
     required bool portrait,
     required Resume resume,
-    required int source_language_index,
     required String base_url,
   }) =>
       Container(

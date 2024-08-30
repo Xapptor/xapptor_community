@@ -12,7 +12,7 @@ class Resume {
   final String job_title;
   final String email;
   final String website;
-  final String skills_title;
+  String skills_title;
   final List<ResumeSkill> skills;
   final List<int> sections_by_page;
   final ResumeSection profile_section;
