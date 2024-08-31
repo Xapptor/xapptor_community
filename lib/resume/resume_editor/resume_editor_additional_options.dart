@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:xapptor_community/resume/models/resume_font.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
 bool show_time_amount = true;
 List<ResumeFont> font_families_value = [];
-ResumeFont current_font_value = ResumeFont(
-  name: 'Nunito',
-  base: null,
-  bold: null,
-  google_font_family: GoogleFonts.nunito().fontFamily!,
-);
+ResumeFont current_font_value = ResumeFont.empty();
 
 class ResumeEditorAdditionalOptions extends StatefulWidget {
   final Function callback;

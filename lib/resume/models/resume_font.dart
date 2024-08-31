@@ -12,4 +12,13 @@ class ResumeFont {
     required this.bold,
     required this.google_font_family,
   });
+
+  factory ResumeFont.empty() {
+    return const ResumeFont(
+      name: '',
+      base: null,
+      bold: null,
+      google_font_family: '',
+    );
+  }
 }

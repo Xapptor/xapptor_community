@@ -62,6 +62,13 @@ download_resume_pdf({
 
   ResumeFont font = current_font_value;
 
+  if (current_font_value == ResumeFont.empty()) {
+    if (font_families_value.isEmpty) {
+      font_families_value = await font_families();
+    }
+    font = font_families_value.first;
+  }
+
   pdf.addPage(
     pw.MultiPage(
       theme: pw.ThemeData.withFont(
