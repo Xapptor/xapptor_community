@@ -23,6 +23,7 @@ pw.Widget resume_section_pw({
       end: resume_section.end!,
       language_code: language_code,
       present_text: resume.text_list[0],
+      text_list: resume.text_list.sublist(4),
     );
   }
 
@@ -136,6 +137,7 @@ resume_section({
       end: resume_section.end!,
       language_code: language_code,
       present_text: resume.text_list[0],
+      text_list: resume.text_list.sublist(4),
     );
   }
 

@@ -39,7 +39,8 @@ extension StateExtension on ResumeEditorState {
           text_list.get(source_language_index).sublist(18, 20) +
           [
             widget.base_url,
-          ],
+          ] +
+          time_text_list.get(source_language_index),
       creation_date: Timestamp.now(),
       user_id: current_user!.uid,
       slot_index: slot_index,

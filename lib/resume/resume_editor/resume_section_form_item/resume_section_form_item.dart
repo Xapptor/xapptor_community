@@ -13,6 +13,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class ResumeSectionFormItem extends StatefulWidget {
   final ResumeSectionFormType resume_section_form_type;
   final List<String> text_list;
+  final List<String> time_text_list;
   final Color text_color;
   final String language_code;
   final int item_index;
@@ -45,6 +46,7 @@ class ResumeSectionFormItem extends StatefulWidget {
     super.key,
     required this.resume_section_form_type,
     required this.text_list,
+    required this.time_text_list,
     required this.text_color,
     required this.language_code,
     required this.item_index,
@@ -94,6 +96,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
         end: selected_date_2!,
         language_code: widget.language_code,
         present_text: widget.text_list[4],
+        text_list: widget.time_text_list,
       );
     } else {
       timeframe_text = widget.text_list[5];

@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 
 get_timeframe_text({
@@ -7,6 +6,7 @@ get_timeframe_text({
   required DateTime end,
   required String language_code,
   required String present_text,
+  required List<String> text_list,
 }) {
   String timeframe_text = "";
   String begin_text = DateFormat.yMMMM(language_code).format(begin);
@@ -32,21 +32,28 @@ get_timeframe_text({
     if (months_difference > 12) {
       int years = months_difference ~/ 12;
 
-      //String years_label = get_year_label(years);
-      String years_label = "";
+      String years_label = get_year_label(
+        count: years,
+        text_list: text_list,
+      );
 
       timeframe_text += " . $years $years_label";
 
-      double remainder_months = months_difference % 12;
+      int remainder_months = months_difference % 12;
+
       if (remainder_months > 0) {
-        // String months_label = get_month_label(remainder_months);
-        String months_label = "";
+        String months_label = get_month_label(
+          count: remainder_months,
+          text_list: text_list,
+        );
 
         timeframe_text += " $remainder_months $months_label";
       }
     } else {
-      // String months_label = get_month_label(months_difference);
-      String months_label = "";
+      String months_label = get_month_label(
+        count: months_difference,
+        text_list: text_list,
+      );
 
       timeframe_text += " . $months_difference $months_label";
     }
@@ -54,12 +61,16 @@ get_timeframe_text({
   return timeframe_text;
 }
 
-extension StateExtension on ResumeEditorState {
-  String get_year_label(int count) {
-    return time_text_list.get(source_language_index)[count > 1 ? 1 : 0];
-  }
+String get_year_label({
+  required int count,
+  required List<String> text_list,
+}) {
+  return text_list[count > 1 ? 1 : 0];
+}
 
-  String get_month_label(int count) {
-    return time_text_list.get(source_language_index)[count > 1 ? 3 : 2];
-  }
+String get_month_label({
+  required int count,
+  required List<String> text_list,
+}) {
+  return text_list[count > 1 ? 3 : 2];
 }

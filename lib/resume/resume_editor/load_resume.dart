@@ -48,13 +48,17 @@ extension StateExtension on ResumeEditorState {
       current_resume.profile_section.title = text_array[5];
       current_resume.employment_sections.first.title = text_array[7];
       current_resume.education_sections.first.title = text_array[15];
+
+      List<String> time_text_array = time_text_list.get(source_language_index);
+
       current_resume.text_list = [
             text_array[11],
           ] +
           text_array.sublist(18, 20) +
           [
             widget.base_url,
-          ];
+          ] +
+          time_text_array;
 
       current_resume_id = current_resume.id;
 

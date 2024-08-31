@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/resume_section_form_item.dart';
@@ -17,6 +16,8 @@ enum ResumeSectionFormType {
 class ResumeSectionForm extends StatefulWidget {
   final ResumeSectionFormType resume_section_form_type;
   final List<String> text_list;
+  final List<String> time_text_list;
+
   final Color text_color;
   final String language_code;
   final int section_index;
@@ -45,6 +46,7 @@ class ResumeSectionForm extends StatefulWidget {
     super.key,
     required this.resume_section_form_type,
     required this.text_list,
+    required this.time_text_list,
     required this.text_color,
     required this.language_code,
     required this.section_index,
@@ -66,7 +68,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
   DateTime? selected_date_1;
   DateTime? selected_date_2;
   int selected_date_index = 0;
-  String timeframe_text = "";
 
   remove_item({
     required int item_index,
@@ -132,17 +133,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
 
   @override
   Widget build(BuildContext context) {
-    if (selected_date_1 != null && selected_date_2 != null) {
-      timeframe_text = get_timeframe_text(
-        begin: selected_date_1!,
-        end: selected_date_2!,
-        language_code: widget.language_code,
-        present_text: widget.text_list[4],
-      );
-    } else {
-      timeframe_text = widget.text_list[5];
-    }
-
     String title = "";
 
     switch (widget.resume_section_form_type) {
@@ -232,6 +222,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
             return ResumeSectionFormItem(
               resume_section_form_type: widget.resume_section_form_type,
               text_list: widget.text_list.sublist(0, 10) + widget.text_list.sublist(11),
+              time_text_list: widget.time_text_list,
               text_color: widget.text_color,
               language_code: widget.language_code,
               item_index: index,

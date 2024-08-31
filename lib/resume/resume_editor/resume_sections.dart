@@ -15,6 +15,7 @@ extension StateExtension on ResumeEditorState {
                 skill_text_list.get(source_language_index) +
                 picker_text_list.get(source_language_index) +
                 text_list.get(source_language_index).sublist(4, 5),
+            time_text_list: time_text_list.get(source_language_index),
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 0,
@@ -54,6 +55,7 @@ extension StateExtension on ResumeEditorState {
             resume_section_form_type: ResumeSectionFormType.employment_history,
             text_list:
                 text_list.get(source_language_index).sublist(7, 18) + employment_text_list.get(source_language_index),
+            time_text_list: time_text_list.get(source_language_index),
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 1,
@@ -69,6 +71,7 @@ extension StateExtension on ResumeEditorState {
             resume_section_form_type: ResumeSectionFormType.education,
             text_list:
                 text_list.get(source_language_index).sublist(7, 18) + education_text_list.get(source_language_index),
+            time_text_list: time_text_list.get(source_language_index),
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 2,
@@ -83,6 +86,7 @@ extension StateExtension on ResumeEditorState {
           ResumeSectionForm(
             resume_section_form_type: ResumeSectionFormType.custom,
             text_list: text_list.get(source_language_index).sublist(7, 18),
+            time_text_list: time_text_list.get(source_language_index),
             text_color: widget.color_topbar,
             language_code: text_list.list[source_language_index].source_language,
             section_index: 3,
