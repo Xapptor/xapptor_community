@@ -10,47 +10,48 @@ extension StateExtension on ResumeEditorState {
     required bool portrait,
     required Resume resume,
     required String base_url,
-  }) =>
-      Container(
-        margin: EdgeInsets.all(portrait ? 6 : 16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.deepOrangeAccent,
-            width: 6,
+  }) {
+    return Container(
+      margin: EdgeInsets.all(portrait ? 6 : 16),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.deepOrangeAccent,
+          width: 6,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: sized_box_space * 2,
           ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              height: sized_box_space * 2,
-            ),
-            Container(
-              alignment: Alignment.center,
-              width: double.maxFinite,
-              padding: const EdgeInsets.only(bottom: 20),
-              decoration: const BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.deepOrangeAccent,
-                    width: 6,
-                  ),
-                ),
-              ),
-              child: Text(
-                text_list.get(source_language_index)[6],
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+          Container(
+            alignment: Alignment.center,
+            width: double.maxFinite,
+            padding: const EdgeInsets.only(bottom: 20),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.deepOrangeAccent,
+                  width: 6,
                 ),
               ),
             ),
-            ResumeVisualizer(
-              resume: resume,
-              language_code: text_list.list[source_language_index].source_language,
-              base_url: widget.base_url,
+            child: Text(
+              text_list.get(source_language_index)[6],
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ],
-        ),
-      );
+          ),
+          ResumeVisualizer(
+            resume: resume,
+            language_code: text_list.list[source_language_index].source_language,
+            base_url: widget.base_url,
+          ),
+        ],
+      ),
+    );
+  }
 }

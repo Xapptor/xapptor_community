@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 
 get_timeframe_text({
@@ -30,15 +31,35 @@ get_timeframe_text({
 
     if (months_difference > 12) {
       int years = months_difference ~/ 12;
-      timeframe_text += " . $years yrs";
+
+      //String years_label = get_year_label(years);
+      String years_label = "";
+
+      timeframe_text += " . $years $years_label";
 
       double remainder_months = months_difference % 12;
       if (remainder_months > 0) {
-        timeframe_text += " $remainder_months mos";
+        // String months_label = get_month_label(remainder_months);
+        String months_label = "";
+
+        timeframe_text += " $remainder_months $months_label";
       }
     } else {
-      timeframe_text += " . $months_difference mos";
+      // String months_label = get_month_label(months_difference);
+      String months_label = "";
+
+      timeframe_text += " . $months_difference $months_label";
     }
   }
   return timeframe_text;
+}
+
+extension StateExtension on ResumeEditorState {
+  String get_year_label(int count) {
+    return time_text_list.get(source_language_index)[count > 1 ? 1 : 0];
+  }
+
+  String get_month_label(int count) {
+    return time_text_list.get(source_language_index)[count > 1 ? 3 : 2];
+  }
 }
