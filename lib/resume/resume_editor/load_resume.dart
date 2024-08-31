@@ -42,10 +42,19 @@ extension StateExtension on ResumeEditorState {
 
     if (current_resume != Resume.empty()) {
       // SETTING TRANSLATED TITLES
-      current_resume.skills_title = text_list.get(source_language_index)[4];
-      current_resume.profile_section.title = text_list.get(source_language_index)[5];
-      current_resume.employment_sections.first.title = text_list.get(source_language_index)[7];
-      current_resume.education_sections.first.title = text_list.get(source_language_index)[15];
+
+      List<String> text_array = text_list.get(source_language_index);
+      current_resume.skills_title = text_array[4];
+      current_resume.profile_section.title = text_array[5];
+      current_resume.employment_sections.first.title = text_array[7];
+      current_resume.education_sections.first.title = text_array[15];
+      current_resume.text_list = [
+            text_array[11],
+          ] +
+          text_array.sublist(18, 20) +
+          [
+            widget.base_url,
+          ];
 
       current_resume_id = current_resume.id;
 

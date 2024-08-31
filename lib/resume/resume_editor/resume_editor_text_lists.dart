@@ -224,4 +224,27 @@ class ResumeEditorTextLists {
       ),
     ],
   );
+
+  TranslationTextListArray time_text_list = TranslationTextListArray(
+    [
+      TranslationTextList(
+        source_language: "en",
+        text_list: [
+          "Year",
+          "Years",
+          "Month",
+          "Months",
+        ],
+      ),
+      TranslationTextList(
+        source_language: "es",
+        text_list: [
+          "Año",
+          "Años",
+          "Mes",
+          "Meses",
+        ],
+      ),
+    ],
+  );
 }

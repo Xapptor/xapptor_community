@@ -9,8 +9,8 @@ extension StateExtension on ResumeEditorState {
   Resume generate_resume({
     required int slot_index,
   }) {
-    return Resume(
-      image_url: chosen_image_path,
+    Resume resume = Resume(
+      image_url: chosen_image_url,
       name: name_input_controller.text,
       job_title: job_title_input_controller.text,
       email: email_input_controller.text,
@@ -47,5 +47,6 @@ extension StateExtension on ResumeEditorState {
       font_name: current_font_value.name,
       show_time_amount: show_time_amount,
     );
+    return resume;
   }
 }

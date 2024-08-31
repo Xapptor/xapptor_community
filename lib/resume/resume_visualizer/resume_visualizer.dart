@@ -16,11 +16,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 class ResumeVisualizer extends StatefulWidget {
   final String? resume_id;
   final Resume? resume;
-  final String language_code;
+  String language_code;
   final String base_url;
   final double text_bottom_margin_for_section;
 
-  const ResumeVisualizer({
+  ResumeVisualizer({
     super.key,
     this.resume_id,
     this.resume,
@@ -69,30 +69,34 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
     setState(() {});
   }
 
-  String resume_doc_id = "";
+  String resume_id = "";
 
   fetch_resume() async {
-    resume_doc_id = widget.resume_id ?? get_last_path_segment();
+    resume_id = widget.resume_id ?? get_last_path_segment();
 
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id).get();
+    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
 
     Map? resume_map = resume_doc.data() as Map?;
     if (resume_map != null) {
-      var remote_resume = Resume.from_snapshot(resume_doc_id, resume_map);
+      var remote_resume = Resume.from_snapshot(resume_id, resume_map);
 
       current_resume = remote_resume;
+      widget.language_code = current_resume!.id.split("_").last;
     }
     populate_skills_and_sections();
   }
 
-  Widget get_name_and_skills(bool portrait, double screen_width) {
+  Widget get_name_and_skills(
+    bool portrait,
+    double screen_width,
+  ) {
     return name_and_skills(
       resume: current_resume!,
       portrait: portrait,
       screen_width: screen_width,
       skills: skills,
       text_bottom_margin: widget.text_bottom_margin_for_section,
-      resume_link: "${widget.base_url}/resumes/$resume_doc_id",
+      resume_link: "${widget.base_url}/resumes/$resume_id",
       language_code: widget.language_code,
       context: context,
     );
@@ -118,8 +122,11 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
       fetch_resume();
     } else {
       current_resume = widget.resume!;
+
+      widget.language_code = current_resume!.id.split("_").last;
+
       current_user = FirebaseAuth.instance.currentUser!;
-      resume_doc_id = "${current_user.uid}_${widget.language_code}";
+      resume_id = "${current_user.uid}_${widget.language_code}";
 
       populate_skills_timer = Timer(const Duration(milliseconds: 300), () {
         populate_skills_and_sections();

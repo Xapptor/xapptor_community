@@ -21,7 +21,7 @@ class Resume {
   final List<ResumeSection> custom_sections;
   final Color icon_color;
   final String language_code;
-  final List<String> text_list;
+  List<String> text_list;
   final Timestamp creation_date;
   final String user_id;
   int slot_index;

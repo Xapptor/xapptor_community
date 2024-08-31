@@ -49,6 +49,13 @@ extension StateExtension on ResumeEditorState {
       source_language_index: source_language_index,
     );
 
+    time_translation_stream = TranslationStream(
+      translation_text_list_array: time_text_list,
+      update_text_list_function: update_text_list,
+      list_index: 6,
+      source_language_index: source_language_index,
+    );
+
     translation_stream_list = [
       translation_stream,
       skill_translation_stream,
@@ -56,6 +63,7 @@ extension StateExtension on ResumeEditorState {
       education_translation_stream,
       picker_translation_stream,
       sections_by_page_translation_stream,
+      time_translation_stream,
     ];
   }
 }

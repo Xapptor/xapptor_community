@@ -12,6 +12,7 @@ List<dynamic> populate_sections({
   List<Widget> sections = [];
   List<pw.Widget> sections_pw = [];
 
+  // PROFILE
   sections.add(
     resume_section(
       resume: resume,
@@ -32,6 +33,7 @@ List<dynamic> populate_sections({
     ),
   );
 
+  // EMPLOYMENT
   for (var section in resume.employment_sections) {
     sections.add(
       resume_section(
@@ -54,6 +56,7 @@ List<dynamic> populate_sections({
     );
   }
 
+  // EDUCATION
   for (var section in resume.education_sections) {
     sections.add(
       resume_section(
@@ -76,6 +79,7 @@ List<dynamic> populate_sections({
     );
   }
 
+  // CUSTOM SECTIONS
   for (var section in resume.custom_sections) {
     sections.add(
       resume_section(

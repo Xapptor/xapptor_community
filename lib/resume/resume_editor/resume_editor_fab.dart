@@ -11,12 +11,14 @@ import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.d
 
 extension StateExtension on ResumeEditorState {
   resume_editor_fab() {
-    String load_label = alert_text_list.get(source_language_index)[17];
-    String save_label = alert_text_list.get(source_language_index)[18];
-    String delete_label = alert_text_list.get(source_language_index)[19];
-    String download_label = alert_text_list.get(source_language_index)[20];
-    String menu_label = alert_text_list.get(source_language_index)[21];
-    String close_label = alert_text_list.get(source_language_index)[22];
+    List alert_text_array = alert_text_list.get(source_language_index);
+
+    String load_label = alert_text_array[17];
+    String save_label = alert_text_array[18];
+    String delete_label = alert_text_array[19];
+    String download_label = alert_text_array[20];
+    String menu_label = alert_text_array[21];
+    String close_label = alert_text_array[22];
 
     return ExpandableFab(
       key: expandable_fab_key,
@@ -155,14 +157,19 @@ extension StateExtension on ResumeEditorState {
         FloatingActionButton.extended(
           heroTag: null,
           onPressed: () {
+            String language_code = text_list.list[source_language_index].source_language;
+
             Resume resume = generate_resume(slot_index: slot_index);
+            resume.id = "${resume.user_id}_$language_code";
+
+            String resume_link = "${widget.base_url}/resumes/${resume.id}";
 
             download_resume_pdf(
               resume: resume,
               text_bottom_margin_for_section: widget.text_bottom_margin_for_section,
-              resume_link: "${widget.base_url}/resumes/${resume.id}",
+              resume_link: resume_link,
               context: context,
-              language_code: text_list.list[source_language_index].source_language,
+              language_code: language_code,
             );
           },
           backgroundColor: Colors.lightBlue,

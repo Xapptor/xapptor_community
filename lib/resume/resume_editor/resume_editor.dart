@@ -70,6 +70,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   TranslationTextListArray education_text_list = ResumeEditorTextLists().education_text_list;
   TranslationTextListArray picker_text_list = ResumeEditorTextLists().picker_text_list;
   TranslationTextListArray sections_by_page_text_list = ResumeEditorTextLists().sections_by_page_text_list;
+  TranslationTextListArray time_text_list = ResumeEditorTextLists().time_text_list;
 
   late TranslationStream translation_stream;
   late TranslationStream skill_translation_stream;
@@ -77,6 +78,7 @@ class ResumeEditorState extends State<ResumeEditor> {
   late TranslationStream education_translation_stream;
   late TranslationStream picker_translation_stream;
   late TranslationStream sections_by_page_translation_stream;
+  late TranslationStream time_translation_stream;
 
   List<TranslationStream> translation_stream_list = [];
 

@@ -20,6 +20,8 @@ extension StateExtension on ResumeEditorState {
       picker_text_list.get(source_language_index)[index] = new_text;
     } else if (list_index == 5) {
       sections_by_page_text_list.get(source_language_index)[index] = new_text;
+    } else if (list_index == 6) {
+      time_text_list.get(source_language_index)[index] = new_text;
     }
     setState(() {});
   }
