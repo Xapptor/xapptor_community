@@ -11,6 +11,7 @@ import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.d
 
 extension StateExtension on ResumeEditorState {
   resume_editor_fab() {
+    String language_code = text_list.list[source_language_index].source_language;
     List alert_text_array = alert_text_list.get(source_language_index);
 
     String load_label = alert_text_array[17];
@@ -94,6 +95,8 @@ extension StateExtension on ResumeEditorState {
           heroTag: null,
           onPressed: () {
             Resume resume = generate_resume(slot_index: slot_index);
+            resume.id = "${resume.user_id}_$language_code";
+            current_resume_id = resume.id;
 
             resume_editor_alert(
               resume: resume,
@@ -157,8 +160,6 @@ extension StateExtension on ResumeEditorState {
         FloatingActionButton.extended(
           heroTag: null,
           onPressed: () {
-            String language_code = text_list.list[source_language_index].source_language;
-
             Resume resume = generate_resume(slot_index: slot_index);
             resume.id = "${resume.user_id}_$language_code";
 

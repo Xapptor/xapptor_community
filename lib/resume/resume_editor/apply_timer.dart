@@ -35,7 +35,7 @@ extension StateExtension on ResumeEditorState {
           resumes.add(last_resume);
         } else {
           Resume new_resume = resumes.firstWhere(
-            (element) => !element.id.contains('_bu_'),
+            (element) => !element.id.contains('_bu'),
           );
 
           new_resume.id = '${new_resume.id.split('_').first}_$new_language_code';

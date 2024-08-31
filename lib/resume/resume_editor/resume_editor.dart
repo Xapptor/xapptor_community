@@ -112,7 +112,9 @@ class ResumeEditorState extends State<ResumeEditor> {
   @override
   void initState() {
     init_text_lists();
+
     super.initState();
+
     resume_editor_init_state();
   }
 
@@ -139,6 +141,10 @@ class ResumeEditorState extends State<ResumeEditor> {
     );
 
     if (resumes.isNotEmpty) {
+      Resume current_resume = resumes.firstWhere((element) => element.id == current_resume_id, orElse: () {
+        return resumes.firstWhere((element) => !element.id.contains("_bu"));
+      });
+
       String slot_label = get_slot_label(
         slot_index: slot_index,
       );
@@ -168,7 +174,7 @@ class ResumeEditorState extends State<ResumeEditor> {
                 resume_editor_preview(
                   context: context,
                   portrait: portrait,
-                  resume: resumes.firstWhere((element) => element.id == current_resume_id),
+                  resume: current_resume,
                   base_url: widget.base_url,
                 ),
                 const SizedBox(height: 100),
