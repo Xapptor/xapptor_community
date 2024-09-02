@@ -13,6 +13,7 @@ import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dart';
+import 'package:xapptor_db/xapptor_db.dart';
 
 extension StateExtension on ResumeEditorState {
   Future<Resume> load_resume_from_json(String resume_id) async {
@@ -50,8 +51,9 @@ extension StateExtension on ResumeEditorState {
         chosen_image_bytes = await rootBundle.load(chosen_image_path).then(
               (ByteData byteData) => byteData.buffer.asUint8List(),
             );
+        resumes.add(current_resume);
       } else {
-        DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
+        DocumentSnapshot resume_doc = await XapptorDB.instance.collection("resumes").doc(resume_id).get();
 
         Map? resume_map = resume_doc.data() as Map?;
         if (resume_map != null) {
@@ -66,6 +68,10 @@ extension StateExtension on ResumeEditorState {
       List<String> text_array = text_list.get(source_language_index);
       current_resume.skills_title = text_array[4];
       current_resume.profile_section.title = text_array[5];
+
+      print("employment_sections_length:");
+      print(current_resume.employment_sections.length);
+
       current_resume.employment_sections.first.title = text_array[7];
       current_resume.education_sections.first.title = text_array[15];
 

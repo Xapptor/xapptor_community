@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xapptor_db/xapptor_db.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
@@ -10,6 +10,6 @@ extension StateExtension on ResumeEditorState {
     if (slot_index != 0) {
       resume_doc_id += "_bu_$slot_index";
     }
-    return FirebaseFirestore.instance.collection("resumes").doc(resume_doc_id);
+    return XapptorDB.instance.collection("resumes").doc(resume_doc_id);
   }
 }

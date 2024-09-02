@@ -12,6 +12,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:xapptor_db/xapptor_db.dart';
 
 class ResumeVisualizer extends StatefulWidget {
   final String? resume_id;
@@ -74,7 +75,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
   fetch_resume() async {
     resume_id = widget.resume_id ?? get_last_path_segment();
 
-    DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
+    DocumentSnapshot resume_doc = await XapptorDB.instance.collection("resumes").doc(resume_id).get();
 
     Map? resume_map = resume_doc.data() as Map?;
     if (resume_map != null) {
