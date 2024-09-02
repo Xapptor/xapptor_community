@@ -40,8 +40,6 @@ class ResumeEditor extends StatefulWidget {
 }
 
 class ResumeEditorState extends State<ResumeEditor> {
-// TODO: Resolve template readability for Xapptor and Abeinstitute
-
   TextEditingController name_input_controller = TextEditingController();
   TextEditingController job_title_input_controller = TextEditingController();
   TextEditingController email_input_controller = TextEditingController();

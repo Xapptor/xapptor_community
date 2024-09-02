@@ -1,0 +1,175 @@
+{
+    "image_url": "https://firebasestorage.googleapis.com/v0/b/xapptor.appspot.com/o/users%2FFcqQqDVf8FNmF9tw1TsmZhykr8G3%2Fresumes%2Fresume_profile_image.png?alt=media&token=7e475f22-ec2b-4b73-bf12-a4cf2395d438",
+    "name": "Javier Jesus Garcia Contreras Example",
+    "job_title": "Senior Software Engineer",
+    "email": "info@xapptor.com",
+    "website": "https://xapptor.com",
+    "skills_title": "Dexterity Points",
+    "skills": [
+        {
+            "name": "Experience: 8 years",
+            "percentage": 0.8,
+            "color": "#ffd537c6"
+        },
+        {
+            "name": "Communication",
+            "percentage": 0.8,
+            "color": "#ff45e8a7"
+        },
+        {
+            "name": "Cognitive Flexibility",
+            "percentage": 0.9,
+            "color": "#ff832ab9"
+        },
+        {
+            "name": "Negotiation",
+            "percentage": 0.8,
+            "color": "#ff1cdc49"
+        },
+        {
+            "name": "Team Management",
+            "percentage": 0.9,
+            "color": "#ff2196f3"
+        },
+        {
+            "name": "Project Planning",
+            "percentage": 0.8,
+            "color": "#ffc1c4ed"
+        }
+    ],
+    "sections_by_page": [
+        0,
+        0
+    ],
+    "profile_section": {
+        "icon": "57544",
+        "code_point": "60007",
+        "title": "Profile",
+        "subtitle": null,
+        "description": "Javier is a Software and Mobile Developer with more than 8 years of experience in total and 6 years in the Flutter framework. He also has experience teaching High School programming classes and mentoring. He loves developing Cross-Platform and Native Apps. Also develops dependencies, libraries, and tools to improve the efficiency of the App development process. He likes to use technologies like Flutter, Firebase, Javascript, NodeJS, SwiftUI, Android Jetpack Compose, and more!",
+        "begin": null,
+        "end": null
+    },
+    "employment_sections": [
+        {
+            "icon": "63211",
+            "code_point": "57778",
+            "title": "Employment History",
+            "subtitle": "FrontEnd Mobile Leader, Flutter & IOS Developer at Wizeline, Remote",
+            "description": "",
+            "begin": "2022-02-16T00:00:00.000",
+            "end": "2024-08-26T10:10:10.000"
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": null,
+            "subtitle": "iOS Leader & Development Specialist at Keydok, Remote",
+            "description": "",
+            "begin": "2019-10-16T00:00:00.000",
+            "end": "2022-02-17T00:00:00.000"
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": null,
+            "subtitle": "BackEnd & Mobile Developer at Iké Asistencia, Contractor (Mexico City)",
+            "description": "",
+            "begin": "2019-04-24T00:00:00.000",
+            "end": "2019-10-10T00:00:00.000"
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": null,
+            "subtitle": "Game Developer (Unity, Play Canvas & Unreal Engine) at Visionaria Games, Mexico City",
+            "description": "",
+            "begin": "2018-01-17T00:00:00.000",
+            "end": "2019-04-12T00:00:00.000"
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": null,
+            "subtitle": "Software Design Professor at Universidad Mexicana de Innovacion en Negocios, State of Mexico",
+            "description": "Teaching high school level students on mobile applications and video games.",
+            "begin": "2017-06-15T00:00:00.000",
+            "end": "2018-01-18T00:00:00.000"
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": null,
+            "subtitle": "Software Developer at Freelance, Remote",
+            "description": "",
+            "begin": "2016-02-17T00:00:00.000",
+            "end": "2017-06-15T00:00:00.000"
+        }
+    ],
+    "education_sections": [
+        {
+            "icon": "63470",
+            "code_point": "59966",
+            "title": "Education",
+            "subtitle": "Digital Bussines Engineer, Universidad Mexicana de Innovacion en Negocios, Metepec, State of Mexico",
+            "description": null,
+            "begin": "2014-09-10T00:00:00.000",
+            "end": "2018-09-13T00:00:00.000"
+        }
+    ],
+    "custom_sections": [
+        {
+            "icon": null,
+            "code_point": null,
+            "title": "Licenses & Certifications",
+            "subtitle": "",
+            "description": "- Agile Software Development.\n- Lean Six Sigma (Black Belt).\n- Business Analysis Foundations.\n- Leadership in Tech.\n- Objectives and Key Results.",
+            "begin": null,
+            "end": null
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": "Frameworks, Architectures & Languages",
+            "subtitle": "",
+            "description": "- Native Frameworks: iOS (Xcode) & Android (Android Studio and VSCode).\n- Cross Platform Frameworks: Flutter, KMM, Xamarin, Appcelerator Titanium.\n- Backend Frameworks: NodeJS, Micronaut & Spring Boot.\n- Reactive Frameworks: RXJava & RXSwift.\n- Game Engines: Unity, PlayCanvas & Unreal Engine.\n- Architectures: Viper, MVVM, MVA, MVP, MVC.\n- Languages: Java, Kotlin, JavaScript, C#, Objective-C, Swift, Dart.\n- Declarative Languages: SwiftUI, Android Jetpack Compose, Flutter. (Also with Wrappers).",
+            "begin": null,
+            "end": null
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": "Databases, SDKs & Platforms",
+            "subtitle": "",
+            "description": "- Databases: MySQL, SQLite, Firebase, MongoDB, iOS Core Data, SharedPreferences, UserDefaults, Keychain.\n- SDKs and Library Integrations: Cocoapods, Swift Package Manager, Carthage, Gradle, Maven, Pubspec.\n- Distribution Platforms: Google Play Console, Apple Store Connect, Firebase App Distribution.\n- Cloud Platforms: GCP, AWS & Azure.\n- Payment Processor Platforms: Stripe, Bill Pocket, Sr Pago, ClaroPay, MobileCard, Baz.",
+            "begin": null,
+            "end": null
+        },
+        {
+            "icon": null,
+            "code_point": null,
+            "title": "Tech Stack and Tools",
+            "subtitle": "",
+            "description": "- Authentication: JWT, Google Auth 2.0, Facebook Auth, Apple Auth.\n- Implementation of Permissions & Files Manager, Device Sensors.\n- HTTP Libraries, Webviews, SVGs, PDFs & Animations.\n- Use of Flavors, Schemes & BuildVariants.\n- Encryption Protocols: Fingerprint SHA-1 & SHA-256, AES, Keys, Certificates.\n- Maps SDKs: Google Maps, Open Street Maps & Apple Maps.\n- Gitflow, Git Ignore, Code Review.\n- Testing (XCTest, JUnit 4, Mockito, Sauce Labs).\n- Pair Programming.\n- Debugging (Manual and with Firebase Analytics & Crashlytics).",
+            "begin": null,
+            "end": null
+        }
+    ],
+    "icon_color": "#ff2196f3",
+    "language_code": "en",
+    "text_list": [
+        "Present",
+        "Resume available online at:",
+        "Resume Developed and Hosted by Xapptor:",
+        "https://xapptor.com",
+        "Year",
+        "Years",
+        "Month",
+        "Months"
+    ],
+    "creation_date": "2024-09-01T23:04:50.316",
+    "user_id": "FcqQqDVf8FNmF9tw1TsmZhykr8G3",
+    "slot_index": 0,
+    "font_name": "Nunito",
+    "show_time_amount": true
+}

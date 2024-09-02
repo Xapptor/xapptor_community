@@ -51,6 +51,37 @@ class ResumeSection {
     };
   }
 
+  Map<String, dynamic> to_pretty_json() {
+    return {
+      'icon': icon?.codePoint.toString(),
+      'code_point': code_point?.toString(),
+      'title': title,
+      'subtitle': subtitle,
+      'description': description,
+      'begin': begin?.toIso8601String(),
+      'end': end?.toIso8601String(),
+    };
+  }
+
+  ResumeSection.from_json(
+    Map<String, dynamic> json,
+  )   : icon = json['icon'] != null
+            ? IconData(
+                int.parse(json['icon']),
+                fontFamily: "MaterialIcons",
+              )
+            : null,
+        code_point = json['code_point'] != null
+            ? int.parse(
+                json['code_point'],
+              )
+            : null,
+        title = json['title'],
+        subtitle = json['subtitle'],
+        description = json['description'],
+        begin = json['begin'] != null ? DateTime.parse(json['begin']) : null,
+        end = json['end'] != null ? DateTime.parse(json['end']) : null;
+
   factory ResumeSection.empty() {
     return ResumeSection(
       icon: null,

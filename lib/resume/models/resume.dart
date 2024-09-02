@@ -107,6 +107,59 @@ class Resume {
     };
   }
 
+  Map<String, dynamic> to_pretty_json() {
+    return {
+      'image_url': image_url,
+      'name': name,
+      'job_title': job_title,
+      'email': email,
+      'website': website,
+      'skills_title': skills_title,
+      'skills': skills.map((e) => e.to_json()).toList(),
+      'sections_by_page': sections_by_page,
+      'profile_section': profile_section.to_pretty_json(),
+      'employment_sections': employment_sections.map((e) => e.to_pretty_json()).toList(),
+      'education_sections': education_sections.map((e) => e.to_pretty_json()).toList(),
+      'custom_sections': custom_sections.map((e) => e.to_pretty_json()).toList(),
+      'icon_color': icon_color.toHex(),
+      'language_code': language_code,
+      'text_list': text_list,
+      'creation_date': creation_date.toDate().toIso8601String(),
+      'user_id': user_id,
+      'slot_index': slot_index,
+      'font_name': font_name,
+      'show_time_amount': show_time_amount,
+    };
+  }
+
+  Resume.from_json(
+    this.id,
+    Map<String, dynamic> json,
+  )   : image_url = json['image_url'] ?? '',
+        name = json['name'] ?? '',
+        job_title = json['job_title'] ?? '',
+        email = json['email'] ?? '',
+        website = json['website'] ?? '',
+        skills_title = json['skills_title'] ?? '',
+        skills = (json['skills'] as List).map((skill) => ResumeSkill.from_snapshot(skill)).toList(),
+        sections_by_page = (json['sections_by_page'] as List).map((e) => e as int).toList(),
+        profile_section = ResumeSection.from_json(json['profile_section']),
+        employment_sections =
+            (json['employment_sections'] as List).map((section) => ResumeSection.from_json(section)).toList(),
+        education_sections =
+            (json['education_sections'] as List).map((section) => ResumeSection.from_json(section)).toList(),
+        custom_sections = (json['custom_sections'] as List).map((section) => ResumeSection.from_json(section)).toList(),
+        icon_color = HexColor.fromHex(json['icon_color']),
+        language_code = json['language_code'] ?? 'en',
+        text_list = (json['text_list'] as List).map((e) => e as String).toList(),
+        creation_date =
+            json['creation_date'] != null ? Timestamp.fromDate(DateTime.parse(json['creation_date'])) : Timestamp.now(),
+        user_id = json['user_id'] ?? '',
+        slot_index = json['slot_index'] ?? 0,
+        chosen_image_bytes = null,
+        font_name = json['font_name'] ?? 'Nunito',
+        show_time_amount = json['show_time_amount'] ?? true;
+
   factory Resume.empty() {
     return Resume(
       image_url: '',

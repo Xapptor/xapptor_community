@@ -1,8 +1,10 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_font.dart';
@@ -13,6 +15,16 @@ import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_
 import 'package:xapptor_community/resume/resume_editor/show_result_snack_bar.dart';
 
 extension StateExtension on ResumeEditorState {
+  Future<Resume> load_resume_from_json(String resume_id) async {
+    String resume_string = await rootBundle.loadString('packages/xapptor_community/assets/resume_example.json');
+    Map<String, dynamic> resume_map = jsonDecode(resume_string);
+    Resume resume = Resume.from_json(
+      resume_id,
+      resume_map,
+    );
+    return resume;
+  }
+
   load_resume({
     bool load_example = false,
     required int new_slot_index,
@@ -20,7 +32,7 @@ extension StateExtension on ResumeEditorState {
     slot_index = new_slot_index;
 
     String resume_id = load_example
-        ? "FcqQqDVf8FNmF9tw1TsmZhykr8G3_en"
+        ? "9999qDVf8FNmF9999TsmZhyk9999_en"
         : ("${current_user!.uid}_${text_list.list[source_language_index].source_language}");
 
     if (new_slot_index != 0 && !load_example) {
@@ -32,11 +44,19 @@ extension StateExtension on ResumeEditorState {
     if (resumes.map((e) => e.id).contains(resume_id)) {
       current_resume = resumes.firstWhere((element) => element.id == resume_id);
     } else {
-      DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
+      if (load_example) {
+        current_resume = await load_resume_from_json(resume_id);
+        chosen_image_path = 'packages/xapptor_community/assets/resume_photo_small.png';
+        chosen_image_bytes = await rootBundle.load(chosen_image_path).then(
+              (ByteData byteData) => byteData.buffer.asUint8List(),
+            );
+      } else {
+        DocumentSnapshot resume_doc = await FirebaseFirestore.instance.collection("resumes").doc(resume_id).get();
 
-      Map? resume_map = resume_doc.data() as Map?;
-      if (resume_map != null) {
-        current_resume = Resume.from_snapshot(resume_id, resume_map);
+        Map? resume_map = resume_doc.data() as Map?;
+        if (resume_map != null) {
+          current_resume = Resume.from_snapshot(resume_id, resume_map);
+        }
       }
     }
 

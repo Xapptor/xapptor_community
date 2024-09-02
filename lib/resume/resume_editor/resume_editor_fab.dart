@@ -165,6 +165,10 @@ extension StateExtension on ResumeEditorState {
 
             String resume_link = "${widget.base_url}/resumes/${resume.id}";
 
+            // var encoder = const JsonEncoder.withIndent('  ');
+            // String pretty_json = encoder.convert(resume.to_json_2());
+            // print(pretty_json);
+
             download_resume_pdf(
               resume: resume,
               text_bottom_margin_for_section: widget.text_bottom_margin_for_section,

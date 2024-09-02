@@ -77,7 +77,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
       item_index: item_index,
       section_index: section_index,
     );
-    setState(() {});
   }
 
   clone_item({
@@ -88,7 +87,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
       item_index: item_index,
       section_index: section_index,
     );
-    setState(() {});
   }
 
   @override
@@ -116,8 +114,6 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
         update_widget: true,
       );
     }
-    // TODO: Check if this setState is redundant
-    setState(() {});
   }
 
   show_snack_bar() {
