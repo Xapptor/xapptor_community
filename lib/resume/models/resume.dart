@@ -177,7 +177,9 @@ class Resume {
       icon_color: Colors.blue,
       language_code: 'en',
       text_list: [],
-      creation_date: Timestamp.now(),
+      creation_date: Timestamp.fromDate(
+        DateTime(2014, 5, 10),
+      ),
       user_id: '',
       slot_index: 0,
       chosen_image_bytes: null,

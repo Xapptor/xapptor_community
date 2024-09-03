@@ -62,15 +62,15 @@ extension StateExtension on ResumeEditorState {
       }
     }
 
-    if (current_resume != Resume.empty()) {
+    Timestamp current_resume_date = current_resume.creation_date;
+    Timestamp empty_resume_date = Resume.empty().creation_date;
+
+    if (current_resume_date != empty_resume_date) {
       // SETTING TRANSLATED TITLES
 
       List<String> text_array = text_list.get(source_language_index);
       current_resume.skills_title = text_array[4];
       current_resume.profile_section.title = text_array[5];
-
-      print("employment_sections_length:");
-      print(current_resume.employment_sections.length);
 
       current_resume.employment_sections.first.title = text_array[7];
       current_resume.education_sections.first.title = text_array[15];

@@ -30,10 +30,10 @@ extension StateExtension on ResumeEditorState {
       ),
       openButtonBuilder: FloatingActionButtonBuilder(
         size: 20,
-        builder: (context, onPressed, progress) {
+        builder: (context, on_pressed, progress) {
           return FloatingActionButton(
             heroTag: null,
-            onPressed: onPressed,
+            onPressed: on_pressed,
             tooltip: menu_label,
             child: const Icon(
               Icons.menu,

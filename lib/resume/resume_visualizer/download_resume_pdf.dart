@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -139,10 +139,11 @@ download_resume_pdf({
                                 ),
                                 child: pw.Row(
                                   children: [
-                                    PdfUrlText(
-                                      text: resume.email,
-                                      url: "mailto:${resume.email}",
-                                      font_size: font_size_website_url,
+                                    pw.Text(
+                                      resume.email,
+                                      style: pw.TextStyle(
+                                        fontSize: font_size_website_url,
+                                      ),
                                     ),
                                     pw.SizedBox(width: sized_box_space),
                                     PdfUrlText(
