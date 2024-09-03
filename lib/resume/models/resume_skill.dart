@@ -25,4 +25,12 @@ class ResumeSkill {
       'color': color.toHex(),
     };
   }
+
+  factory ResumeSkill.empty() {
+    return const ResumeSkill(
+      name: "",
+      percentage: 0.2,
+      color: Colors.blue,
+    );
+  }
 }

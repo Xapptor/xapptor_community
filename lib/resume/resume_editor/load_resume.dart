@@ -3,12 +3,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_font.dart';
-import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:xapptor_community/resume/models/resume_skill.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
@@ -131,27 +129,13 @@ extension StateExtension on ResumeEditorState {
       job_title_input_controller.text = current_resume.job_title;
       email_input_controller.text = current_resume.email;
       website_input_controller.text = current_resume.website;
-      profile_input_controller.text = current_resume.profile_section.description!;
+      profile_input_controller.text = current_resume.profile_section.description ?? "";
 
-      skill_sections = [
-        const ResumeSkill(
-          name: "",
-          percentage: 0.2,
-          color: Colors.blue,
-        ),
-      ];
+      skill_sections = [ResumeSkill.empty()];
+      employment_sections = [];
+      education_sections = [];
+      custom_sections = [];
 
-      employment_sections = [
-        ResumeSection(),
-      ];
-
-      education_sections = [
-        ResumeSection(),
-      ];
-
-      custom_sections = [
-        ResumeSection(),
-      ];
       setState(() {});
     }
 

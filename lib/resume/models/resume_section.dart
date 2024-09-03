@@ -86,9 +86,9 @@ class ResumeSection {
     return ResumeSection(
       icon: null,
       code_point: null,
-      title: "",
-      subtitle: "",
-      description: "",
+      title: null,
+      subtitle: null,
+      description: null,
       begin: null,
       end: null,
     );
