@@ -171,7 +171,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
               value: value!,
               type: FormFieldValidatorsType.name,
             ).validate(),
-            maxLength: widget.resume_section_form_type == ResumeSectionFormType.skill ? 30 : 50,
+            maxLength: widget.resume_section_form_type == ResumeSectionFormType.skill ? 30 : 60,
           ),
           widget.resume_section_form_type != ResumeSectionFormType.skill
               ? Column(
@@ -201,7 +201,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                         value: value!,
                         type: FormFieldValidatorsType.name,
                       ).validate(),
-                      maxLength: 50,
+                      maxLength: 60,
                     ),
                     TextFormField(
                       onChanged: (new_value) {
@@ -230,7 +230,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       ).validate(),
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
-                      maxLength: widget.resume_section_form_type == ResumeSectionFormType.custom ? 600 : 50,
+                      maxLength: widget.resume_section_form_type == ResumeSectionFormType.custom ? 600 : 60,
                     ),
                     widget.resume_section_form_type == ResumeSectionFormType.employment_history
                         ? TextFormField(
