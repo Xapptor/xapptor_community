@@ -127,6 +127,12 @@ extension StateExtension on ResumeEditorState {
         setState(() {});
       });
     } else {
+      name_input_controller.text = current_resume.name;
+      job_title_input_controller.text = current_resume.job_title;
+      email_input_controller.text = current_resume.email;
+      website_input_controller.text = current_resume.website;
+      profile_input_controller.text = current_resume.profile_section.description!;
+
       skill_sections = [
         const ResumeSkill(
           name: "",
@@ -134,10 +140,16 @@ extension StateExtension on ResumeEditorState {
           color: Colors.blue,
         ),
       ];
+
       employment_sections = [
         ResumeSection(),
       ];
+
       education_sections = [
+        ResumeSection(),
+      ];
+
+      custom_sections = [
         ResumeSection(),
       ];
       setState(() {});
