@@ -16,6 +16,7 @@ extension StateExtension on ResumeEditorState {
               focus_node: focus_node_1,
               on_field_submitted: (fieldValue) => focus_node_2.requestFocus(),
               controller: name_input_controller,
+              length_limit: FormFieldValidatorsType.name.get_Length(),
               validator: (value) => FormFieldValidators(
                 value: value!,
                 type: FormFieldValidatorsType.name,
@@ -30,6 +31,7 @@ extension StateExtension on ResumeEditorState {
               focus_node: focus_node_2,
               on_field_submitted: (fieldValue) => focus_node_3.requestFocus(),
               controller: job_title_input_controller,
+              length_limit: FormFieldValidatorsType.name.get_Length(),
               validator: (value) => FormFieldValidators(
                 value: value!,
                 type: FormFieldValidatorsType.name,
@@ -44,6 +46,7 @@ extension StateExtension on ResumeEditorState {
               focus_node: focus_node_3,
               on_field_submitted: (fieldValue) => focus_node_4.requestFocus(),
               controller: email_input_controller,
+              length_limit: FormFieldValidatorsType.email.get_Length(),
               validator: (value) => FormFieldValidators(
                 value: value!,
                 type: FormFieldValidatorsType.email,
@@ -58,6 +61,7 @@ extension StateExtension on ResumeEditorState {
               focus_node: focus_node_4,
               on_field_submitted: (fieldValue) => focus_node_5.requestFocus(),
               controller: website_input_controller,
+              length_limit: FormFieldValidatorsType.website.get_Length(),
               validator: (value) => FormFieldValidators(
                 value: value!,
                 type: FormFieldValidatorsType.website,
@@ -72,6 +76,7 @@ extension StateExtension on ResumeEditorState {
               focus_node: focus_node_5,
               on_field_submitted: (fieldValue) => null,
               controller: profile_input_controller,
+              length_limit: FormFieldValidatorsType.multiline_long.get_Length(),
               validator: (value) => FormFieldValidators(
                 value: value!,
                 type: FormFieldValidatorsType.multiline_long,
