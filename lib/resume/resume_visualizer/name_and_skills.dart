@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/font_configuration.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_visualizer/download_resume_pdf.dart';
 import 'package:xapptor_ui/values/ui.dart';
@@ -72,9 +71,6 @@ Widget name_and_skills({
             children: [
               SelectableText(
                 resume.email,
-                style: TextStyle(
-                  fontSize: font_size_website_url,
-                ),
               ),
               SizedBox(width: sized_box_space),
               UrlText(
