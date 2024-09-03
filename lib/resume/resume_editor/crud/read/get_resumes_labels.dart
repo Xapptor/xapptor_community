@@ -15,8 +15,16 @@ get_resumes_labels({
 
   if (main_resume_exists) {
     Resume main_resume = resumes.firstWhere((resume) => resume.slot_index == 0);
-    String main_date_String = date_format.format(main_resume.creation_date.toDate());
-    String label = "$main_label - $main_date_String";
+
+    String label = "";
+
+    if (main_resume.creation_date == Resume.empty().creation_date) {
+      label = main_label;
+    } else {
+      String main_date_String = date_format.format(main_resume.creation_date.toDate());
+      label = "$main_label - $main_date_String";
+    }
+
     labels.add(label);
   } else {
     if (resume_editor_alert_type != ResumeEditorAlertType.delete) {
