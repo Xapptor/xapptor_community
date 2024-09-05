@@ -36,58 +36,56 @@ class ResumeEditorAdditionalOptionsState extends State<ResumeEditorAdditionalOpt
   Widget build(BuildContext context) {
     bool portrait = is_portrait(context);
 
-    return font_families_value.isEmpty
-        ? Container()
-        : Column(
-            children: [
-              SizedBox(height: sized_box_space * 2),
-              Flex(
-                direction: portrait ? Axis.vertical : Axis.horizontal,
-                crossAxisAlignment: portrait ? CrossAxisAlignment.start : CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    font_family_title,
+    return Column(
+      children: [
+        SizedBox(height: sized_box_space * 2),
+        Flex(
+          direction: portrait ? Axis.vertical : Axis.horizontal,
+          crossAxisAlignment: portrait ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+          children: [
+            Text(
+              font_family_title,
+            ),
+            if (!portrait) SizedBox(width: sized_box_space),
+            DropdownButton<String>(
+              value: current_font_value.name,
+              items: font_families_value.map((ResumeFont font) {
+                return DropdownMenuItem<String>(
+                  value: font.name,
+                  child: Text(
+                    font.name,
+                    style: TextStyle(
+                      fontFamily: font.google_font_family,
+                    ),
                   ),
-                  if (!portrait) SizedBox(width: sized_box_space),
-                  DropdownButton<String>(
-                    value: current_font_value.name,
-                    items: font_families_value.map((ResumeFont font) {
-                      return DropdownMenuItem<String>(
-                        value: font.name,
-                        child: Text(
-                          font.name,
-                          style: TextStyle(
-                            fontFamily: font.google_font_family,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (String? value) {
-                      current_font_value = font_families_value.firstWhere(
-                        (ResumeFont font) => font.name == value,
-                      );
-                      setState(() {});
-                    },
-                  ),
-                ],
-              ),
-              if (portrait) SizedBox(height: sized_box_space),
-              Row(
-                children: [
-                  Text(
-                    checkbox_label,
-                  ),
-                  SizedBox(width: sized_box_space),
-                  Checkbox(
-                    value: show_time_amount,
-                    onChanged: (bool? value) {
-                      show_time_amount = value!;
-                      widget.callback();
-                    },
-                  ),
-                ],
-              ),
-            ],
-          );
+                );
+              }).toList(),
+              onChanged: (String? value) {
+                current_font_value = font_families_value.firstWhere(
+                  (ResumeFont font) => font.name == value,
+                );
+                setState(() {});
+              },
+            ),
+          ],
+        ),
+        if (portrait) SizedBox(height: sized_box_space),
+        Row(
+          children: [
+            Text(
+              checkbox_label,
+            ),
+            SizedBox(width: sized_box_space),
+            Checkbox(
+              value: show_time_amount,
+              onChanged: (bool? value) {
+                show_time_amount = value!;
+                widget.callback();
+              },
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

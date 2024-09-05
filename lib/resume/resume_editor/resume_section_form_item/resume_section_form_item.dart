@@ -232,37 +232,36 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       maxLines: null,
                       maxLength: widget.resume_section_form_type == ResumeSectionFormType.custom ? 600 : 60,
                     ),
-                    widget.resume_section_form_type == ResumeSectionFormType.employment_history
-                        ? TextFormField(
-                            onChanged: (new_value) {
-                              update_item(
-                                update_widget: false,
-                              );
-                            },
-                            style: TextStyle(
+                    if (widget.resume_section_form_type == ResumeSectionFormType.employment_history)
+                      TextFormField(
+                        onChanged: (new_value) {
+                          update_item(
+                            update_widget: false,
+                          );
+                        },
+                        style: TextStyle(
+                          color: widget.text_color,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: field_4_hint,
+                          labelStyle: TextStyle(
+                            color: widget.text_color,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
                               color: widget.text_color,
                             ),
-                            decoration: InputDecoration(
-                              labelText: field_4_hint,
-                              labelStyle: TextStyle(
-                                color: widget.text_color,
-                              ),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: widget.text_color,
-                                ),
-                              ),
-                            ),
-                            controller: field_4_input_controller,
-                            validator: (value) => FormFieldValidators(
-                              value: value!,
-                              type: FormFieldValidatorsType.name,
-                            ).validate(),
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            maxLength: 600,
-                          )
-                        : Container(),
+                          ),
+                        ),
+                        controller: field_4_input_controller,
+                        validator: (value) => FormFieldValidators(
+                          value: value!,
+                          type: FormFieldValidatorsType.name,
+                        ).validate(),
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        maxLength: 600,
+                      ),
                   ],
                 )
               : Column(
@@ -313,63 +312,61 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           SizedBox(
             height: sized_box_space,
           ),
-          widget.resume_section_form_type == ResumeSectionFormType.skill
-              ? Container()
-              : SizedBox(
-                  width: screen_width,
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      elevation: WidgetStateProperty.all<double>(
-                        0,
+          if (widget.resume_section_form_type != ResumeSectionFormType.skill)
+            SizedBox(
+              width: screen_width,
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  elevation: WidgetStateProperty.all<double>(
+                    0,
+                  ),
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                    Colors.transparent,
+                  ),
+                  overlayColor: WidgetStateProperty.all<Color>(
+                    Colors.grey.withOpacity(0.2),
+                  ),
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        MediaQuery.of(context).size.width,
                       ),
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                        Colors.transparent,
-                      ),
-                      overlayColor: WidgetStateProperty.all<Color>(
-                        Colors.grey.withOpacity(0.2),
-                      ),
-                      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            MediaQuery.of(context).size.width,
-                          ),
-                          side: BorderSide(
-                            color: widget.text_color,
-                          ),
-                        ),
-                      ),
-                    ),
-                    onPressed: () {
-                      show_select_date_alert_dialog(widget.text_list[6]);
-                    },
-                    child: Text(
-                      timeframe_text,
-                      style: TextStyle(
+                      side: BorderSide(
                         color: widget.text_color,
                       ),
                     ),
                   ),
                 ),
+                onPressed: () {
+                  show_select_date_alert_dialog(widget.text_list[6]);
+                },
+                child: Text(
+                  timeframe_text,
+                  style: TextStyle(
+                    color: widget.text_color,
+                  ),
+                ),
+              ),
+            ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom
-                      ? IconButton(
-                          onPressed: () {
-                            widget.remove_item(
-                              item_index: widget.item_index,
-                              section_index: widget.section_index,
-                            );
-                          },
-                          icon: const Icon(
-                            FontAwesomeIcons.trash,
-                          ),
-                          color: Colors.red,
-                        )
-                      : Container(),
+                  if (widget.item_index != 0 || widget.resume_section_form_type == ResumeSectionFormType.custom)
+                    IconButton(
+                      onPressed: () {
+                        widget.remove_item(
+                          item_index: widget.item_index,
+                          section_index: widget.section_index,
+                        );
+                      },
+                      icon: const Icon(
+                        FontAwesomeIcons.trash,
+                      ),
+                      color: Colors.red,
+                    ),
                   IconButton(
                     onPressed: () {
                       widget.clone_item(

@@ -135,7 +135,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
     }
   }
 
-  Widget profile_image() {
+  Widget? profile_image() {
     if (current_resume != null) {
       Uint8List? image_bytes = current_resume!.chosen_image_bytes;
       String image_url = current_resume!.image_url;
@@ -154,10 +154,10 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                 ),
         );
       } else {
-        return Container();
+        return null;
       }
     } else {
-      return Container();
+      return null;
     }
   }
 
@@ -186,7 +186,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                           direction: portrait ? Axis.vertical : Axis.horizontal,
                           children: portrait
                               ? [
-                                  profile_image(),
+                                  if (profile_image() != null) profile_image()!,
                                   get_name_and_skills(
                                     portrait,
                                     screen_width,
@@ -195,7 +195,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                               : [
                                   Expanded(
                                     flex: 1,
-                                    child: profile_image(),
+                                    child: profile_image() ?? const SizedBox(),
                                   ),
                                   Expanded(
                                     flex: 2,
@@ -219,7 +219,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
               ],
             ),
           )
-        : Container();
+        : const CircularProgressIndicator();
 
     return widget.resume != null
         ? body

@@ -160,11 +160,12 @@ class ResumeEditorState extends State<ResumeEditor> {
                     children: [
                       resume_editor_top_option_buttons(),
                       resume_editor_text_fields(),
-                      ResumeEditorAdditionalOptions(
-                        callback: () {
-                          setState(() {});
-                        },
-                      ),
+                      if (font_families_value.isNotEmpty)
+                        ResumeEditorAdditionalOptions(
+                          callback: () {
+                            setState(() {});
+                          },
+                        ),
                       resume_sections(),
                     ],
                   ),

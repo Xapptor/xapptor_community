@@ -57,7 +57,7 @@ download_resume_pdf({
 
     profile_image = pw.Image(profile_image);
   } else {
-    profile_image = pw.Container();
+    profile_image = pw.SizedBox();
   }
 
   ResumeFont font = current_font_value;
