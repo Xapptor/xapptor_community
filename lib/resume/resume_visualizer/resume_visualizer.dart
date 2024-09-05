@@ -193,10 +193,12 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
                                   ),
                                 ]
                               : [
-                                  Expanded(
-                                    flex: 1,
-                                    child: profile_image() ?? const SizedBox(),
-                                  ),
+                                  profile_image() != null
+                                      ? Expanded(
+                                          flex: 1,
+                                          child: profile_image()!,
+                                        )
+                                      : const Spacer(flex: 1),
                                   Expanded(
                                     flex: 2,
                                     child: get_name_and_skills(
