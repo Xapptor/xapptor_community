@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'package:xapptor_community/resume/models/resume.dart';
-import 'package:xapptor_community/resume/resume_editor/apply_timer.dart';
+import 'package:xapptor_community/resume/resume_editor/update_language_callback_and_load.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor.dart';
 
 extension StateExtension on ResumeEditorState {
@@ -20,7 +20,7 @@ extension StateExtension on ResumeEditorState {
       last_resume = resumes[slot_index];
     }
 
-    apply_timer(
+    update_language_callback_and_load(
       last_resume: last_resume,
       past_language_code: past_language_code,
       new_language_code: new_language_code,

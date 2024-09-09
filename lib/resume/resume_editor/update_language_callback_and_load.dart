@@ -9,7 +9,7 @@ import 'package:xapptor_logic/check_browser_type.dart';
 import 'package:xapptor_community/resume/resume_editor/crud/read/get_resumes.dart';
 
 extension StateExtension on ResumeEditorState {
-  apply_timer({
+  update_language_callback_and_load({
     required Resume? last_resume,
     required String past_language_code,
     required String new_language_code,
