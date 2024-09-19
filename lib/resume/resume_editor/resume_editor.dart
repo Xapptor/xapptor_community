@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/resume_editor/crud/read/get_slot_label.dart';
@@ -18,6 +17,7 @@ import 'package:xapptor_community/resume/resume_editor/crud/update/update_source
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
+import 'package:xapptor_ui/widgets/text_field/focus_node_template.dart';
 import 'package:xapptor_ui/widgets/top_and_bottom/topbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -52,11 +52,43 @@ class ResumeEditorState extends State<ResumeEditor> {
   FocusNode focus_node_3 = FocusNode();
   FocusNode focus_node_4 = FocusNode();
   FocusNode focus_node_5 = FocusNode();
-  FocusNode focus_node_6 = FocusNode();
-  FocusNode focus_node_7 = FocusNode();
-  FocusNode focus_node_8 = FocusNode();
-  FocusNode focus_node_9 = FocusNode();
-  FocusNode focus_node_10 = FocusNode();
+
+  init_focus_nodes() {
+    focus_node_1 = focus_node_template(
+      controller: name_input_controller,
+      callback: () {
+        focus_node_2.requestFocus();
+      },
+    );
+
+    focus_node_2 = focus_node_template(
+      controller: job_title_input_controller,
+      callback: () {
+        focus_node_3.requestFocus();
+      },
+    );
+
+    focus_node_3 = focus_node_template(
+      controller: email_input_controller,
+      callback: () {
+        focus_node_4.requestFocus();
+      },
+    );
+
+    focus_node_4 = focus_node_template(
+      controller: website_input_controller,
+      callback: () {
+        focus_node_5.requestFocus();
+      },
+    );
+
+    focus_node_5 = focus_node_template(
+      controller: profile_input_controller,
+      callback: () {
+        focus_node_5.unfocus();
+      },
+    );
+  }
 
   double screen_height = 0;
   double screen_width = 0;
@@ -109,6 +141,7 @@ class ResumeEditorState extends State<ResumeEditor> {
 
   @override
   void initState() {
+    init_focus_nodes();
     init_text_lists();
 
     super.initState();
