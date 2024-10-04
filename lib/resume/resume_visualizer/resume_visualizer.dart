@@ -167,61 +167,63 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
     double screen_width = MediaQuery.of(context).size.width;
     bool portrait = screen_height > screen_width;
 
-    Widget body = current_resume != null
-        ? Container(
-            color: Colors.white,
-            child: ListView(
-              physics: widget.resume == null ? const ScrollPhysics() : const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(
-                    vertical: screen_height / 10,
-                  ),
-                  child: FractionallySizedBox(
-                    widthFactor: portrait ? 0.85 : 0.5,
-                    child: Column(
-                      children: [
-                        Flex(
-                          direction: portrait ? Axis.vertical : Axis.horizontal,
-                          children: portrait
-                              ? [
-                                  if (profile_image() != null) profile_image()!,
-                                  get_name_and_skills(
-                                    portrait,
-                                    screen_width,
-                                  ),
-                                ]
-                              : [
-                                  profile_image() != null
-                                      ? Expanded(
-                                          flex: 1,
-                                          child: profile_image()!,
-                                        )
-                                      : const Spacer(flex: 1),
-                                  Expanded(
-                                    flex: 2,
-                                    child: get_name_and_skills(
+    Widget body = Center(
+      child: current_resume != null
+          ? Container(
+              color: Colors.white,
+              child: ListView(
+                physics: widget.resume == null ? const ScrollPhysics() : const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      vertical: screen_height / 10,
+                    ),
+                    child: FractionallySizedBox(
+                      widthFactor: portrait ? 0.85 : 0.5,
+                      child: Column(
+                        children: [
+                          Flex(
+                            direction: portrait ? Axis.vertical : Axis.horizontal,
+                            children: portrait
+                                ? [
+                                    if (profile_image() != null) profile_image()!,
+                                    get_name_and_skills(
                                       portrait,
                                       screen_width,
                                     ),
-                                  ),
-                                ],
-                        ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            children: sections,
+                                  ]
+                                : [
+                                    profile_image() != null
+                                        ? Expanded(
+                                            flex: 1,
+                                            child: profile_image()!,
+                                          )
+                                        : const Spacer(flex: 1),
+                                    Expanded(
+                                      flex: 2,
+                                      child: get_name_and_skills(
+                                        portrait,
+                                        screen_width,
+                                      ),
+                                    ),
+                                  ],
                           ),
-                        ),
-                      ],
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              children: sections,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          )
-        : const CircularProgressIndicator();
+                ],
+              ),
+            )
+          : const CircularProgressIndicator(),
+    );
 
     return widget.resume != null
         ? body
