@@ -230,7 +230,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                       ).validate(),
                       keyboardType: TextInputType.multiline,
                       maxLines: null,
-                      maxLength: widget.resume_section_form_type == ResumeSectionFormType.custom ? 600 : 60,
+                      maxLength: widget.resume_section_form_type == ResumeSectionFormType.custom ? 1000 : 60,
                     ),
                     if (widget.resume_section_form_type == ResumeSectionFormType.employment_history)
                       TextFormField(
@@ -260,7 +260,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                         ).validate(),
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
-                        maxLength: 600,
+                        maxLength: 1000,
                       ),
                   ],
                 )
