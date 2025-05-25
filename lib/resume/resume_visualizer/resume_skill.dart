@@ -14,8 +14,11 @@ pw.Widget resume_skill_pw({
 }) {
   double current_bar_width = 165 * skill.percentage;
 
-  PdfColor pdf_color = PdfColor.fromInt(
-    skill.color.value,
+  PdfColor pdf_color = PdfColor(
+    skill.color.r,
+    skill.color.g,
+    skill.color.b,
+    skill.color.a,
   );
 
   PdfColor background_color = PdfColor(
@@ -55,8 +58,11 @@ pw.Widget resume_skill_pw({
               width: current_bar_width,
               decoration: pw.BoxDecoration(
                 borderRadius: pw.BorderRadius.circular(3.5),
-                color: PdfColor.fromInt(
-                  skill.color.value,
+                color: PdfColor(
+                  skill.color.r,
+                  skill.color.g,
+                  skill.color.b,
+                  skill.color.a,
                 ),
               ),
             ),
@@ -153,7 +159,7 @@ class _ResumeSkillState extends State<ResumeSkill> {
                 width: double.maxFinite,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1000),
-                  color: widget.skill.color.withOpacity(0.5),
+                  color: widget.skill.color.withValues(alpha: 0.5),
                 ),
               ),
               AnimatedContainer(

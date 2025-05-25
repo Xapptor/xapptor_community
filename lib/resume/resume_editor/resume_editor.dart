@@ -214,7 +214,7 @@ class ResumeEditorState extends State<ResumeEditor> {
             ),
           ),
           Container(
-            color: widget.color_topbar.withOpacity(0.7),
+            color: widget.color_topbar.withValues(alpha: 0.7),
             width: double.maxFinite,
             height: 40,
             child: Center(

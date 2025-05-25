@@ -324,7 +324,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     Colors.transparent,
                   ),
                   overlayColor: WidgetStateProperty.all<Color>(
-                    Colors.grey.withOpacity(0.2),
+                    Colors.grey.withValues(alpha: 0.2),
                   ),
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                     RoundedRectangleBorder(

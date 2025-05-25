@@ -11,20 +11,20 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cloud_firestore: ^5.3.0
-  firebase_auth: ^5.2.0
-  firebase_storage: ^12.2.0
+  cloud_firestore: ^5.6.7
+  firebase_auth: ^5.5.3
+  firebase_storage: ^12.4.5
 
   google_fonts: ^6.2.1
   universal_platform: ^1.1.0
-  pdf: ^3.11.1
-  printing: ^5.13.2
-  file_picker: ^8.1.2
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  file_picker: ^10.1.9
   flutter_colorpicker: ^1.1.0
   intl: ^0.19.0
-  http: ^1.2.0
-  font_awesome_flutter: ^10.7.0
-  flutter_expandable_fab: ^2.2.0
+  http: ^1.4.0
+  font_awesome_flutter: ^10.8.0
+  flutter_expandable_fab: ^2.5.1
 
   # xapptor_logic: ^0.0.3
   # xapptor_router: ^0.0.2

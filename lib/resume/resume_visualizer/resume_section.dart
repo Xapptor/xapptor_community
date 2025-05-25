@@ -39,8 +39,11 @@ pw.Widget resume_section_pw({
                   pw.IconData(
                     resume_section.code_point!,
                   ),
-                  color: PdfColor.fromInt(
-                    resume.icon_color.value,
+                  color: PdfColor(
+                    resume.icon_color.r,
+                    resume.icon_color.g,
+                    resume.icon_color.b,
+                    resume.icon_color.a,
                   ),
                   size: 16,
                 )
