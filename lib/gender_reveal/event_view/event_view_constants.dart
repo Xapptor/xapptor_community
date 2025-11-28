@@ -1,0 +1,16 @@
+const int k_min_shake_interval_seconds = 3;
+const int k_max_shake_interval_seconds = 6;
+const int k_confetti_duration_seconds = 6;
+const int k_voting_card_hide_delay_ms = 1200;
+const int k_voting_card_show_delay_seconds = 30;
+const int k_audio_play_delay_seconds = 1;
+const double k_shake_delta_x = 4.0;
+const double k_shake_angle = 0.04;
+const double k_shake_frequency = 6.0;
+const double k_celebration_icon_size = 44.0;
+const double k_section_max_width_narrow = 420.0;
+const double k_section_max_width_wide = 520.0;
+const int k_glow_animation_duration_ms = 1600;
+const int k_shake_animation_duration_ms = 450;
+const int k_fade_animation_duration_seconds = 2;
+const double k_scroll_factor_threshold = 0.01;

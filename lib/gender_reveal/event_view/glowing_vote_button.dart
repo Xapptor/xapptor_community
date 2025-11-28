@@ -3,35 +3,35 @@ import 'package:flutter/material.dart';
 class GlowingVoteButton extends StatelessWidget {
   final String label;
   final IconData icon;
-  final bool isSelected;
-  final double glowStrength;
+  final bool is_selected;
+  final double glow_strength;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback on_tap;
 
   const GlowingVoteButton({
     super.key,
     required this.label,
     required this.icon,
-    required this.isSelected,
-    required this.glowStrength,
+    required this.is_selected,
+    required this.glow_strength,
     required this.color,
-    required this.onTap,
+    required this.on_tap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final inactiveForeground = theme.colorScheme.onSurface;
-    final activeForeground = theme.colorScheme.onPrimary;
+    final inactive_foreground = theme.colorScheme.onSurface;
+    final active_foreground = theme.colorScheme.onPrimary;
 
     return Transform.scale(
-      scale: isSelected ? 1 + glowStrength * 0.04 : 1,
+      scale: is_selected ? 1 + glow_strength * 0.1 : 1,
       child: AnimatedContainer(
         margin: const EdgeInsets.symmetric(horizontal: 4),
         duration: const Duration(milliseconds: 240),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          gradient: isSelected
+          gradient: is_selected
               ? LinearGradient(
                   colors: [
                     color.withAlpha((255 * 0.95).round()),
@@ -50,16 +50,16 @@ class GlowingVoteButton extends StatelessWidget {
                 ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
+            color: is_selected
                 ? color.withAlpha((255 * 0.8).round())
                 : theme.colorScheme.onSurface.withAlpha((255 * 0.12).round()),
           ),
           boxShadow: [
-            if (glowStrength > 0)
+            if (glow_strength > 0)
               BoxShadow(
-                color: color.withAlpha((255 * 0.45 * glowStrength).round()),
-                blurRadius: 24 + (16 * glowStrength),
-                spreadRadius: 2 + (4 * glowStrength),
+                color: color.withAlpha((255 * 0.45 * glow_strength).round()),
+                blurRadius: 24 + (16 * glow_strength),
+                spreadRadius: 2 + (4 * glow_strength),
               ),
           ],
         ),
@@ -67,7 +67,7 @@ class GlowingVoteButton extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
-            onTap: onTap,
+            onTap: on_tap,
             child: Padding(
               // 🔹 a bit less horizontal padding to help on tiny widths
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
@@ -80,7 +80,7 @@ class GlowingVoteButton extends StatelessWidget {
                   children: [
                     Icon(
                       icon,
-                      color: isSelected ? activeForeground : inactiveForeground,
+                      color: is_selected ? active_foreground : inactive_foreground,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -88,7 +88,7 @@ class GlowingVoteButton extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
-                        color: isSelected ? activeForeground : inactiveForeground,
+                        color: is_selected ? active_foreground : inactive_foreground,
                       ),
                     ),
                   ],

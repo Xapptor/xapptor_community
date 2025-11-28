@@ -32,11 +32,15 @@ dependencies:
   just_audio: ^0.10.5
   confetti: ^0.8.0
 
+  # xapptor_auth: ^0.0.3
+  # xapptor_db: ^0.0.3
   # xapptor_logic: ^0.0.3
   # xapptor_router: ^0.0.2
   # xapptor_translation: ^0.0.3
   # xapptor_ui: ^0.0.3
 
+  xapptor_auth:
+    path: ../xapptor_auth
   xapptor_db:
     path: ../xapptor_db
   xapptor_logic:

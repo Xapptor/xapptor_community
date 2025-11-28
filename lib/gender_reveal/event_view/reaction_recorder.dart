@@ -2,8 +2,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 class ReactionRecorder extends StatefulWidget {
+  final double border_radius;
+
   const ReactionRecorder({
     super.key,
+    this.border_radius = 20,
   });
 
   @override
@@ -66,30 +69,28 @@ class _ReactionRecorderState extends State<ReactionRecorder> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     if (!camera_permission_granted || controller == null || !controller!.value.isInitialized) {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: size.height,
-      width: size.width,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(widget.border_radius),
       child: CameraPreview(
         controller!,
         child: Stack(
           children: [
-            Align(
-              alignment: Alignment.center,
-              child: Text(
-                countdown_seconds.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 150,
-                  fontWeight: FontWeight.bold,
+            if (countdown_seconds > 0 && countdown_seconds < 8)
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  countdown_seconds.toString(),
+                  style: TextStyle(
+                    color: Colors.white.withAlpha(255 - (countdown_seconds * -32)),
+                    fontSize: 150,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
             Container(
               alignment: Alignment.bottomCenter,
               margin: const EdgeInsets.only(bottom: 60),
