@@ -6,12 +6,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 event_view_fab({
   required GlobalKey<ExpandableFabState> expandable_fab_key,
-  required String load_label,
-  required String save_label,
-  required String delete_label,
-  required String download_label,
   required String menu_label,
   required String close_label,
+  required String volume_label,
+  required String back_label,
+  required String play_label,
+  required String forward_label,
+  required String share_label,
+  required bool sound_is_on,
+  required bool is_playing,
 }) {
   return ExpandableFab(
     key: expandable_fab_key,
@@ -49,84 +52,83 @@ event_view_fab({
       },
     ),
     children: [
-      // LOAD
-
+      // VOLUME ON/OFF
+      //
       FloatingActionButton.extended(
         heroTag: null,
         onPressed: () {
           //
         },
         backgroundColor: Colors.pink,
-        tooltip: load_label,
-        label: Row(
-          children: [
-            Text(
-              load_label,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              FontAwesomeIcons.server,
-              color: Colors.white,
-              size: 20,
-            ),
-          ],
+        tooltip: volume_label,
+        label: Icon(
+          sound_is_on ? FontAwesomeIcons.volumeHigh : FontAwesomeIcons.volumeXmark,
+          color: Colors.white,
+          size: 20,
         ),
       ),
 
-      // SAVE
-
+      // BACK SONG
+      //
       FloatingActionButton.extended(
         heroTag: null,
         onPressed: () {
           //
         },
         backgroundColor: Colors.green,
-        tooltip: save_label,
-        label: Row(
-          children: [
-            Text(
-              save_label,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              FontAwesomeIcons.cloudArrowUp,
-              color: Colors.white,
-              size: 20,
-            ),
-          ],
+        tooltip: back_label,
+        label: const Icon(
+          FontAwesomeIcons.backward,
+          color: Colors.white,
+          size: 20,
         ),
       ),
 
-      // DELETE
-
+      // PLAY/STOP SONG
+      //
       FloatingActionButton.extended(
         heroTag: null,
         onPressed: () {
           //
         },
         backgroundColor: Colors.red,
-        tooltip: delete_label,
-        label: Row(
-          children: [
-            Text(
-              delete_label,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              FontAwesomeIcons.trash,
-              color: Colors.white,
-              size: 20,
-            ),
-          ],
+        tooltip: play_label,
+        label: Icon(
+          is_playing ? FontAwesomeIcons.stop : FontAwesomeIcons.play,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+
+      // FORWARD SONG
+      //
+      FloatingActionButton.extended(
+        heroTag: null,
+        onPressed: () {
+          //
+        },
+        backgroundColor: Colors.green,
+        tooltip: forward_label,
+        label: const Icon(
+          FontAwesomeIcons.forward,
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+
+      // SHARE BUTTON
+      //
+      FloatingActionButton.extended(
+        heroTag: null,
+        onPressed: () {
+          //
+        },
+        backgroundColor: Colors.red,
+        tooltip: share_label,
+        label: const Icon(
+          FontAwesomeIcons.share,
+          color: Colors.white,
+          size: 20,
         ),
       ),
     ].reversed.toList(),
