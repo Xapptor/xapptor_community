@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 
-const double main_alpha = 0.75;
+const double main_alpha = 0.7;
 
 class CountdownView extends StatefulWidget {
   final int milliseconds_sice_epoch;
@@ -44,7 +44,7 @@ class _CountdownViewState extends State<CountdownView> {
     setState(() => _remaining = diff);
   }
 
-  String _twoDigits(int value) => value.toString().padLeft(2, '0');
+  String _two_digits(int value) => value == 0 ? '0' : value.toString().padLeft(2, '0');
 
   @override
   Widget build(BuildContext context) {
@@ -66,31 +66,31 @@ class _CountdownViewState extends State<CountdownView> {
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: 'Days',
-              value: _twoDigits(days),
+              label: days == 1 ? 'Day' : 'Days',
+              value: _two_digits(days),
             ),
           ),
         if (days > 0 || hours > 0)
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: 'Hours',
-              value: _twoDigits(hours),
+              label: hours == 1 ? 'Hour' : 'Hours',
+              value: _two_digits(hours),
             ),
           ),
         if (hours > 0 || minutes > 0)
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: 'Minutes',
-              value: _twoDigits(minutes),
+              label: minutes == 1 ? 'Minute' : 'Minutes',
+              value: _two_digits(minutes),
             ),
           ),
         Expanded(
           flex: 1,
           child: _TimeBlock(
-            label: 'Seconds',
-            value: _twoDigits(seconds),
+            label: seconds == 1 ? 'Second' : 'Seconds',
+            value: _two_digits(seconds),
           ),
         ),
       ],
@@ -129,28 +129,26 @@ class _TimeBlock extends StatelessWidget {
       },
       child: Container(
         key: ValueKey<String>('$label$value'),
-        padding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 18,
-        ),
+        padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               value,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withAlpha((255 * main_alpha).round()),
-                fontSize: portrait ? 20 : 54,
+                fontSize: portrait ? 20 : 40,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withAlpha((255 * main_alpha).round()),
-                fontSize: portrait ? 12 : 34,
-                letterSpacing: 1.2,
+                fontSize: portrait ? 12 : 32,
               ),
             ),
           ],

@@ -69,7 +69,6 @@ class GlowingVoteButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             onTap: on_tap,
             child: Padding(
-              // 🔹 a bit less horizontal padding to help on tiny widths
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
               // 🔹 this makes the row shrink instead of overflow
               child: FittedBox(

@@ -23,6 +23,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   bool show_voting_card = false;
   bool enable_voting_card = false;
   final bool show_countdown = false;
+  bool tooltip_shown = false;
 
   // Animation controllers
   late AnimationController glow_controller;
@@ -48,6 +49,12 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   void initialize_state() {
     get_event_from_path();
     check_if_user_voted();
+    // Show the celebration tooltip once after first build to avoid layout mutations.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || tooltip_shown) return;
+      celebration_tooltip_key.currentState?.ensureTooltipVisible();
+      tooltip_shown = true;
+    });
 
     // Initialize audio player and confetti
     player = AudioPlayer();
@@ -84,11 +91,10 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   void on_shake_status_changed(AnimationStatus status) {
     if (!mounted) return;
 
-    celebration_tooltip_key.currentState?.ensureTooltipVisible();
-
     if (status == AnimationStatus.completed) {
       shake_controller.reset();
       schedule_next_shake();
+      tooltip_shown = true;
     }
   }
 

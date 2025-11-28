@@ -124,39 +124,42 @@ mixin EventViewWidgetsMixin {
             SizedBox(height: sized_box_space),
 
             // Vote buttons with glow animation
-            AnimatedBuilder(
-              animation: glow_animation,
-              builder: (context, _) {
-                final glow = glow_animation.value;
-                return Row(
-                  children: [
-                    Expanded(
-                      child: GlowingVoteButton(
-                        label: 'Boy',
-                        icon: Icons.male,
-                        color: boy_color,
-                        is_selected: selected_vote == 'boy',
-                        glow_strength: selected_vote == 'boy' ? glow : 0,
-                        on_tap: () => on_vote_selected('boy'),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: AnimatedBuilder(
+                animation: glow_animation,
+                builder: (context, _) {
+                  final glow = glow_animation.value;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: GlowingVoteButton(
+                          label: 'Boy',
+                          icon: Icons.male,
+                          color: boy_color,
+                          is_selected: selected_vote == 'boy',
+                          glow_strength: selected_vote == 'boy' ? glow : 0,
+                          on_tap: () => on_vote_selected('boy'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GlowingVoteButton(
-                        label: 'Girl',
-                        icon: Icons.female,
-                        color: girl_color,
-                        is_selected: selected_vote == 'girl',
-                        glow_strength: selected_vote == 'girl' ? glow : 0,
-                        on_tap: () => on_vote_selected('girl'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GlowingVoteButton(
+                          label: 'Girl',
+                          icon: Icons.female,
+                          color: girl_color,
+                          is_selected: selected_vote == 'girl',
+                          glow_strength: selected_vote == 'girl' ? glow : 0,
+                          on_tap: () => on_vote_selected('girl'),
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
 
-            SizedBox(height: sized_box_space),
+            SizedBox(height: sized_box_space * 1.5),
 
             if (selected_vote != null)
               Row(
@@ -170,6 +173,7 @@ mixin EventViewWidgetsMixin {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  SizedBox(width: sized_box_space / 2),
                   Icon(
                     selected_vote == 'boy' ? Icons.male : Icons.female,
                     color: selected_vote == 'boy' ? Colors.blue : Colors.pink,

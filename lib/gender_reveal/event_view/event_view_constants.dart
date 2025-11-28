@@ -13,4 +13,3 @@ const double k_section_max_width_wide = 520.0;
 const int k_glow_animation_duration_ms = 1600;
 const int k_shake_animation_duration_ms = 450;
 const int k_fade_animation_duration_seconds = 2;
-const double k_scroll_factor_threshold = 0.01;
