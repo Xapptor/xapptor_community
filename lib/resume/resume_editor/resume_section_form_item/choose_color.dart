@@ -6,7 +6,7 @@ import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/update_item.dart';
 
 extension StateExtension on ResumeSectionFormItemState {
-  choose_color() async {
+  Future<void> choose_color() async {
     await showDialog(
       context: context,
       builder: (context) {

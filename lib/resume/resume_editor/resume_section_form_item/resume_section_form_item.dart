@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xapptor_community/resume/get_timeframe_text.dart';
+import 'package:xapptor_community/utils/get_timeframe_text.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/choose_color.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_section_form_item/populate_fields.dart';

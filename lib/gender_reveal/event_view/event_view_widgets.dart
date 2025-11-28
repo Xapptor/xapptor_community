@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:xapptor_community/gender_reveal/event_view/charts/bar_chart_widget.dart';
 import 'package:xapptor_community/gender_reveal/event_view/charts/pie_chart.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
-import 'package:xapptor_community/gender_reveal/event_view/glowing_vote_button.dart';
+import 'package:xapptor_ui/widgets/buttons/glowing_vote_button.dart';
 import 'package:xapptor_logic/string/capitalize.dart';
 import 'package:xapptor_ui/values/ui.dart';
 

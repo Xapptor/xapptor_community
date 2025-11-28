@@ -4,7 +4,7 @@ import 'package:xapptor_community/resume/models/resume.dart';
 import 'package:xapptor_community/resume/models/resume_section.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
-import 'package:xapptor_community/resume/get_timeframe_text.dart';
+import 'package:xapptor_community/utils/get_timeframe_text.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 
 // Resume, descriptive section for PDF.

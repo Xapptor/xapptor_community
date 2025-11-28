@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:xapptor_community/resume/resume_editor/resume_editor_additional_options.dart';
 
-get_timeframe_text({
+String get_timeframe_text({
   required DateTime begin,
   required DateTime end,
   required String language_code,

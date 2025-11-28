@@ -4,26 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_custom_text.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
-import 'package:xapptor_community/ui/slideshow/loading_memories_message.dart';
+import 'package:xapptor_community/ui/slideshow/loading_message.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
 import 'package:xapptor_logic/image/get_image_size.dart';
 import 'package:xapptor_logic/video/get_video_size.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
 class Slideshow extends StatefulWidget {
-  final List<String> image_paths;
+  final List<String>? image_paths;
   final List<String>? video_paths;
   final bool use_examples;
   final String title;
   final String subtitle;
+  final String loading_message;
 
   const Slideshow({
     super.key,
-    required this.image_paths,
+    this.image_paths,
     this.video_paths,
-    required this.use_examples,
+    this.use_examples = false,
     this.title = "",
     this.subtitle = "",
+    this.loading_message = "Loading...",
   });
 
   @override
@@ -107,7 +109,11 @@ class _SlideshowState extends State<Slideshow> {
     all_images.clear();
 
     final bool using_examples = widget.use_examples;
-    final List<String> paths = using_examples ? image_urls : widget.image_paths;
+    final List<String> paths = using_examples
+        ? image_urls
+        : widget.image_paths != null
+            ? widget.image_paths!
+            : [];
 
     if (paths.isEmpty) {
       if (mounted) setState(() {});
@@ -304,7 +310,9 @@ class _SlideshowState extends State<Slideshow> {
     }
 
     if (all_images.isEmpty) {
-      return loading_memories_message();
+      return loading_message(
+        loading_message: widget.loading_message,
+      );
     }
 
     return Stack(
