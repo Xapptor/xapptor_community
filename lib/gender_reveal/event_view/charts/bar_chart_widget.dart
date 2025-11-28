@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:xapptor_ui/values/ui.dart';
 
 class BarChartWidget extends StatelessWidget {
   final double boy_votes;
@@ -117,7 +118,7 @@ class BarChartWidget extends StatelessWidget {
                 BarChartRodData(
                   toY: boy_votes,
                   width: 42,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(outline_border_radius),
                   gradient: const LinearGradient(
                     colors: [
                       Color(0xFF64B5F6),
@@ -136,7 +137,7 @@ class BarChartWidget extends StatelessWidget {
                 BarChartRodData(
                   toY: girl_votes,
                   width: 42,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(outline_border_radius),
                   gradient: const LinearGradient(
                     colors: [
                       Color(0xFFF48FB1),

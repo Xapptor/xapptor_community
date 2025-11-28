@@ -8,7 +8,7 @@ import 'package:xapptor_ui/widgets/text_field/custom_text_field_model.dart';
 extension StateExtension on ResumeEditorState {
   resume_editor_text_fields() => Column(
         children: [
-          SizedBox(height: sized_box_space),
+          const SizedBox(height: sized_box_space),
           CustomTextField(
             model: CustomTextFieldModel(
               title: text_list.get(source_language_index)[0],
@@ -23,7 +23,7 @@ extension StateExtension on ResumeEditorState {
               ).validate(),
             ),
           ),
-          SizedBox(height: sized_box_space),
+          const SizedBox(height: sized_box_space),
           CustomTextField(
             model: CustomTextFieldModel(
               title: text_list.get(source_language_index)[1],
@@ -38,7 +38,7 @@ extension StateExtension on ResumeEditorState {
               ).validate(),
             ),
           ),
-          SizedBox(height: sized_box_space),
+          const SizedBox(height: sized_box_space),
           CustomTextField(
             model: CustomTextFieldModel(
               title: text_list.get(source_language_index)[2],
@@ -53,7 +53,7 @@ extension StateExtension on ResumeEditorState {
               ).validate(),
             ),
           ),
-          SizedBox(height: sized_box_space),
+          const SizedBox(height: sized_box_space),
           CustomTextField(
             model: CustomTextFieldModel(
               title: text_list.get(source_language_index)[3],
@@ -68,7 +68,7 @@ extension StateExtension on ResumeEditorState {
               ).validate(),
             ),
           ),
-          SizedBox(height: sized_box_space),
+          const SizedBox(height: sized_box_space),
           CustomTextField(
             model: CustomTextFieldModel(
               title: text_list.get(source_language_index)[5],

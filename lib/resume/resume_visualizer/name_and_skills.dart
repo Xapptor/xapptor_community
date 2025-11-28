@@ -72,7 +72,7 @@ Widget name_and_skills({
               SelectableText(
                 resume.email,
               ),
-              SizedBox(width: sized_box_space),
+              const SizedBox(width: sized_box_space),
               UrlText(
                 text: 'Website',
                 url: resume.website,

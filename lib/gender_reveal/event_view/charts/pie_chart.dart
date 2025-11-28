@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:xapptor_ui/values/ui.dart';
+
 class VotePieChart extends StatelessWidget {
   final double boy_votes;
   final double girl_votes;
@@ -55,7 +57,7 @@ class VotePieChart extends StatelessWidget {
             },
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: sized_box_space),
         PieLegendEntry(
           color: boy_color,
           label: 'Boy',

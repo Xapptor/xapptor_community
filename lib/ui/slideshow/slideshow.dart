@@ -400,7 +400,7 @@ class _SlideshowState extends State<Slideshow> {
                   mute_videos ? Icons.volume_off : Icons.volume_up,
                 ),
               ),
-              SizedBox(width: sized_box_space),
+              const SizedBox(width: sized_box_space),
               FloatingActionButton(
                 onPressed: () {
                   set_slideshow_matrix(
@@ -432,7 +432,7 @@ class _SlideshowState extends State<Slideshow> {
                   type: CustomTextType.title,
                   portrait: portrait,
                 ),
-                SizedBox(height: sized_box_space),
+                const SizedBox(height: sized_box_space),
                 slideshow_custom_text(
                   widget.subtitle,
                   type: CustomTextType.subtitle,

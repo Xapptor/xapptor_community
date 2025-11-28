@@ -17,6 +17,7 @@ import 'package:xapptor_community/resume/resume_editor/crud/update/update_source
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_translation/translation_stream.dart';
+import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/text_field/focus_node_template.dart';
 import 'package:xapptor_ui/widgets/top_and_bottom/topbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -209,7 +210,7 @@ class ResumeEditorState extends State<ResumeEditor> {
                   resume: current_resume,
                   base_url: widget.base_url,
                 ),
-                const SizedBox(height: 100),
+                const SizedBox(height: sized_box_space * 6),
               ],
             ),
           ),

@@ -8,9 +8,7 @@ import 'package:xapptor_ui/values/ui.dart';
 extension StateExtension on ResumeEditorState {
   resume_editor_top_option_buttons() => Column(
         children: [
-          SizedBox(
-            height: sized_box_space * 4,
-          ),
+          const SizedBox(height: sized_box_space * 4),
           SizedBox(
             width: screen_width,
             child: ElevatedButton(
@@ -49,9 +47,7 @@ extension StateExtension on ResumeEditorState {
               ),
             ),
           ),
-          SizedBox(
-            height: sized_box_space,
-          ),
+          const SizedBox(height: sized_box_space),
           Row(
             children: [
               Expanded(

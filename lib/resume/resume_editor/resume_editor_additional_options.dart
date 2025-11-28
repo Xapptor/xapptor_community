@@ -38,7 +38,7 @@ class ResumeEditorAdditionalOptionsState extends State<ResumeEditorAdditionalOpt
 
     return Column(
       children: [
-        SizedBox(height: sized_box_space * 2),
+        const SizedBox(height: sized_box_space * 2),
         Flex(
           direction: portrait ? Axis.vertical : Axis.horizontal,
           crossAxisAlignment: portrait ? CrossAxisAlignment.start : CrossAxisAlignment.center,
@@ -46,7 +46,7 @@ class ResumeEditorAdditionalOptionsState extends State<ResumeEditorAdditionalOpt
             Text(
               font_family_title,
             ),
-            if (!portrait) SizedBox(width: sized_box_space),
+            if (!portrait) const SizedBox(width: sized_box_space),
             DropdownButton<String>(
               value: current_font_value.name,
               items: font_families_value.map((ResumeFont font) {
@@ -69,13 +69,13 @@ class ResumeEditorAdditionalOptionsState extends State<ResumeEditorAdditionalOpt
             ),
           ],
         ),
-        if (portrait) SizedBox(height: sized_box_space),
+        if (portrait) const SizedBox(height: sized_box_space),
         Row(
           children: [
             Text(
               checkbox_label,
             ),
-            SizedBox(width: sized_box_space),
+            const SizedBox(width: sized_box_space),
             Checkbox(
               value: show_time_amount,
               onChanged: (bool? value) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xapptor_ui/values/ui.dart';
 
 class GlowingVoteButton extends StatelessWidget {
   final String label;
@@ -48,7 +49,7 @@ class GlowingVoteButton extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(outline_border_radius),
           border: Border.all(
             color: is_selected
                 ? color.withAlpha((255 * 0.8).round())
@@ -66,7 +67,7 @@ class GlowingVoteButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(outline_border_radius),
             onTap: on_tap,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),

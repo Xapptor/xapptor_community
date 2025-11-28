@@ -13,11 +13,13 @@ import 'package:xapptor_ui/values/ui.dart';
 class EventView extends StatefulWidget {
   final String mother_name;
   final String father_name;
+  final Widget wishlist_button;
 
   const EventView({
     super.key,
     required this.mother_name,
     required this.father_name,
+    required this.wishlist_button,
   });
 
   @override
@@ -106,24 +108,25 @@ class _EventViewState extends State<EventView>
 
                                     // ───────────────── intro section ─────────────────
                                     final intro_section = build_intro_section(
-                                      context,
-                                      stacked,
-                                      constraints,
-                                      boy_color,
-                                      girl_color,
-                                      on_celebration_pressed,
-                                      on_vote_selected,
+                                      context: context,
+                                      stacked: stacked,
+                                      constraints: constraints,
+                                      boy_color: boy_color,
+                                      girl_color: girl_color,
+                                      on_celebration_pressed: on_celebration_pressed,
+                                      on_vote_selected: on_vote_selected,
+                                      wishlist_button: widget.wishlist_button,
                                     );
 
                                     // ───────────────── charts section ─────────────────
                                     final charts_section = build_charts_wrapper(
-                                      context,
-                                      stacked,
-                                      constraints,
-                                      portrait,
-                                      has_votes,
-                                      boy_color,
-                                      girl_color,
+                                      context: context,
+                                      stacked: stacked,
+                                      constraints: constraints,
+                                      portrait: portrait,
+                                      has_votes: has_votes,
+                                      boy_color: boy_color,
+                                      girl_color: girl_color,
                                     );
 
                                     final content = stacked
@@ -131,7 +134,7 @@ class _EventViewState extends State<EventView>
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               intro_section,
-                                              const SizedBox(height: 72),
+                                              const SizedBox(height: sized_box_space * 4),
                                               charts_section,
                                             ],
                                           )
@@ -143,7 +146,7 @@ class _EventViewState extends State<EventView>
                                                 flex: 48,
                                                 child: intro_section,
                                               ),
-                                              const SizedBox(width: 24),
+                                              const SizedBox(width: sized_box_space),
                                               Flexible(
                                                 flex: 52,
                                                 child: charts_section,

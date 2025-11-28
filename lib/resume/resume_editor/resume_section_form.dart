@@ -148,9 +148,7 @@ class _ResumeSectionFormState extends State<ResumeSectionForm> {
 
     return Column(
       children: [
-        SizedBox(
-          height: sized_box_space * 2,
-        ),
+        const SizedBox(height: sized_box_space * 2),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

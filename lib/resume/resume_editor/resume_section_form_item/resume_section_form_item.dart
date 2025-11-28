@@ -139,13 +139,11 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
           color: widget.text_color,
           width: 3,
         ),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(outline_border_radius),
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: sized_box_space,
-          ),
+          const SizedBox(height: sized_box_space),
           TextFormField(
             onChanged: (new_value) {
               update_item(
@@ -309,9 +307,7 @@ class ResumeSectionFormItemState extends State<ResumeSectionFormItem> {
                     ),
                   ],
                 ),
-          SizedBox(
-            height: sized_box_space,
-          ),
+          const SizedBox(height: sized_box_space),
           if (widget.resume_section_form_type != ResumeSectionFormType.skill)
             SizedBox(
               width: screen_width,

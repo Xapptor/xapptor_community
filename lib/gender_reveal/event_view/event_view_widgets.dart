@@ -19,15 +19,16 @@ mixin EventViewWidgetsMixin {
   Animation<double> get shake_animation;
   Animation<double> get glow_animation;
 
-  Widget build_intro_section(
-    BuildContext context,
-    bool stacked,
-    BoxConstraints constraints,
-    Color boy_color,
-    Color girl_color,
-    VoidCallback on_celebration_pressed,
-    void Function(String vote) on_vote_selected,
-  ) {
+  Widget build_intro_section({
+    required BuildContext context,
+    required bool stacked,
+    required BoxConstraints constraints,
+    required Color boy_color,
+    required Color girl_color,
+    required VoidCallback on_celebration_pressed,
+    required void Function(String vote) on_vote_selected,
+    required Widget wishlist_button,
+  }) {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -44,7 +45,7 @@ mixin EventViewWidgetsMixin {
               ),
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(outline_border_radius),
               ),
               child: Column(
                 children: [
@@ -71,11 +72,16 @@ mixin EventViewWidgetsMixin {
                         iconSize: k_celebration_icon_size,
                         color: Theme.of(context).colorScheme.onPrimary,
                         onPressed: on_celebration_pressed,
-                        icon: const Icon(Icons.celebration),
+                        icon: const Text(
+                          "🎉",
+                          style: TextStyle(
+                            fontSize: k_celebration_icon_size,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: sized_box_space),
 
                   // Title
                   Text(
@@ -87,7 +93,7 @@ mixin EventViewWidgetsMixin {
                           letterSpacing: 1.0,
                         ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: sized_box_space),
 
                   // Subtitle with parent names
                   RichText(
@@ -118,10 +124,14 @@ mixin EventViewWidgetsMixin {
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: sized_box_space),
+
+                  wishlist_button,
                 ],
               ),
             ),
-            SizedBox(height: sized_box_space),
+            const SizedBox(height: sized_box_space),
 
             // Vote buttons with glow animation
             Container(
@@ -142,7 +152,7 @@ mixin EventViewWidgetsMixin {
                           on_tap: () => on_vote_selected('boy'),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: sized_box_space),
                       Expanded(
                         child: GlowingVoteButton(
                           label: 'Girl',
@@ -159,7 +169,7 @@ mixin EventViewWidgetsMixin {
               ),
             ),
 
-            SizedBox(height: sized_box_space * 1.5),
+            const SizedBox(height: sized_box_space * 1.5),
 
             if (selected_vote != null)
               Row(
@@ -173,7 +183,7 @@ mixin EventViewWidgetsMixin {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: sized_box_space / 2),
+                  const SizedBox(width: sized_box_space / 2),
                   Icon(
                     selected_vote == 'boy' ? Icons.male : Icons.female,
                     color: selected_vote == 'boy' ? Colors.blue : Colors.pink,
@@ -186,15 +196,15 @@ mixin EventViewWidgetsMixin {
     );
   }
 
-  Widget build_charts_wrapper(
-    BuildContext context,
-    bool stacked,
-    BoxConstraints constraints,
-    bool portrait,
-    bool has_votes,
-    Color boy_color,
-    Color girl_color,
-  ) {
+  Widget build_charts_wrapper({
+    required BuildContext context,
+    required bool stacked,
+    required BoxConstraints constraints,
+    required bool portrait,
+    required bool has_votes,
+    required Color boy_color,
+    required Color girl_color,
+  }) {
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -204,14 +214,23 @@ mixin EventViewWidgetsMixin {
         child: AspectRatio(
           aspectRatio: stacked ? 0.9 : 1.35,
           child: !has_votes
-              ? build_no_votes_message(context)
-              : build_charts_section(context, portrait, boy_color, girl_color),
+              ? build_no_votes_message(
+                  context: context,
+                )
+              : build_charts_section(
+                  context: context,
+                  portrait: portrait,
+                  boy_color: boy_color,
+                  girl_color: girl_color,
+                ),
         ),
       ),
     );
   }
 
-  Widget build_no_votes_message(BuildContext context) {
+  Widget build_no_votes_message({
+    required BuildContext context,
+  }) {
     return Center(
       child: Text(
         'No votes yet',
@@ -222,12 +241,12 @@ mixin EventViewWidgetsMixin {
     );
   }
 
-  Widget build_charts_section(
-    BuildContext context,
-    bool portrait,
-    Color boy_color,
-    Color girl_color,
-  ) {
+  Widget build_charts_section({
+    required BuildContext context,
+    required bool portrait,
+    required Color boy_color,
+    required Color girl_color,
+  }) {
     return Flex(
       direction: portrait ? Axis.vertical : Axis.horizontal,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -238,7 +257,7 @@ mixin EventViewWidgetsMixin {
             boy_votes: boy_votes,
           ),
         ),
-        if (portrait) const SizedBox(height: 16) else const SizedBox(width: 16),
+        if (portrait) const SizedBox(height: sized_box_space) else const SizedBox(width: sized_box_space),
         Expanded(
           child: VotePieChart(
             boy_votes: boy_votes,

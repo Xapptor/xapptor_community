@@ -18,13 +18,11 @@ extension StateExtension on ResumeEditorState {
           color: Colors.deepOrangeAccent,
           width: 6,
         ),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(outline_border_radius),
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: sized_box_space * 2,
-          ),
+          const SizedBox(height: sized_box_space * 2),
           Container(
             alignment: Alignment.center,
             width: double.maxFinite,

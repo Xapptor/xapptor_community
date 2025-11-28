@@ -13,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xapptor_router/get_last_path_segment.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:xapptor_db/xapptor_db.dart';
+import 'package:xapptor_ui/values/ui.dart';
 
 class ResumeVisualizer extends StatefulWidget {
   final String? resume_id;
@@ -142,7 +143,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
 
       if (image_bytes != null || image_url.isNotEmpty) {
         return ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(outline_border_radius),
           child: image_bytes != null
               ? Image.memory(
                   image_bytes,

@@ -24,9 +24,7 @@ extension StateExtension on ResumeEditorState {
             clone_item: clone_item,
             section_list: skill_sections,
           ),
-          SizedBox(
-            height: sized_box_space * 2,
-          ),
+          const SizedBox(height: sized_box_space * 2),
 
           // Old Way to manually asign sections in each page
 
@@ -64,9 +62,7 @@ extension StateExtension on ResumeEditorState {
             clone_item: clone_item,
             section_list: employment_sections,
           ),
-          SizedBox(
-            height: sized_box_space * 2,
-          ),
+          const SizedBox(height: sized_box_space * 2),
           ResumeSectionForm(
             resume_section_form_type: ResumeSectionFormType.education,
             text_list:
@@ -80,9 +76,7 @@ extension StateExtension on ResumeEditorState {
             clone_item: clone_item,
             section_list: education_sections,
           ),
-          SizedBox(
-            height: sized_box_space * 2,
-          ),
+          const SizedBox(height: sized_box_space * 2),
           ResumeSectionForm(
             resume_section_form_type: ResumeSectionFormType.custom,
             text_list: text_list.get(source_language_index).sublist(7, 18),
@@ -95,9 +89,7 @@ extension StateExtension on ResumeEditorState {
             clone_item: clone_item,
             section_list: custom_sections,
           ),
-          SizedBox(
-            height: sized_box_space * 4,
-          ),
+          const SizedBox(height: sized_box_space * 4),
         ],
       );
 }
