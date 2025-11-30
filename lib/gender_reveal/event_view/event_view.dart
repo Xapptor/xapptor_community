@@ -10,12 +10,19 @@ import 'package:xapptor_community/ui/slideshow/slideshow.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 import 'package:confetti/confetti.dart';
 import 'package:xapptor_ui/values/ui.dart';
+import 'package:xapptor_translation/language_picker.dart';
+import 'package:xapptor_translation/model/text_list.dart';
+import 'package:xapptor_translation/translation_stream.dart';
 
 class EventView extends StatefulWidget {
   final String mother_name;
   final String father_name;
   final Widget Function(int source_language_index) wishlist_button_builder;
   final String share_url;
+  final TranslationTextListArray? event_text_list;
+  final TranslationTextListArray? wishlist_text_list;
+  final TranslationTextListArray? slideshow_fab_text_list;
+  final bool has_language_picker;
 
   const EventView({
     super.key,
@@ -23,6 +30,10 @@ class EventView extends StatefulWidget {
     required this.father_name,
     required this.wishlist_button_builder,
     required this.share_url,
+    this.event_text_list,
+    this.wishlist_text_list,
+    this.slideshow_fab_text_list,
+    this.has_language_picker = false,
   });
 
   @override
@@ -44,6 +55,13 @@ class _EventViewState extends State<EventView>
   // FAB data from Slideshow
   SlideshowFabData? _fab_data;
 
+  // Translation state
+  int source_language_index = 0;
+  TranslationStream? translation_stream_event;
+  TranslationStream? translation_stream_wishlist;
+  TranslationStream? translation_stream_slideshow_fab;
+  List<TranslationStream> translation_stream_list = [];
+
   void _on_fab_data_changed(SlideshowFabData data) {
     print('_on_fab_data_changed received! is_playing=${data.is_playing}, is_loading=${data.is_loading}');
     setState(() {
@@ -51,10 +69,65 @@ class _EventViewState extends State<EventView>
     });
   }
 
+  update_text_list({
+    required int index,
+    required String new_text,
+    required int list_index,
+  }) {
+    if (list_index == 0 && widget.event_text_list != null) {
+      widget.event_text_list!.get(source_language_index)[index] = new_text;
+    } else if (list_index == 1 && widget.wishlist_text_list != null) {
+      widget.wishlist_text_list!.get(source_language_index)[index] = new_text;
+    } else if (list_index == 2 && widget.slideshow_fab_text_list != null) {
+      widget.slideshow_fab_text_list!.get(source_language_index)[index] = new_text;
+    }
+    setState(() {});
+  }
+
+  update_source_language({
+    required int new_source_language_index,
+  }) {
+    source_language_index = new_source_language_index;
+    setState(() {});
+  }
+
+  void _init_translation_streams() {
+    if (widget.event_text_list != null) {
+      translation_stream_event = TranslationStream(
+        translation_text_list_array: widget.event_text_list!,
+        update_text_list_function: update_text_list,
+        list_index: 0,
+        source_language_index: source_language_index,
+      );
+      translation_stream_list.add(translation_stream_event!);
+    }
+
+    if (widget.wishlist_text_list != null) {
+      translation_stream_wishlist = TranslationStream(
+        translation_text_list_array: widget.wishlist_text_list!,
+        update_text_list_function: update_text_list,
+        list_index: 1,
+        source_language_index: source_language_index,
+      );
+      translation_stream_list.add(translation_stream_wishlist!);
+    }
+
+    if (widget.slideshow_fab_text_list != null) {
+      translation_stream_slideshow_fab = TranslationStream(
+        translation_text_list_array: widget.slideshow_fab_text_list!,
+        update_text_list_function: update_text_list,
+        list_index: 2,
+        source_language_index: source_language_index,
+      );
+      translation_stream_list.add(translation_stream_slideshow_fab!);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     initialize_state();
+    _init_translation_streams();
   }
 
   @override
@@ -142,6 +215,8 @@ class _EventViewState extends State<EventView>
                                             on_celebration_pressed: on_celebration_pressed,
                                             on_vote_selected: on_vote_selected,
                                             wishlist_button_builder: widget.wishlist_button_builder,
+                                            source_language_index: source_language_index,
+                                            event_text_list: widget.event_text_list,
                                           );
 
                                           // ───────────────── charts section ─────────────────
@@ -153,6 +228,8 @@ class _EventViewState extends State<EventView>
                                             has_votes: has_votes,
                                             boy_color: boy_color,
                                             girl_color: girl_color,
+                                            source_language_index: source_language_index,
+                                            event_text_list: widget.event_text_list,
                                           );
 
                                           final content = stacked
@@ -237,6 +314,29 @@ class _EventViewState extends State<EventView>
                       ),
                     ),
                   ),
+
+                  // Language Picker overlay
+                  if (widget.has_language_picker && translation_stream_list.isNotEmpty)
+                    Positioned(
+                      top: 8,
+                      right: sized_box_space,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha((255 * 0.5).round()),
+                          borderRadius: BorderRadius.circular(outline_border_radius),
+                        ),
+                        child: SizedBox(
+                          width: 150,
+                          child: LanguagePicker(
+                            translation_stream_list: translation_stream_list,
+                            language_picker_items_text_color: Colors.white,
+                            update_source_language: update_source_language,
+                            source_language_index: source_language_index,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

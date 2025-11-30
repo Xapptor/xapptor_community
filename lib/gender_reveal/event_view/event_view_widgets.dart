@@ -6,6 +6,7 @@ import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.
 import 'package:xapptor_ui/widgets/buttons/glowing_vote_button.dart';
 import 'package:xapptor_logic/string/capitalize.dart';
 import 'package:xapptor_ui/values/ui.dart';
+import 'package:xapptor_translation/model/text_list.dart';
 
 /// Widget builder methods for EventView
 mixin EventViewWidgetsMixin {
@@ -29,7 +30,22 @@ mixin EventViewWidgetsMixin {
     required void Function(String vote) on_vote_selected,
     required Widget Function(int source_language_index) wishlist_button_builder,
     int source_language_index = 0,
+    TranslationTextListArray? event_text_list,
   }) {
+    // Get translated text or fallback to defaults
+    // Index: 0 = Click me, 1 = Celebrate the Moment!, 2 = Welcome to the,
+    //        3 = &, 4 = gender reveal celebration!, 5 = Boy, 6 = Girl,
+    //        7 = You voted for a, 8 = No votes yet
+    final text = event_text_list?.get(source_language_index);
+    final click_me_text = text?[0] ?? 'Click me';
+    final celebrate_text = text?[1] ?? 'Celebrate the Moment!';
+    final welcome_text = text?[2] ?? 'Welcome to the ';
+    final and_text = text?[3] ?? ' & ';
+    final celebration_text = text?[4] ?? ' gender reveal celebration!';
+    final boy_text = text?[5] ?? 'Boy';
+    final girl_text = text?[6] ?? 'Girl';
+    final voted_for_text = text?[7] ?? 'You voted for a ';
+
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -68,7 +84,7 @@ mixin EventViewWidgetsMixin {
                     },
                     child: Tooltip(
                       key: celebration_tooltip_key,
-                      message: 'Click me',
+                      message: click_me_text,
                       child: IconButton(
                         iconSize: k_celebration_icon_size,
                         color: Theme.of(context).colorScheme.onPrimary,
@@ -86,7 +102,7 @@ mixin EventViewWidgetsMixin {
 
                   // Title
                   Text(
-                    'Celebrate the Moment!',
+                    celebrate_text,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimary,
@@ -105,22 +121,22 @@ mixin EventViewWidgetsMixin {
                             fontWeight: FontWeight.w500,
                           ),
                       children: [
-                        const TextSpan(text: 'Welcome to the '),
+                        TextSpan(text: welcome_text),
                         TextSpan(
                           text: mother_name,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const TextSpan(text: ' & '),
+                        TextSpan(text: and_text),
                         TextSpan(
                           text: father_name,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const TextSpan(
-                          text: ' gender reveal celebration!',
+                        TextSpan(
+                          text: celebration_text,
                         ),
                       ],
                     ),
@@ -145,7 +161,7 @@ mixin EventViewWidgetsMixin {
                     children: [
                       Expanded(
                         child: GlowingVoteButton(
-                          label: 'Boy',
+                          label: boy_text,
                           icon: Icons.male,
                           color: boy_color,
                           is_selected: selected_vote == 'boy',
@@ -156,7 +172,7 @@ mixin EventViewWidgetsMixin {
                       const SizedBox(width: sized_box_space),
                       Expanded(
                         child: GlowingVoteButton(
-                          label: 'Girl',
+                          label: girl_text,
                           icon: Icons.female,
                           color: girl_color,
                           is_selected: selected_vote == 'girl',
@@ -177,7 +193,7 @@ mixin EventViewWidgetsMixin {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'You voted for a ${selected_vote!.capitalize()}!',
+                    '$voted_for_text${selected_vote == 'boy' ? boy_text : girl_text}!',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -205,7 +221,13 @@ mixin EventViewWidgetsMixin {
     required bool has_votes,
     required Color boy_color,
     required Color girl_color,
+    int source_language_index = 0,
+    TranslationTextListArray? event_text_list,
   }) {
+    // Get "No votes yet" text (index 8)
+    final text = event_text_list?.get(source_language_index);
+    final no_votes_text = text?[8] ?? 'No votes yet';
+
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -217,6 +239,7 @@ mixin EventViewWidgetsMixin {
           child: !has_votes
               ? build_no_votes_message(
                   context: context,
+                  no_votes_text: no_votes_text,
                 )
               : build_charts_section(
                   context: context,
@@ -231,10 +254,11 @@ mixin EventViewWidgetsMixin {
 
   Widget build_no_votes_message({
     required BuildContext context,
+    String no_votes_text = 'No votes yet',
   }) {
     return Center(
       child: Text(
-        'No votes yet',
+        no_votes_text,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Theme.of(context).colorScheme.onPrimary,
             ),
