@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:xapptor_community/gender_reveal/event_view/countdown_view.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_state.dart';
@@ -35,6 +36,19 @@ class _EventViewState extends State<EventView>
   @override
   String get father_name => widget.father_name;
 
+  // FAB key - owned by this widget, persists across rebuilds
+  final GlobalKey<ExpandableFabState> _fab_key = GlobalKey<ExpandableFabState>();
+
+  // FAB data from Slideshow
+  SlideshowFabData? _fab_data;
+
+  void _on_fab_data_changed(SlideshowFabData data) {
+    print('_on_fab_data_changed received! is_playing=${data.is_playing}, is_loading=${data.is_loading}');
+    setState(() {
+      _fab_data = data;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +81,8 @@ class _EventViewState extends State<EventView>
 
     print('small_countdown_start=$small_countdown_start');
 
+    final fab = _fab_data?.build_fab(_fab_key);
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -75,10 +91,11 @@ class _EventViewState extends State<EventView>
             Positioned.fill(
               child: Stack(
                 children: [
-                  const Positioned.fill(
+                  Positioned.fill(
                     child: Slideshow(
                       image_paths: [],
                       use_examples: true,
+                      onFabData: _on_fab_data_changed,
                     ),
                   ),
                   if (event != null && enable_voting_card && !small_countdown_start)
@@ -214,6 +231,8 @@ class _EventViewState extends State<EventView>
           ],
         ),
       ),
+      floatingActionButton: fab,
+      floatingActionButtonLocation: ExpandableFab.location,
     );
   }
 }

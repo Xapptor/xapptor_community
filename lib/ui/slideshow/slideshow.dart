@@ -1,14 +1,90 @@
 import 'dart:async';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_audio_service.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_custom_text.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
 import 'package:xapptor_community/ui/slideshow/loading_message.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_fab.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
 import 'package:xapptor_logic/image/get_image_size.dart';
 import 'package:xapptor_logic/video/get_video_size.dart';
 import 'package:xapptor_ui/values/ui.dart';
+
+/// Data class containing all state needed to build the slideshow FAB.
+/// This allows the parent widget to build the FAB in its own widget tree
+/// with its own GlobalKey, while the Slideshow manages the audio state.
+class SlideshowFabData {
+  final bool sound_is_on;
+  final bool is_playing;
+  final bool is_loading;
+  final VoidCallback on_volume_pressed;
+  final VoidCallback on_back_pressed;
+  final VoidCallback on_play_pressed;
+  final VoidCallback on_forward_pressed;
+  final VoidCallback on_share_pressed;
+  final String menu_label;
+  final String close_label;
+  final String volume_label;
+  final String back_label;
+  final String play_label;
+  final String forward_label;
+  final String share_label;
+  final Color primary_color;
+  final Color secondary_color;
+
+  const SlideshowFabData({
+    required this.sound_is_on,
+    required this.is_playing,
+    required this.is_loading,
+    required this.on_volume_pressed,
+    required this.on_back_pressed,
+    required this.on_play_pressed,
+    required this.on_forward_pressed,
+    required this.on_share_pressed,
+    required this.menu_label,
+    required this.close_label,
+    required this.volume_label,
+    required this.back_label,
+    required this.play_label,
+    required this.forward_label,
+    required this.share_label,
+    required this.primary_color,
+    required this.secondary_color,
+  });
+
+  /// Builds the FAB widget using the provided GlobalKey.
+  /// The parent should create and maintain the GlobalKey.
+  Widget build_fab(GlobalKey<ExpandableFabState> fab_key) {
+    return slideshow_fab(
+      expandable_fab_key: fab_key,
+      menu_label: menu_label,
+      close_label: close_label,
+      volume_label: volume_label,
+      back_label: back_label,
+      play_label: play_label,
+      forward_label: forward_label,
+      share_label: share_label,
+      sound_is_on: sound_is_on,
+      is_playing: is_playing,
+      is_loading: is_loading,
+      on_volume_pressed: on_volume_pressed,
+      on_back_pressed: on_back_pressed,
+      on_play_pressed: on_play_pressed,
+      on_forward_pressed: on_forward_pressed,
+      on_share_pressed: on_share_pressed,
+      primary_color: primary_color,
+      secondary_color: secondary_color,
+    );
+  }
+}
+
+/// Callback type for when the FAB data is ready/updated.
+/// The parent widget should use this data to build the FAB in its Scaffold.
+typedef OnFabDataCallback = void Function(SlideshowFabData data);
 
 class Slideshow extends StatefulWidget {
   final List<String>? image_paths;
@@ -18,6 +94,37 @@ class Slideshow extends StatefulWidget {
   final String subtitle;
   final String loading_message;
 
+  /// Firebase Storage path for background music songs.
+  /// Example: 'app/example_songs'
+  /// If null, background music will be disabled.
+  final String? songs_storage_path;
+
+  /// Text to share when the share button is pressed.
+  final String share_text;
+
+  /// Subject for the share action.
+  final String share_subject;
+
+  /// Primary color for the FAB and controls.
+  final Color primary_color;
+
+  /// Secondary color for alternating FAB buttons.
+  final Color secondary_color;
+
+  /// Labels for the FAB buttons.
+  final String menu_label;
+  final String close_label;
+  final String volume_label;
+  final String back_label;
+  final String play_label;
+  final String forward_label;
+  final String share_label;
+
+  /// Callback to provide FAB data to the parent.
+  /// The parent should use this to build the FAB in its Scaffold's floatingActionButton.
+  /// The parent must create and maintain its own GlobalKey<ExpandableFabState>.
+  final OnFabDataCallback? onFabData;
+
   const Slideshow({
     super.key,
     this.image_paths,
@@ -26,6 +133,19 @@ class Slideshow extends StatefulWidget {
     this.title = "",
     this.subtitle = "",
     this.loading_message = "Loading...",
+    this.songs_storage_path,
+    this.share_text = "Check out this amazing slideshow!",
+    this.share_subject = "Slideshow",
+    this.primary_color = const Color(0xFFD9C7FF),
+    this.secondary_color = const Color(0xFFFFC2E0),
+    this.menu_label = "Music Menu",
+    this.close_label = "Close",
+    this.volume_label = "Toggle Volume",
+    this.back_label = "Previous Song",
+    this.play_label = "Play/Pause",
+    this.forward_label = "Next Song",
+    this.share_label = "Share",
+    this.onFabData,
   });
 
   @override
@@ -44,7 +164,6 @@ class _SlideshowState extends State<Slideshow> {
   List<String> image_urls = [];
   List<String> video_urls = [];
 
-  bool mute_videos = true;
   Cubic animation_curve = Curves.fastOutSlowIn;
   Duration animation_duration = const Duration(milliseconds: 1000);
 
@@ -55,6 +174,15 @@ class _SlideshowState extends State<Slideshow> {
   static const int max_initial_videos = 4;
   static const int video_batch_size = 1;
   static const Duration video_batch_delay = Duration(seconds: 2);
+
+  // Audio service for background music
+  final SlideshowAudioService _audio_service = SlideshowAudioService.instance;
+  StreamSubscription<SlideshowAudioState>? _audio_state_subscription;
+
+  // Audio state
+  bool _is_music_playing = false;
+  bool _is_music_muted = false;
+  bool _is_music_loading = false;
 
   Future<void> _load_single_image({
     required String path,
@@ -210,6 +338,7 @@ class _SlideshowState extends State<Slideshow> {
 
     final Size size = await get_video_size(controller: controller);
 
+    // Videos are always muted - background music handles audio
     await controller.setVolume(0);
     await controller.setLooping(true);
     await controller.play();
@@ -236,6 +365,57 @@ class _SlideshowState extends State<Slideshow> {
     await get_image_sizes();
   }
 
+  Future<void> _initialize_audio_service() async {
+    // Determine the songs storage path
+    final String songs_path = widget.songs_storage_path ?? 'app/example_songs';
+
+    final Reference songs_storage_ref = FirebaseStorage.instance.ref(songs_path);
+
+    // Subscribe to audio state changes
+    _audio_state_subscription = _audio_service.state_stream.listen((state) {
+      if (mounted) {
+        setState(() {
+          _is_music_playing = state.is_playing;
+          _is_music_muted = state.is_muted;
+          _is_music_loading = state.is_loading;
+        });
+        // Update the FAB data when audio state changes
+        _notify_fab_data();
+      }
+    });
+
+    // Initialize the audio service
+    await _audio_service.initialize(storage_ref: songs_storage_ref);
+  }
+
+  void _notify_fab_data() {
+    if (widget.onFabData != null) {
+      widget.onFabData!(_build_fab_data());
+    }
+  }
+
+  SlideshowFabData _build_fab_data() {
+    return SlideshowFabData(
+      sound_is_on: !_is_music_muted,
+      is_playing: _is_music_playing,
+      is_loading: _is_music_loading,
+      on_volume_pressed: _on_volume_pressed,
+      on_back_pressed: _on_back_pressed,
+      on_play_pressed: _on_play_pressed,
+      on_forward_pressed: _on_forward_pressed,
+      on_share_pressed: _on_share_pressed,
+      menu_label: widget.menu_label,
+      close_label: widget.close_label,
+      volume_label: widget.volume_label,
+      back_label: widget.back_label,
+      play_label: widget.play_label,
+      forward_label: widget.forward_label,
+      share_label: widget.share_label,
+      primary_color: widget.primary_color,
+      secondary_color: widget.secondary_color,
+    );
+  }
+
   @override
   initState() {
     super.initState();
@@ -245,6 +425,14 @@ class _SlideshowState extends State<Slideshow> {
     } else {
       get_example_urls();
     }
+
+    // Initialize background music
+    _initialize_audio_service();
+
+    // Notify parent with initial FAB data
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notify_fab_data();
+    });
   }
 
   @override
@@ -255,6 +443,9 @@ class _SlideshowState extends State<Slideshow> {
     for (var controller in landscape_video_player_controllers) {
       controller.dispose();
     }
+    _audio_state_subscription?.cancel();
+    // Note: We don't dispose the audio service singleton here
+    // as it may be reused
     super.dispose();
   }
 
@@ -279,6 +470,31 @@ class _SlideshowState extends State<Slideshow> {
   }
 
   Orientation? last_orientation;
+
+  void _on_volume_pressed() {
+    _audio_service.toggle_mute();
+  }
+
+  void _on_back_pressed() {
+    _audio_service.previous();
+  }
+
+  void _on_play_pressed() {
+    _audio_service.toggle_play_pause();
+  }
+
+  void _on_forward_pressed() {
+    _audio_service.next();
+  }
+
+  void _on_share_pressed() {
+    SharePlus.instance.share(
+      ShareParams(
+        text: widget.share_text,
+        subject: widget.share_subject,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +534,7 @@ class _SlideshowState extends State<Slideshow> {
     return Stack(
       alignment: Alignment.center,
       children: [
+        // Slideshow grid
         Row(
           children: List.generate(
             slideshow_matrix!.length,
@@ -350,14 +567,12 @@ class _SlideshowState extends State<Slideshow> {
                       int item_count = 0;
 
                       if (!possible_video_position_for_portrait && !possible_video_position_for_landscape) {
-                        //
                         item_count = slideshow_view_orientation == SlideshowViewOrientation.landscape
                             ? landscape_images.length
                             : slideshow_view_orientation == SlideshowViewOrientation.portrait
                                 ? portrait_images.length
                                 : all_images.length;
                       } else {
-                        //
                         if (possible_video_position_for_portrait) {
                           item_count = portrait_video_player_controllers.length;
                         } else {
@@ -392,43 +607,8 @@ class _SlideshowState extends State<Slideshow> {
             },
           ),
         ),
-        Container(
-          alignment: Alignment.bottomRight,
-          margin: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton(
-                onPressed: () {
-                  mute_videos = !mute_videos;
-                  _set_all_videos_volume(mute_videos ? 0 : 1);
-                  setState(() {});
-                },
-                child: Icon(
-                  mute_videos ? Icons.volume_off : Icons.volume_up,
-                ),
-              ),
-              const SizedBox(width: sized_box_space),
-              FloatingActionButton(
-                onPressed: () {
-                  set_slideshow_matrix(
-                    screen_height: screen_height,
-                    screen_width: screen_width,
-                    portrait: portrait,
-                    number_of_columns: number_of_columns,
-                  );
-                  setState(() {});
-                },
-                backgroundColor: const Color(0xFFD9C7FF),
-                tooltip: "Refresh Slideshow",
-                child: const Icon(
-                  Icons.refresh,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
+
+        // Center title and subtitle
         if (all_images.isNotEmpty)
           Container(
             alignment: Alignment.center,
@@ -451,14 +631,5 @@ class _SlideshowState extends State<Slideshow> {
           ),
       ],
     );
-  }
-
-  void _set_all_videos_volume(double volume) {
-    for (final c in portrait_video_player_controllers) {
-      c.setVolume(volume);
-    }
-    for (final c in landscape_video_player_controllers) {
-      c.setVolume(volume);
-    }
   }
 }
