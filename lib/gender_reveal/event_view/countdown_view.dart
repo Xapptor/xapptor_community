@@ -5,12 +5,54 @@ import 'package:xapptor_ui/values/ui.dart';
 
 const double main_alpha = 0.7;
 
+/// Translation text indices for countdown labels
+/// 9 = Day, 10 = Days, 11 = Hour, 12 = Hours, 13 = Minute, 14 = Minutes, 15 = Second, 16 = Seconds
+class CountdownLabels {
+  final String day;
+  final String days;
+  final String hour;
+  final String hours;
+  final String minute;
+  final String minutes;
+  final String second;
+  final String seconds;
+
+  const CountdownLabels({
+    this.day = 'Day',
+    this.days = 'Days',
+    this.hour = 'Hour',
+    this.hours = 'Hours',
+    this.minute = 'Minute',
+    this.minutes = 'Minutes',
+    this.second = 'Second',
+    this.seconds = 'Seconds',
+  });
+
+  factory CountdownLabels.fromTextList(List<String>? text) {
+    if (text == null || text.length < 17) {
+      return const CountdownLabels();
+    }
+    return CountdownLabels(
+      day: text[9],
+      days: text[10],
+      hour: text[11],
+      hours: text[12],
+      minute: text[13],
+      minutes: text[14],
+      second: text[15],
+      seconds: text[16],
+    );
+  }
+}
+
 class CountdownView extends StatefulWidget {
   final int milliseconds_sice_epoch;
+  final CountdownLabels labels;
 
   const CountdownView({
     super.key,
     required this.milliseconds_sice_epoch,
+    this.labels = const CountdownLabels(),
   });
 
   @override
@@ -59,6 +101,8 @@ class _CountdownViewState extends State<CountdownView> {
     final minutes = seconds_test_mode ? 0 : _remaining.inMinutes % 60;
     final seconds = _remaining.inSeconds % 60;
 
+    final labels = widget.labels;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,7 +111,7 @@ class _CountdownViewState extends State<CountdownView> {
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: days == 1 ? 'Day' : 'Days',
+              label: days == 1 ? labels.day : labels.days,
               value: _two_digits(days),
             ),
           ),
@@ -75,7 +119,7 @@ class _CountdownViewState extends State<CountdownView> {
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: hours == 1 ? 'Hour' : 'Hours',
+              label: hours == 1 ? labels.hour : labels.hours,
               value: _two_digits(hours),
             ),
           ),
@@ -83,14 +127,14 @@ class _CountdownViewState extends State<CountdownView> {
           Expanded(
             flex: 1,
             child: _TimeBlock(
-              label: minutes == 1 ? 'Minute' : 'Minutes',
+              label: minutes == 1 ? labels.minute : labels.minutes,
               value: _two_digits(minutes),
             ),
           ),
         Expanded(
           flex: 1,
           child: _TimeBlock(
-            label: seconds == 1 ? 'Second' : 'Seconds',
+            label: seconds == 1 ? labels.second : labels.seconds,
             value: _two_digits(seconds),
           ),
         ),

@@ -3,11 +3,34 @@ import 'dart:math' as math;
 
 import 'package:xapptor_ui/values/ui.dart';
 
+/// Labels for pie chart translations
+/// Uses indices 5 = Boy, 6 = Girl from event_text_list
+class PieChartLabels {
+  final String boy;
+  final String girl;
+
+  const PieChartLabels({
+    this.boy = 'Boy',
+    this.girl = 'Girl',
+  });
+
+  factory PieChartLabels.fromTextList(List<String>? text) {
+    if (text == null || text.length < 7) {
+      return const PieChartLabels();
+    }
+    return PieChartLabels(
+      boy: text[5],
+      girl: text[6],
+    );
+  }
+}
+
 class VotePieChart extends StatelessWidget {
   final double boy_votes;
   final double girl_votes;
   final Color boy_color;
   final Color girl_color;
+  final PieChartLabels labels;
 
   const VotePieChart({
     super.key,
@@ -15,6 +38,7 @@ class VotePieChart extends StatelessWidget {
     required this.girl_votes,
     required this.boy_color,
     required this.girl_color,
+    this.labels = const PieChartLabels(),
   });
 
   @override
@@ -60,13 +84,13 @@ class VotePieChart extends StatelessWidget {
         const SizedBox(height: sized_box_space),
         PieLegendEntry(
           color: boy_color,
-          label: 'Boy',
+          label: labels.boy,
           percentage: boy_percentage,
         ),
         const SizedBox(height: 6),
         PieLegendEntry(
           color: girl_color,
-          label: 'Girl',
+          label: labels.girl,
           percentage: girl_percentage,
         ),
       ],

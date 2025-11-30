@@ -103,17 +103,35 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
 
   void get_event_from_path() async {
     event_id = get_last_path_segment();
-    final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
 
-    if (!event_doc.exists) {
-      debugPrint('Event not found: $event_id');
-      return;
-    }
+    try {
+      final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
 
-    event = EventModel.fromDoc(event_doc);
+      if (!event_doc.exists) {
+        debugPrint('Event not found: $event_id');
+        return;
+      }
 
-    if (mounted) {
-      setState(() {});
+      event = EventModel.fromDoc(event_doc);
+
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error getting event from path: $e');
+      // Retry once after a short delay (Firestore might still be initializing)
+      await Future.delayed(const Duration(milliseconds: 1500));
+      try {
+        final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
+        if (event_doc.exists) {
+          event = EventModel.fromDoc(event_doc);
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      } catch (retry_error) {
+        debugPrint('Retry failed - Error getting event: $retry_error');
+      }
     }
   }
 
@@ -382,10 +400,50 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       }
     } catch (e) {
       debugPrint('Error checking if user voted: $e');
-      if (mounted) {
-        setState(() {
-          is_loading_vote_status = false;
-        });
+      // Retry once after a short delay (Firestore might still be initializing)
+      await Future.delayed(const Duration(milliseconds: 1500));
+      try {
+        final vote_query_retry = await XapptorDB.instance
+            .collection("votes")
+            .where("user_id", isEqualTo: current_user!.id)
+            .where("event_id", isEqualTo: event_id)
+            .limit(1)
+            .get();
+
+        if (vote_query_retry.docs.isNotEmpty) {
+          final vote_data = vote_query_retry.docs.first.data();
+          final user_vote = vote_data['choice'] as String?;
+          if (mounted) {
+            setState(() {
+              selected_vote = user_vote;
+              confirmed = true;
+              is_loading_vote_status = false;
+              show_voting_card = true;
+              enable_voting_card = true;
+            });
+          }
+          debugPrint('Retry succeeded - User has already voted: $user_vote');
+        } else {
+          if (mounted) {
+            setState(() {
+              is_loading_vote_status = false;
+              show_voting_card = true;
+              enable_voting_card = true;
+            });
+          }
+          debugPrint('Retry succeeded - User has not voted yet');
+        }
+      } catch (retry_error) {
+        debugPrint('Retry failed - Error checking if user voted: $retry_error');
+        if (mounted) {
+          setState(() {
+            is_loading_vote_status = false;
+            // Show voting card on error (offline or network issues)
+            // User can still vote and it will sync when back online
+            show_voting_card = true;
+            enable_voting_card = true;
+          });
+        }
       }
     }
   }

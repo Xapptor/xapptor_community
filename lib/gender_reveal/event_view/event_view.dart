@@ -173,11 +173,29 @@ class _EventViewState extends State<EventView>
                     child: Stack(
                       children: [
                         Positioned.fill(
-                          child: Slideshow(
-                            image_paths: const [],
-                            use_examples: true,
-                            onFabData: _on_fab_data_changed,
-                            share_url: widget.share_url + event_id,
+                          child: Builder(
+                            builder: (context) {
+                              // Get translated FAB labels from slideshow_fab_text_list
+                              // Index: 0 = Music Menu, 1 = Close, 2 = Toggle Volume, 3 = Toggle Shuffle,
+                              //        4 = Toggle Repeat, 5 = Previous Song, 6 = Play/Pause, 7 = Next Song, 8 = Share
+                              final fab_text = widget.slideshow_fab_text_list?.get(source_language_index);
+
+                              return Slideshow(
+                                image_paths: const [],
+                                use_examples: true,
+                                onFabData: _on_fab_data_changed,
+                                share_url: widget.share_url + event_id,
+                                menu_label: fab_text?[0] ?? 'Music Menu',
+                                close_label: fab_text?[1] ?? 'Close',
+                                volume_label: fab_text?[2] ?? 'Toggle Volume',
+                                shuffle_label: fab_text?[3] ?? 'Toggle Shuffle',
+                                repeat_label: fab_text?[4] ?? 'Toggle Repeat',
+                                back_label: fab_text?[5] ?? 'Previous Song',
+                                play_label: fab_text?[6] ?? 'Play/Pause',
+                                forward_label: fab_text?[7] ?? 'Next Song',
+                                share_label: fab_text?[8] ?? 'Share',
+                              );
+                            },
                           ),
                         ),
                         if (event != null && enable_voting_card && !small_countdown_start)
@@ -199,6 +217,9 @@ class _EventViewState extends State<EventView>
                                   children: [
                                     CountdownView(
                                       milliseconds_sice_epoch: (event!.reveal_date).millisecondsSinceEpoch,
+                                      labels: CountdownLabels.fromTextList(
+                                        widget.event_text_list?.get(source_language_index),
+                                      ),
                                     ),
                                     Expanded(
                                       child: LayoutBuilder(

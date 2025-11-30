@@ -224,9 +224,13 @@ mixin EventViewWidgetsMixin {
     int source_language_index = 0,
     TranslationTextListArray? event_text_list,
   }) {
-    // Get "No votes yet" text (index 8)
+    // Get translated text for charts
     final text = event_text_list?.get(source_language_index);
     final no_votes_text = text?[8] ?? 'No votes yet';
+
+    // Create labels for charts
+    final bar_chart_labels = BarChartLabels.fromTextList(text);
+    final pie_chart_labels = PieChartLabels.fromTextList(text);
 
     return Align(
       alignment: Alignment.topCenter,
@@ -246,6 +250,8 @@ mixin EventViewWidgetsMixin {
                   portrait: portrait,
                   boy_color: boy_color,
                   girl_color: girl_color,
+                  bar_chart_labels: bar_chart_labels,
+                  pie_chart_labels: pie_chart_labels,
                 ),
         ),
       ),
@@ -271,6 +277,8 @@ mixin EventViewWidgetsMixin {
     required bool portrait,
     required Color boy_color,
     required Color girl_color,
+    BarChartLabels bar_chart_labels = const BarChartLabels(),
+    PieChartLabels pie_chart_labels = const PieChartLabels(),
   }) {
     return Flex(
       direction: portrait ? Axis.vertical : Axis.horizontal,
@@ -280,6 +288,7 @@ mixin EventViewWidgetsMixin {
           child: BarChartWidget(
             girl_votes: girl_votes,
             boy_votes: boy_votes,
+            labels: bar_chart_labels,
           ),
         ),
         if (portrait) const SizedBox(height: sized_box_space) else const SizedBox(width: sized_box_space),
@@ -289,6 +298,7 @@ mixin EventViewWidgetsMixin {
             girl_votes: girl_votes,
             boy_color: boy_color,
             girl_color: girl_color,
+            labels: pie_chart_labels,
           ),
         ),
       ],
