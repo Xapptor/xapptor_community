@@ -32,18 +32,16 @@ mixin EventViewWidgetsMixin {
     TranslationTextListArray? event_text_list,
   }) {
     // Get translated text or fallback to defaults
-    // Index: 0 = Click me, 1 = Celebrate the Moment!, 2 = Welcome to the,
-    //        3 = &, 4 = gender reveal celebration!, 5 = Boy, 6 = Girl,
-    //        7 = You voted for a, 8 = No votes yet
+    // Index: 0 = Click me, 1 = Celebrate the Moment!,
+    //        2 = Welcome message template (with {mother} and {father} placeholders),
+    //        3 = Boy, 4 = Girl, 5 = You voted for a, 6 = No votes yet
     final text = event_text_list?.get(source_language_index);
     final click_me_text = text?[0] ?? 'Click me';
     final celebrate_text = text?[1] ?? 'Celebrate the Moment!';
-    final welcome_text = text?[2] ?? 'Welcome to the ';
-    final and_text = text?[3] ?? ' & ';
-    final celebration_text = text?[4] ?? ' gender reveal celebration!';
-    final boy_text = text?[5] ?? 'Boy';
-    final girl_text = text?[6] ?? 'Girl';
-    final voted_for_text = text?[7] ?? 'You voted for a ';
+    final welcome_template = text?[2] ?? 'Welcome to the {mother} & {father} gender reveal celebration!';
+    final boy_text = text?[3] ?? 'Boy';
+    final girl_text = text?[4] ?? 'Girl';
+    final voted_for_text = text?[5] ?? 'You voted for a ';
 
     return Align(
       alignment: Alignment.topCenter,
@@ -111,7 +109,7 @@ mixin EventViewWidgetsMixin {
                   ),
                   const SizedBox(height: sized_box_space),
 
-                  // Subtitle with parent names
+                  // Subtitle with parent names (using template with placeholders)
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
@@ -119,25 +117,11 @@ mixin EventViewWidgetsMixin {
                             color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.w500,
                           ),
-                      children: [
-                        TextSpan(text: welcome_text),
-                        TextSpan(
-                          text: mother_name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextSpan(text: and_text),
-                        TextSpan(
-                          text: father_name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextSpan(
-                          text: celebration_text,
-                        ),
-                      ],
+                      children: _build_welcome_text_spans(
+                        template: welcome_template,
+                        mother_name: mother_name,
+                        father_name: father_name,
+                      ),
                     ),
                   ),
 
@@ -224,8 +208,9 @@ mixin EventViewWidgetsMixin {
     TranslationTextListArray? event_text_list,
   }) {
     // Get translated text for charts
+    // Index: 6 = No votes yet (after template consolidation)
     final text = event_text_list?.get(source_language_index);
-    final no_votes_text = text?[8] ?? 'No votes yet';
+    final no_votes_text = text?[6] ?? 'No votes yet';
 
     // Create labels for charts
     final bar_chart_labels = BarChartLabels.fromTextList(text);
@@ -302,5 +287,45 @@ mixin EventViewWidgetsMixin {
         ),
       ],
     );
+  }
+
+  /// Builds a list of TextSpans from a template string with placeholders.
+  /// Placeholders: {mother} and {father} will be replaced with the actual names
+  /// and styled with bold font weight.
+  List<TextSpan> _build_welcome_text_spans({
+    required String template,
+    required String mother_name,
+    required String father_name,
+  }) {
+    final List<TextSpan> spans = [];
+    final bold_style = const TextStyle(fontWeight: FontWeight.w800);
+
+    // Regular expression to find {mother} and {father} placeholders
+    final regex = RegExp(r'\{(mother|father)\}');
+    int last_end = 0;
+
+    for (final match in regex.allMatches(template)) {
+      // Add text before the placeholder
+      if (match.start > last_end) {
+        spans.add(TextSpan(text: template.substring(last_end, match.start)));
+      }
+
+      // Add the name with bold styling
+      final placeholder = match.group(1);
+      if (placeholder == 'mother') {
+        spans.add(TextSpan(text: mother_name, style: bold_style));
+      } else if (placeholder == 'father') {
+        spans.add(TextSpan(text: father_name, style: bold_style));
+      }
+
+      last_end = match.end;
+    }
+
+    // Add any remaining text after the last placeholder
+    if (last_end < template.length) {
+      spans.add(TextSpan(text: template.substring(last_end)));
+    }
+
+    return spans;
   }
 }

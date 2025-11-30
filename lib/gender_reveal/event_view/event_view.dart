@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xapptor_community/gender_reveal/event_view/countdown_view.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_state.dart';
@@ -91,6 +92,28 @@ class _EventViewState extends State<EventView>
     setState(() {});
   }
 
+  /// Load saved language preference from SharedPreferences
+  Future<void> _load_saved_language() async {
+    if (widget.event_text_list == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final target_language = prefs.getString('target_language');
+
+    if (target_language == null) return;
+
+    // Find the index of the saved language in the text list array
+    for (int i = 0; i < widget.event_text_list!.list.length; i++) {
+      if (widget.event_text_list!.list[i].source_language == target_language) {
+        if (i != source_language_index && mounted) {
+          setState(() {
+            source_language_index = i;
+          });
+        }
+        return;
+      }
+    }
+  }
+
   void _init_translation_streams() {
     if (widget.event_text_list != null) {
       translation_stream_event = TranslationStream(
@@ -128,6 +151,9 @@ class _EventViewState extends State<EventView>
     super.initState();
     initialize_state();
     _init_translation_streams();
+
+    // Load saved language preference
+    _load_saved_language();
   }
 
   @override

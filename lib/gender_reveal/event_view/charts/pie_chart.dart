@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:xapptor_ui/values/ui.dart';
 
 /// Labels for pie chart translations
-/// Uses indices 5 = Boy, 6 = Girl from event_text_list
+/// Uses indices 3 = Boy, 4 = Girl from event_text_list
 class PieChartLabels {
   final String boy;
   final String girl;
@@ -15,12 +15,12 @@ class PieChartLabels {
   });
 
   factory PieChartLabels.fromTextList(List<String>? text) {
-    if (text == null || text.length < 7) {
+    if (text == null || text.length < 5) {
       return const PieChartLabels();
     }
     return PieChartLabels(
-      boy: text[5],
-      girl: text[6],
+      boy: text[3],
+      girl: text[4],
     );
   }
 }

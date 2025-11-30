@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
 /// Labels for bar chart translations
-/// Uses indices 5 = Boy, 6 = Girl, 17 = votes, 18 = vote from event_text_list
+/// Uses indices 3 = Boy, 4 = Girl, 15 = votes, 16 = vote from event_text_list
 class BarChartLabels {
   final String boy;
   final String girl;
@@ -18,14 +18,14 @@ class BarChartLabels {
   });
 
   factory BarChartLabels.fromTextList(List<String>? text) {
-    if (text == null || text.length < 19) {
+    if (text == null || text.length < 17) {
       return const BarChartLabels();
     }
     return BarChartLabels(
-      boy: text[5],
-      girl: text[6],
-      votes: text[17],
-      vote: text[18],
+      boy: text[3],
+      girl: text[4],
+      votes: text[15],
+      vote: text[16],
     );
   }
 }

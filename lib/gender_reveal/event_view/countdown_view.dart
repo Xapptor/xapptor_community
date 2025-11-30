@@ -6,7 +6,7 @@ import 'package:xapptor_ui/values/ui.dart';
 const double main_alpha = 0.7;
 
 /// Translation text indices for countdown labels
-/// 9 = Day, 10 = Days, 11 = Hour, 12 = Hours, 13 = Minute, 14 = Minutes, 15 = Second, 16 = Seconds
+/// 7 = Day, 8 = Days, 9 = Hour, 10 = Hours, 11 = Minute, 12 = Minutes, 13 = Second, 14 = Seconds
 class CountdownLabels {
   final String day;
   final String days;
@@ -29,18 +29,18 @@ class CountdownLabels {
   });
 
   factory CountdownLabels.fromTextList(List<String>? text) {
-    if (text == null || text.length < 17) {
+    if (text == null || text.length < 15) {
       return const CountdownLabels();
     }
     return CountdownLabels(
-      day: text[9],
-      days: text[10],
-      hour: text[11],
-      hours: text[12],
-      minute: text[13],
-      minutes: text[14],
-      second: text[15],
-      seconds: text[16],
+      day: text[7],
+      days: text[8],
+      hour: text[9],
+      hours: text[10],
+      minute: text[11],
+      minutes: text[12],
+      second: text[13],
+      seconds: text[14],
     );
   }
 }
