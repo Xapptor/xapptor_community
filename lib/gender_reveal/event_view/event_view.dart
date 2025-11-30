@@ -114,7 +114,7 @@ class _EventViewState extends State<EventView>
                               duration: const Duration(seconds: k_fade_animation_duration_seconds),
                               curve: Curves.easeOut,
                               child: Container(
-                                height: screen_height * (portrait ? 0.75 : 0.70),
+                                height: screen_height * (portrait ? 0.75 : 0.8),
                                 width: screen_width * (portrait ? 0.85 : 0.7),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(

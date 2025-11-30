@@ -91,7 +91,10 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   void on_shake_status_changed(AnimationStatus status) {
     if (!mounted) return;
 
-    if (status == AnimationStatus.completed) {
+    if (status == AnimationStatus.forward) {
+      // Show tooltip when shake animation starts
+      celebration_tooltip_key.currentState?.ensureTooltipVisible();
+    } else if (status == AnimationStatus.completed) {
       shake_controller.reset();
       schedule_next_shake();
       tooltip_shown = true;

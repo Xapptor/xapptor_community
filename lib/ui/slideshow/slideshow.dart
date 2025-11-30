@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_audio_service.dart';
@@ -19,9 +20,13 @@ import 'package:xapptor_ui/values/ui.dart';
 /// with its own GlobalKey, while the Slideshow manages the audio state.
 class SlideshowFabData {
   final bool sound_is_on;
+  final bool shuffle_is_on;
+  final LoopMode loop_mode;
   final bool is_playing;
   final bool is_loading;
   final VoidCallback on_volume_pressed;
+  final VoidCallback on_shuffle_pressed;
+  final VoidCallback on_repeat_pressed;
   final VoidCallback on_back_pressed;
   final VoidCallback on_play_pressed;
   final VoidCallback on_forward_pressed;
@@ -29,6 +34,8 @@ class SlideshowFabData {
   final String menu_label;
   final String close_label;
   final String volume_label;
+  final String shuffle_label;
+  final String repeat_label;
   final String back_label;
   final String play_label;
   final String forward_label;
@@ -39,9 +46,13 @@ class SlideshowFabData {
 
   const SlideshowFabData({
     required this.sound_is_on,
+    required this.shuffle_is_on,
+    required this.loop_mode,
     required this.is_playing,
     required this.is_loading,
     required this.on_volume_pressed,
+    required this.on_shuffle_pressed,
+    required this.on_repeat_pressed,
     required this.on_back_pressed,
     required this.on_play_pressed,
     required this.on_forward_pressed,
@@ -49,6 +60,8 @@ class SlideshowFabData {
     required this.menu_label,
     required this.close_label,
     required this.volume_label,
+    required this.shuffle_label,
+    required this.repeat_label,
     required this.back_label,
     required this.play_label,
     required this.forward_label,
@@ -66,14 +79,20 @@ class SlideshowFabData {
       menu_label: menu_label,
       close_label: close_label,
       volume_label: volume_label,
+      shuffle_label: shuffle_label,
+      repeat_label: repeat_label,
       back_label: back_label,
       play_label: play_label,
       forward_label: forward_label,
       share_label: share_label,
       sound_is_on: sound_is_on,
+      shuffle_is_on: shuffle_is_on,
+      loop_mode: loop_mode,
       is_playing: is_playing,
       is_loading: is_loading,
       on_volume_pressed: on_volume_pressed,
+      on_shuffle_pressed: on_shuffle_pressed,
+      on_repeat_pressed: on_repeat_pressed,
       on_back_pressed: on_back_pressed,
       on_play_pressed: on_play_pressed,
       on_forward_pressed: on_forward_pressed,
@@ -118,6 +137,8 @@ class Slideshow extends StatefulWidget {
   final String menu_label;
   final String close_label;
   final String volume_label;
+  final String shuffle_label;
+  final String repeat_label;
   final String back_label;
   final String play_label;
   final String forward_label;
@@ -137,12 +158,14 @@ class Slideshow extends StatefulWidget {
     this.subtitle = "",
     this.loading_message = "Loading...",
     this.songs_storage_path,
-    this.share_subject = "Slideshow",
+    this.share_subject = "Prepare to be amazed!",
     this.primary_color = const Color(0xFFD9C7FF),
     this.secondary_color = const Color(0xFFFFC2E0),
     this.menu_label = "Music Menu",
     this.close_label = "Close",
     this.volume_label = "Toggle Volume",
+    this.shuffle_label = "Toggle Shuffle",
+    this.repeat_label = "Toggle Repeat",
     this.back_label = "Previous Song",
     this.play_label = "Play/Pause",
     this.forward_label = "Next Song",
@@ -186,6 +209,8 @@ class _SlideshowState extends State<Slideshow> {
   bool _is_music_playing = false;
   bool _is_music_muted = false;
   bool _is_music_loading = false;
+  bool _is_shuffle_enabled = false;
+  LoopMode _loop_mode = LoopMode.all;
 
   Future<void> _load_single_image({
     required String path,
@@ -381,6 +406,8 @@ class _SlideshowState extends State<Slideshow> {
           _is_music_playing = state.is_playing;
           _is_music_muted = state.is_muted;
           _is_music_loading = state.is_loading;
+          _is_shuffle_enabled = state.is_shuffle_enabled;
+          _loop_mode = state.loop_mode;
         });
         // Update the FAB data when audio state changes
         _notify_fab_data();
@@ -400,9 +427,13 @@ class _SlideshowState extends State<Slideshow> {
   SlideshowFabData _build_fab_data() {
     return SlideshowFabData(
       sound_is_on: !_is_music_muted,
+      shuffle_is_on: _is_shuffle_enabled,
+      loop_mode: _loop_mode,
       is_playing: _is_music_playing,
       is_loading: _is_music_loading,
       on_volume_pressed: _on_volume_pressed,
+      on_shuffle_pressed: _on_shuffle_pressed,
+      on_repeat_pressed: _on_repeat_pressed,
       on_back_pressed: _on_back_pressed,
       on_play_pressed: _on_play_pressed,
       on_forward_pressed: _on_forward_pressed,
@@ -410,6 +441,8 @@ class _SlideshowState extends State<Slideshow> {
       menu_label: widget.menu_label,
       close_label: widget.close_label,
       volume_label: widget.volume_label,
+      shuffle_label: widget.shuffle_label,
+      repeat_label: widget.repeat_label,
       back_label: widget.back_label,
       play_label: widget.play_label,
       forward_label: widget.forward_label,
@@ -477,6 +510,14 @@ class _SlideshowState extends State<Slideshow> {
 
   void _on_volume_pressed() {
     _audio_service.toggle_mute();
+  }
+
+  void _on_shuffle_pressed() {
+    _audio_service.toggle_shuffle();
+  }
+
+  void _on_repeat_pressed() {
+    _audio_service.toggle_loop();
   }
 
   void _on_back_pressed() {
