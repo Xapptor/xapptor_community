@@ -15,12 +15,14 @@ class EventView extends StatefulWidget {
   final String mother_name;
   final String father_name;
   final Widget wishlist_button;
+  final String share_url;
 
   const EventView({
     super.key,
     required this.mother_name,
     required this.father_name,
     required this.wishlist_button,
+    required this.share_url,
   });
 
   @override
@@ -84,153 +86,160 @@ class _EventViewState extends State<EventView>
     final fab = _fab_data?.build_fab(_fab_key);
 
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Main background container
-            Positioned.fill(
+      body: event == null
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade200),
+              ),
+            )
+          : SafeArea(
               child: Stack(
                 children: [
+                  // Main background container
                   Positioned.fill(
-                    child: Slideshow(
-                      image_paths: [],
-                      use_examples: true,
-                      onFabData: _on_fab_data_changed,
-                    ),
-                  ),
-                  if (event != null && enable_voting_card && !small_countdown_start)
-                    Center(
-                      child: AnimatedOpacity(
-                        opacity: show_voting_card ? 1.0 : 0.0,
-                        duration: const Duration(seconds: k_fade_animation_duration_seconds),
-                        curve: Curves.easeOut,
-                        child: Container(
-                          height: screen_height * (portrait ? 0.75 : 0.70),
-                          width: screen_width * (portrait ? 0.85 : 0.7),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha((255 * 0.6).round()),
-                            borderRadius: BorderRadius.circular(outline_border_radius),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              CountdownView(
-                                milliseconds_sice_epoch: (event!.reveal_date).millisecondsSinceEpoch,
-                              ),
-                              Expanded(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final stacked = portrait || constraints.maxWidth < 760;
-
-                                    // ───────────────── intro section ─────────────────
-                                    final intro_section = build_intro_section(
-                                      context: context,
-                                      stacked: stacked,
-                                      constraints: constraints,
-                                      boy_color: boy_color,
-                                      girl_color: girl_color,
-                                      on_celebration_pressed: on_celebration_pressed,
-                                      on_vote_selected: on_vote_selected,
-                                      wishlist_button: widget.wishlist_button,
-                                    );
-
-                                    // ───────────────── charts section ─────────────────
-                                    final charts_section = build_charts_wrapper(
-                                      context: context,
-                                      stacked: stacked,
-                                      constraints: constraints,
-                                      portrait: portrait,
-                                      has_votes: has_votes,
-                                      boy_color: boy_color,
-                                      girl_color: girl_color,
-                                    );
-
-                                    final content = stacked
-                                        ? Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              intro_section,
-                                              const SizedBox(height: sized_box_space * 4),
-                                              charts_section,
-                                            ],
-                                          )
-                                        : Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Flexible(
-                                                flex: 48,
-                                                child: intro_section,
-                                              ),
-                                              const SizedBox(width: sized_box_space),
-                                              Flexible(
-                                                flex: 52,
-                                                child: charts_section,
-                                              ),
-                                            ],
-                                          );
-
-                                    // ⭐ This scrolls INSIDE the card when content > card height.
-                                    return SingleChildScrollView(
-                                      padding: EdgeInsets.only(
-                                        bottom: stacked ? 40 : 56,
-                                      ),
-                                      physics: const BouncingScrollPhysics(
-                                        parent: AlwaysScrollableScrollPhysics(),
-                                      ),
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minHeight: portrait ? constraints.maxHeight : 0,
-                                        ),
-                                        child: Align(
-                                          alignment: Alignment.topCenter,
-                                          child: content,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Slideshow(
+                            image_paths: const [],
+                            use_examples: true,
+                            onFabData: _on_fab_data_changed,
+                            share_url: widget.share_url + event_id,
                           ),
                         ),
+                        if (event != null && enable_voting_card && !small_countdown_start)
+                          Center(
+                            child: AnimatedOpacity(
+                              opacity: show_voting_card ? 1.0 : 0.0,
+                              duration: const Duration(seconds: k_fade_animation_duration_seconds),
+                              curve: Curves.easeOut,
+                              child: Container(
+                                height: screen_height * (portrait ? 0.75 : 0.70),
+                                width: screen_width * (portrait ? 0.85 : 0.7),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withAlpha((255 * 0.6).round()),
+                                  borderRadius: BorderRadius.circular(outline_border_radius),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    CountdownView(
+                                      milliseconds_sice_epoch: (event!.reveal_date).millisecondsSinceEpoch,
+                                    ),
+                                    Expanded(
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          final stacked = portrait || constraints.maxWidth < 760;
+
+                                          // ───────────────── intro section ─────────────────
+                                          final intro_section = build_intro_section(
+                                            context: context,
+                                            stacked: stacked,
+                                            constraints: constraints,
+                                            boy_color: boy_color,
+                                            girl_color: girl_color,
+                                            on_celebration_pressed: on_celebration_pressed,
+                                            on_vote_selected: on_vote_selected,
+                                            wishlist_button: widget.wishlist_button,
+                                          );
+
+                                          // ───────────────── charts section ─────────────────
+                                          final charts_section = build_charts_wrapper(
+                                            context: context,
+                                            stacked: stacked,
+                                            constraints: constraints,
+                                            portrait: portrait,
+                                            has_votes: has_votes,
+                                            boy_color: boy_color,
+                                            girl_color: girl_color,
+                                          );
+
+                                          final content = stacked
+                                              ? Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    intro_section,
+                                                    const SizedBox(height: sized_box_space * 4),
+                                                    charts_section,
+                                                  ],
+                                                )
+                                              : Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Flexible(
+                                                      flex: 48,
+                                                      child: intro_section,
+                                                    ),
+                                                    const SizedBox(width: sized_box_space),
+                                                    Flexible(
+                                                      flex: 52,
+                                                      child: charts_section,
+                                                    ),
+                                                  ],
+                                                );
+
+                                          // ⭐ This scrolls INSIDE the card when content > card height.
+                                          return SingleChildScrollView(
+                                            padding: EdgeInsets.only(
+                                              bottom: stacked ? 40 : 56,
+                                            ),
+                                            physics: const BouncingScrollPhysics(
+                                              parent: AlwaysScrollableScrollPhysics(),
+                                            ),
+                                            child: ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                minHeight: portrait ? constraints.maxHeight : 0,
+                                              ),
+                                              child: Align(
+                                                alignment: Alignment.topCenter,
+                                                child: content,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (small_countdown_start)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: SizedBox(
+                              height: screen_height / 4,
+                              width: screen_width / 4,
+                              child: const ReactionRecorder(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // Confetti overlay
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: ConfettiWidget(
+                        confettiController: controller_top_center,
+                        blastDirectionality: BlastDirectionality.explosive,
+                        blastDirection: math.pi / 2,
+                        emissionFrequency: 0.05,
+                        numberOfParticles: 12,
+                        gravity: 0.2,
+                        maxBlastForce: 20,
+                        minBlastForce: 5,
+                        shouldLoop: false,
                       ),
                     ),
-                  if (small_countdown_start)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: SizedBox(
-                        height: screen_height / 4,
-                        width: screen_width / 4,
-                        child: const ReactionRecorder(),
-                      ),
-                    ),
+                  ),
                 ],
               ),
             ),
-
-            // Confetti overlay
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.center,
-                child: ConfettiWidget(
-                  confettiController: controller_top_center,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  blastDirection: math.pi / 2,
-                  emissionFrequency: 0.05,
-                  numberOfParticles: 12,
-                  gravity: 0.2,
-                  maxBlastForce: 20,
-                  minBlastForce: 5,
-                  shouldLoop: false,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: fab,
       floatingActionButtonLocation: ExpandableFab.location,
     );

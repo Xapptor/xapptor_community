@@ -31,6 +31,7 @@ Widget slideshow_fab({
   required VoidCallback on_share_pressed,
   Color primary_color = const Color(0xFFD9C7FF),
   Color secondary_color = const Color(0xFFFFC2E0),
+  required String share_url,
 }) {
   return ExpandableFab(
     key: expandable_fab_key,

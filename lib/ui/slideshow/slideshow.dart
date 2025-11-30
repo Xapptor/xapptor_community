@@ -35,6 +35,7 @@ class SlideshowFabData {
   final String share_label;
   final Color primary_color;
   final Color secondary_color;
+  final String share_url;
 
   const SlideshowFabData({
     required this.sound_is_on,
@@ -54,6 +55,7 @@ class SlideshowFabData {
     required this.share_label,
     required this.primary_color,
     required this.secondary_color,
+    required this.share_url,
   });
 
   /// Builds the FAB widget using the provided GlobalKey.
@@ -78,6 +80,7 @@ class SlideshowFabData {
       on_share_pressed: on_share_pressed,
       primary_color: primary_color,
       secondary_color: secondary_color,
+      share_url: share_url,
     );
   }
 }
@@ -99,8 +102,8 @@ class Slideshow extends StatefulWidget {
   /// If null, background music will be disabled.
   final String? songs_storage_path;
 
-  /// Text to share when the share button is pressed.
-  final String share_text;
+  /// URL to share when the share button is pressed.
+  final String share_url;
 
   /// Subject for the share action.
   final String share_subject;
@@ -134,7 +137,6 @@ class Slideshow extends StatefulWidget {
     this.subtitle = "",
     this.loading_message = "Loading...",
     this.songs_storage_path,
-    this.share_text = "Check out this amazing slideshow!",
     this.share_subject = "Slideshow",
     this.primary_color = const Color(0xFFD9C7FF),
     this.secondary_color = const Color(0xFFFFC2E0),
@@ -146,6 +148,7 @@ class Slideshow extends StatefulWidget {
     this.forward_label = "Next Song",
     this.share_label = "Share",
     this.onFabData,
+    this.share_url = "",
   });
 
   @override
@@ -413,6 +416,7 @@ class _SlideshowState extends State<Slideshow> {
       share_label: widget.share_label,
       primary_color: widget.primary_color,
       secondary_color: widget.secondary_color,
+      share_url: widget.share_url,
     );
   }
 
@@ -490,7 +494,7 @@ class _SlideshowState extends State<Slideshow> {
   void _on_share_pressed() {
     SharePlus.instance.share(
       ShareParams(
-        text: widget.share_text,
+        text: widget.share_url,
         subject: widget.share_subject,
       ),
     );
