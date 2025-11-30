@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:xapptor_auth/model/xapptor_user.dart';
@@ -16,8 +17,8 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   final GlobalKey<TooltipState> celebration_tooltip_key = GlobalKey<TooltipState>();
 
   // State variables
-  double boy_votes = 10;
-  double girl_votes = 62;
+  double boy_votes = 0;
+  double girl_votes = 0;
   String? selected_vote;
   bool confirmed = false;
   bool show_voting_card = false;
@@ -45,6 +46,9 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   EventModel? event;
   XapptorUser? current_user;
   bool is_loading_vote_status = true;
+
+  // Real-time votes subscription
+  StreamSubscription<QuerySnapshot>? votes_subscription;
 
   void initialize_state() {
     get_event_from_path();
@@ -114,6 +118,9 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
 
       event = EventModel.fromDoc(event_doc);
 
+      // Start listening to votes after event is loaded
+      listen_to_votes();
+
       if (mounted) {
         setState(() {});
       }
@@ -125,6 +132,10 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
         final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
         if (event_doc.exists) {
           event = EventModel.fromDoc(event_doc);
+
+          // Start listening to votes after event is loaded
+          listen_to_votes();
+
           if (mounted) {
             setState(() {});
           }
@@ -133,6 +144,55 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
         debugPrint('Retry failed - Error getting event: $retry_error');
       }
     }
+  }
+
+  /// Listen to votes collection in real-time for this event
+  void listen_to_votes() {
+    // Cancel any existing subscription
+    votes_subscription?.cancel();
+
+    if (event_id.isEmpty) {
+      debugPrint('Cannot listen to votes: event_id is empty');
+      return;
+    }
+
+    debugPrint('Starting real-time votes listener for event: $event_id');
+
+    // Subscribe to votes collection filtered by event_id
+    votes_subscription = XapptorDB.instance
+        .collection("votes")
+        .where("event_id", isEqualTo: event_id)
+        .snapshots()
+        .listen(
+      (QuerySnapshot snapshot) {
+        if (!mounted) return;
+
+        // Count votes by choice
+        int boy_count = 0;
+        int girl_count = 0;
+
+        for (final doc in snapshot.docs) {
+          final data = doc.data() as Map<String, dynamic>;
+          final choice = data['choice'] as String?;
+
+          if (choice == 'boy') {
+            boy_count++;
+          } else if (choice == 'girl') {
+            girl_count++;
+          }
+        }
+
+        debugPrint('Votes updated - Boy: $boy_count, Girl: $girl_count');
+
+        setState(() {
+          boy_votes = boy_count.toDouble();
+          girl_votes = girl_count.toDouble();
+        });
+      },
+      onError: (error) {
+        debugPrint('Error listening to votes: $error');
+      },
+    );
   }
 
   void schedule_next_shake() {
@@ -157,6 +217,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
 
   void dispose_state() {
     cancel_all_timers();
+    votes_subscription?.cancel();
     glow_controller.dispose();
     shake_controller.removeStatusListener(on_shake_status_changed);
     shake_controller.dispose();
@@ -222,27 +283,12 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
         user_id: current_user!.id,
       );
 
-      await Future.wait([
-        XapptorDB.instance.collection("votes").add(new_vote.toMap()),
-      ]);
+      await XapptorDB.instance.collection("votes").add(new_vote.toMap());
 
       if (!mounted) return;
 
+      // Update local state - votes count will be updated by real-time listener
       setState(() {
-        // Remove previous vote if exists
-        if (selected_vote == 'boy') {
-          boy_votes = (boy_votes - 1).clamp(0.0, double.infinity);
-        } else if (selected_vote == 'girl') {
-          girl_votes = (girl_votes - 1).clamp(0.0, double.infinity);
-        }
-
-        // Add new vote
-        if (vote == 'boy') {
-          boy_votes += 1;
-        } else if (vote == 'girl') {
-          girl_votes += 1;
-        }
-
         selected_vote = vote;
         confirmed = true;
       });
