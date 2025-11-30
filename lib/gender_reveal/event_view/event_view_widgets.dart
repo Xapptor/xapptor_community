@@ -27,7 +27,8 @@ mixin EventViewWidgetsMixin {
     required Color girl_color,
     required VoidCallback on_celebration_pressed,
     required void Function(String vote) on_vote_selected,
-    required Widget wishlist_button,
+    required Widget Function(int source_language_index) wishlist_button_builder,
+    int source_language_index = 0,
   }) {
     return Align(
       alignment: Alignment.topCenter,
@@ -127,7 +128,7 @@ mixin EventViewWidgetsMixin {
 
                   const SizedBox(height: sized_box_space),
 
-                  wishlist_button,
+                  wishlist_button_builder(source_language_index),
                 ],
               ),
             ),

@@ -14,14 +14,14 @@ import 'package:xapptor_ui/values/ui.dart';
 class EventView extends StatefulWidget {
   final String mother_name;
   final String father_name;
-  final Widget wishlist_button;
+  final Widget Function(int source_language_index) wishlist_button_builder;
   final String share_url;
 
   const EventView({
     super.key,
     required this.mother_name,
     required this.father_name,
-    required this.wishlist_button,
+    required this.wishlist_button_builder,
     required this.share_url,
   });
 
@@ -141,7 +141,7 @@ class _EventViewState extends State<EventView>
                                             girl_color: girl_color,
                                             on_celebration_pressed: on_celebration_pressed,
                                             on_vote_selected: on_vote_selected,
-                                            wishlist_button: widget.wishlist_button,
+                                            wishlist_button_builder: widget.wishlist_button_builder,
                                           );
 
                                           // ───────────────── charts section ─────────────────
