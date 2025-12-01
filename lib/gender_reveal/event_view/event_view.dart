@@ -37,6 +37,12 @@ class EventView extends StatefulWidget {
   final TextStyle? subtitle_style;
   final TextStyle? body_style;
 
+  /// Whether to show a language icon in the picker.
+  final bool language_picker_show_icon;
+
+  /// Color for the language picker icon.
+  final Color? language_picker_icon_color;
+
   const EventView({
     super.key,
     required this.mother_name,
@@ -55,6 +61,8 @@ class EventView extends StatefulWidget {
     this.title_style,
     this.subtitle_style,
     this.body_style,
+    this.language_picker_show_icon = false,
+    this.language_picker_icon_color,
   });
 
   @override
@@ -416,12 +424,14 @@ class _EventViewState extends State<EventView>
                           borderRadius: BorderRadius.circular(outline_border_radius),
                         ),
                         child: SizedBox(
-                          width: 150,
+                          width: widget.language_picker_show_icon ? 170 : 150,
                           child: LanguagePicker(
                             translation_stream_list: translation_stream_list,
                             language_picker_items_text_color: language_picker_text,
                             update_source_language: update_source_language,
                             source_language_index: source_language_index,
+                            show_icon: widget.language_picker_show_icon,
+                            icon_color: widget.language_picker_icon_color ?? language_picker_text,
                           ),
                         ),
                       ),
