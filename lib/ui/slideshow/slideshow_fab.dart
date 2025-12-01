@@ -68,20 +68,26 @@ Widget slideshow_fab({
       fabSize: ExpandableFabSize.small,
       foregroundColor: Colors.white,
       backgroundColor: primary_color,
-      child: Icon(
-        is_playing ? Icons.music_note : Icons.music_off,
-        color: Colors.white,
-        size: 28,
+      child: Tooltip(
+        message: menu_label,
+        child: Icon(
+          is_playing ? Icons.music_note : Icons.music_off,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
     ),
     closeButtonBuilder: RotateFloatingActionButtonBuilder(
       fabSize: ExpandableFabSize.small,
       foregroundColor: Colors.white,
       backgroundColor: primary_color,
-      child: const Icon(
-        Icons.close,
-        color: Colors.white,
-        size: 28,
+      child: Tooltip(
+        message: close_label,
+        child: const Icon(
+          Icons.close,
+          color: Colors.white,
+          size: 28,
+        ),
       ),
     ),
     children: [

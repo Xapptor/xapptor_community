@@ -92,11 +92,9 @@ class _EventViewState extends State<EventView>
   int source_language_index = 0;
   TranslationStream? translation_stream_event;
   TranslationStream? translation_stream_wishlist;
-  TranslationStream? translation_stream_slideshow_fab;
   List<TranslationStream> translation_stream_list = [];
 
   void _on_fab_data_changed(SlideshowFabData data) {
-    print('_on_fab_data_changed received! is_playing=${data.is_playing}, is_loading=${data.is_loading}');
     setState(() {
       _fab_data = data;
       // Connect the music play callback to the mixin's on_trigger_music_play
@@ -119,9 +117,9 @@ class _EventViewState extends State<EventView>
       widget.event_text_list!.get(source_language_index)[index] = new_text;
     } else if (list_index == 1 && widget.wishlist_text_list != null) {
       widget.wishlist_text_list!.get(source_language_index)[index] = new_text;
-    } else if (list_index == 2 && widget.slideshow_fab_text_list != null) {
-      widget.slideshow_fab_text_list!.get(source_language_index)[index] = new_text;
     }
+    // Note: list_index == 2 (slideshow_fab_text_list) is not handled here
+    // because it has pre-defined translations and doesn't use the translation stream.
     setState(() {});
   }
 
@@ -175,15 +173,10 @@ class _EventViewState extends State<EventView>
       translation_stream_list.add(translation_stream_wishlist!);
     }
 
-    if (widget.slideshow_fab_text_list != null) {
-      translation_stream_slideshow_fab = TranslationStream(
-        translation_text_list_array: widget.slideshow_fab_text_list!,
-        update_text_list_function: update_text_list,
-        list_index: 2,
-        source_language_index: source_language_index,
-      );
-      translation_stream_list.add(translation_stream_slideshow_fab!);
-    }
+    // Note: slideshow_fab_text_list is NOT added to translation_stream_list
+    // because it has pre-defined translations for all supported languages.
+    // Adding it to the stream would cause the translation system to overwrite
+    // the pre-defined translations when language auto-detection runs.
   }
 
   @override

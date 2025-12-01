@@ -495,6 +495,32 @@ class _SlideshowState extends State<Slideshow> {
   }
 
   @override
+  void didUpdateWidget(covariant Slideshow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Check if any FAB labels changed (e.g., due to language change)
+    final labels_changed = oldWidget.menu_label != widget.menu_label ||
+        oldWidget.close_label != widget.close_label ||
+        oldWidget.volume_label != widget.volume_label ||
+        oldWidget.shuffle_label != widget.shuffle_label ||
+        oldWidget.repeat_label != widget.repeat_label ||
+        oldWidget.back_label != widget.back_label ||
+        oldWidget.play_label != widget.play_label ||
+        oldWidget.forward_label != widget.forward_label ||
+        oldWidget.share_label != widget.share_label;
+
+    if (labels_changed) {
+      // Notify parent with updated FAB data containing new labels
+      // Use addPostFrameCallback to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _notify_fab_data();
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     for (var controller in portrait_video_player_controllers) {
       controller.dispose();
