@@ -24,7 +24,8 @@ class SlideshowAudioService {
   final List<String> _song_urls = [];
   final Map<String, String> _cached_paths = {};
 
-  ConcatenatingAudioSource? _playlist;
+  // Track if playlist has been set (replaces deprecated ConcatenatingAudioSource)
+  bool _playlist_set = false;
 
   bool _is_initialized = false;
   bool _is_loading = false;
@@ -238,16 +239,13 @@ class SlideshowAudioService {
   }
 
   /// Create the playlist from loaded audio sources
+  /// Uses the modern setAudioSources API instead of deprecated ConcatenatingAudioSource
   Future<void> _create_playlist() async {
     if (_audio_sources.isEmpty) return;
 
-    _playlist = ConcatenatingAudioSource(
-      useLazyPreparation: true,
-      shuffleOrder: DefaultShuffleOrder(),
-      children: _audio_sources,
-    );
-
-    await _audio_player.setAudioSource(_playlist!, initialIndex: 0);
+    // Use the new playlist API - setAudioSources replaces ConcatenatingAudioSource
+    await _audio_player.setAudioSources(_audio_sources, initialIndex: 0);
+    _playlist_set = true;
 
     debugPrint('SlideshowAudioService: Playlist created with ${_audio_sources.length} songs');
 
@@ -278,7 +276,7 @@ class SlideshowAudioService {
     if (!_is_initialized || _audio_sources.isEmpty) return;
 
     // If playlist hasn't been created yet, create it now
-    if (_playlist == null && _audio_sources.isNotEmpty) {
+    if (!_playlist_set && _audio_sources.isNotEmpty) {
       await _create_playlist();
     }
 
@@ -314,7 +312,7 @@ class SlideshowAudioService {
     if (!_is_initialized || _audio_sources.isEmpty) return;
 
     // Ensure playlist exists before navigating
-    if (_playlist == null) {
+    if (!_playlist_set) {
       debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
       await _create_playlist();
     }
@@ -345,7 +343,7 @@ class SlideshowAudioService {
     if (!_is_initialized || _audio_sources.isEmpty) return;
 
     // Ensure playlist exists before navigating
-    if (_playlist == null) {
+    if (!_playlist_set) {
       debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
       await _create_playlist();
     }
@@ -381,7 +379,7 @@ class SlideshowAudioService {
   /// Toggle shuffle mode
   Future<void> toggle_shuffle() async {
     // Ensure playlist exists before toggling shuffle
-    if (_playlist == null && _audio_sources.isNotEmpty) {
+    if (!_playlist_set && _audio_sources.isNotEmpty) {
       debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
       await _create_playlist();
     }
@@ -506,7 +504,7 @@ class SlideshowAudioService {
     _initialization_future = null;
     _audio_sources.clear();
     _song_urls.clear();
-    _playlist = null;
+    _playlist_set = false;
     _current_index = 0;
     _shuffle_indices.clear();
     _shuffle_position = 0;
