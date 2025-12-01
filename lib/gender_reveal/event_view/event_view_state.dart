@@ -8,8 +8,9 @@ import 'package:xapptor_community/gender_reveal/models/vote.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
 import 'package:xapptor_db/xapptor_db.dart';
-import 'package:xapptor_router/get_last_path_segment.dart';
-import 'package:xapptor_router/app_screens.dart';
+// V2 Router imports for dynamic route support
+import 'package:xapptor_router/V2/get_last_path_segment_v2.dart';
+import 'package:xapptor_router/V2/app_screens_v2.dart';
 import 'package:confetti/confetti.dart';
 
 /// Mixin containing state management logic for EventView
@@ -112,7 +113,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   }
 
   void get_event_from_path() async {
-    event_id = get_last_path_segment();
+    event_id = get_last_path_segment_v2();
 
     try {
       final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
@@ -270,7 +271,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       );
 
       if (should_login == true) {
-        open_login();
+        open_login_v2();
       }
       return;
     }
@@ -411,7 +412,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
 
       // Get event_id first if not set yet
       if (event_id.isEmpty) {
-        event_id = get_last_path_segment();
+        event_id = get_last_path_segment_v2();
       }
 
       // Validate event_id is not empty
