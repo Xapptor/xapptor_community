@@ -25,6 +25,18 @@ class EventView extends StatefulWidget {
   final TranslationTextListArray? slideshow_fab_text_list;
   final bool has_language_picker;
 
+  // Customizable colors for harmonized theming
+  final Color? card_overlay_color;
+  final Color? boy_color;
+  final Color? girl_color;
+  final Color? language_picker_background_color;
+  final Color? language_picker_text_color;
+
+  // Customizable text styles for harmonized typography
+  final TextStyle? title_style;
+  final TextStyle? subtitle_style;
+  final TextStyle? body_style;
+
   const EventView({
     super.key,
     required this.mother_name,
@@ -35,6 +47,14 @@ class EventView extends StatefulWidget {
     this.wishlist_text_list,
     this.slideshow_fab_text_list,
     this.has_language_picker = false,
+    this.card_overlay_color,
+    this.boy_color,
+    this.girl_color,
+    this.language_picker_background_color,
+    this.language_picker_text_color,
+    this.title_style,
+    this.subtitle_style,
+    this.body_style,
   });
 
   @override
@@ -49,6 +69,10 @@ class _EventViewState extends State<EventView>
 
   @override
   String get father_name => widget.father_name;
+
+  // Implement getter for translated dialog text (required by EventViewStateMixin)
+  @override
+  List<String>? get dialog_text_list => widget.event_text_list?.get(source_language_index);
 
   // FAB key - owned by this widget, persists across rebuilds
   final GlobalKey<ExpandableFabState> _fab_key = GlobalKey<ExpandableFabState>();
@@ -67,6 +91,14 @@ class _EventViewState extends State<EventView>
     print('_on_fab_data_changed received! is_playing=${data.is_playing}, is_loading=${data.is_loading}');
     setState(() {
       _fab_data = data;
+      // Connect the music play callback to the mixin's on_trigger_music_play
+      // This allows on_celebration_pressed to trigger slideshow music
+      on_trigger_music_play = () {
+        // Only trigger play if music is not already playing
+        if (!data.is_playing) {
+          data.on_play_pressed();
+        }
+      };
     });
   }
 
@@ -171,8 +203,12 @@ class _EventViewState extends State<EventView>
 
     final total_votes = boy_votes + girl_votes;
     final has_votes = total_votes > 0;
-    final boy_color = Colors.blueAccent.shade200;
-    final girl_color = Colors.pinkAccent.shade200;
+    // Use custom colors if provided, otherwise fall back to defaults
+    final boy_color = widget.boy_color ?? Colors.blueAccent.shade200;
+    final girl_color = widget.girl_color ?? Colors.pinkAccent.shade200;
+    final card_overlay = widget.card_overlay_color ?? Colors.black.withAlpha((255 * 0.6).round());
+    final language_picker_bg = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
+    final language_picker_text = widget.language_picker_text_color ?? Colors.white;
 
     bool small_countdown_start = false;
     if (event != null) {
@@ -220,6 +256,10 @@ class _EventViewState extends State<EventView>
                                 play_label: fab_text?[6] ?? 'Play/Pause',
                                 forward_label: fab_text?[7] ?? 'Next Song',
                                 share_label: fab_text?[8] ?? 'Share',
+                                // Custom text styles for harmonized typography
+                                title_style: widget.title_style,
+                                subtitle_style: widget.subtitle_style,
+                                body_style: widget.body_style,
                               );
                             },
                           ),
@@ -235,7 +275,7 @@ class _EventViewState extends State<EventView>
                                 width: screen_width * (portrait ? 0.85 : 0.7),
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withAlpha((255 * 0.6).round()),
+                                  color: card_overlay,
                                   borderRadius: BorderRadius.circular(outline_border_radius),
                                 ),
                                 child: Column(
@@ -264,6 +304,8 @@ class _EventViewState extends State<EventView>
                                             wishlist_button_builder: widget.wishlist_button_builder,
                                             source_language_index: source_language_index,
                                             event_text_list: widget.event_text_list,
+                                            title_style: widget.title_style,
+                                            subtitle_style: widget.subtitle_style,
                                           );
 
                                           // ───────────────── charts section ─────────────────
@@ -370,14 +412,14 @@ class _EventViewState extends State<EventView>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.black.withAlpha((255 * 0.5).round()),
+                          color: language_picker_bg,
                           borderRadius: BorderRadius.circular(outline_border_radius),
                         ),
                         child: SizedBox(
                           width: 150,
                           child: LanguagePicker(
                             translation_stream_list: translation_stream_list,
-                            language_picker_items_text_color: Colors.white,
+                            language_picker_items_text_color: language_picker_text,
                             update_source_language: update_source_language,
                             source_language_index: source_language_index,
                           ),

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:xapptor_auth/model/xapptor_user.dart';
 import 'package:xapptor_community/gender_reveal/models/event.dart';
 import 'package:xapptor_community/gender_reveal/models/vote.dart';
@@ -10,6 +9,7 @@ import 'package:xapptor_community/gender_reveal/event_view/event_view.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
 import 'package:xapptor_db/xapptor_db.dart';
 import 'package:xapptor_router/get_last_path_segment.dart';
+import 'package:xapptor_router/app_screens.dart';
 import 'package:confetti/confetti.dart';
 
 /// Mixin containing state management logic for EventView
@@ -26,6 +26,15 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   final bool show_countdown = false;
   bool tooltip_shown = false;
 
+  // Callback to trigger slideshow music play (set by EventView)
+  VoidCallback? on_trigger_music_play;
+
+  // Getter for translated dialog text (to be set by implementing class)
+  // Returns list of strings for dialog text, or null if not available
+  // Index: 17 = Login Required, 18 = Login message, 19 = Cancel, 20 = Log In,
+  //        21 = Confirm your vote, 22 = Vote confirmation message, 23 = Vote is final, 24 = Confirm
+  List<String>? get dialog_text_list;
+
   // Animation controllers
   late AnimationController glow_controller;
   late Animation<double> glow_animation;
@@ -36,10 +45,8 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
   Timer? shake_timer;
   Timer? voting_card_hide_timer;
   Timer? voting_card_show_timer;
-  Timer? audio_play_timer;
 
-  // Media
-  late AudioPlayer player;
+  // Confetti controller
   late ConfettiController controller_top_center;
 
   String event_id = "";
@@ -60,8 +67,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       tooltip_shown = true;
     });
 
-    // Initialize audio player and confetti
-    player = AudioPlayer();
+    // Initialize confetti controller
     controller_top_center = ConfettiController(
       duration: const Duration(seconds: k_confetti_duration_seconds),
     );
@@ -212,7 +218,6 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
     shake_timer?.cancel();
     voting_card_hide_timer?.cancel();
     voting_card_show_timer?.cancel();
-    audio_play_timer?.cancel();
   }
 
   void dispose_state() {
@@ -221,39 +226,73 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
     glow_controller.dispose();
     shake_controller.removeStatusListener(on_shake_status_changed);
     shake_controller.dispose();
-    player.dispose();
     controller_top_center.dispose();
   }
 
   Future<void> on_vote_selected(String vote) async {
     if (vote == selected_vote || confirmed) return;
 
-    // Check if user is authenticated
+    // Get translated text or use defaults
+    final text = dialog_text_list;
+    final login_required_title = text?[17] ?? 'Login Required';
+    final login_required_message = text?[18] ?? 'You need to log in to vote. Would you like to log in now?';
+    final cancel_text = text?[19] ?? 'Cancel';
+    final login_text = text?[20] ?? 'Log In';
+    final confirm_vote_title = text?[21] ?? 'Confirm your vote';
+    final vote_confirmation_template = text?[22] ?? 'Are you sure you want to vote for {choice}?';
+    final vote_is_final_text = text?[23] ?? 'Your vote is final.';
+    final confirm_text = text?[24] ?? 'Confirm';
+    final vote_success_template = text?[25] ?? 'Vote for {choice} saved successfully!';
+    final vote_error_text = text?[26] ?? 'Error saving vote';
+    final boy_text = text?[3] ?? 'Boy';
+    final girl_text = text?[4] ?? 'Girl';
+
+    // Check if user is authenticated - redirect to login if not
     if (current_user == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please log in to vote'),
-          duration: Duration(seconds: 3),
+
+      final should_login = await showDialog<bool>(
+        context: context,
+        builder: (dialog_context) => AlertDialog(
+          title: Text(login_required_title),
+          content: Text(login_required_message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialog_context).pop(false),
+              child: Text(cancel_text),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialog_context).pop(true),
+              child: Text(login_text),
+            ),
+          ],
         ),
       );
+
+      if (should_login == true) {
+        open_login();
+      }
       return;
     }
+
+    // Get choice text for confirmation message
+    final choice_text = vote == 'boy' ? boy_text : girl_text;
+    final confirmation_message = vote_confirmation_template.replaceAll('{choice}', choice_text);
 
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialog_context) => AlertDialog(
-        title: const Text('Confirm your vote'),
+        title: Text(confirm_vote_title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to vote for ${vote == 'boy' ? 'Boy' : 'Girl'}?'),
+            Text(confirmation_message),
             const SizedBox(height: 8),
-            const Text(
-              'Your vote is final.',
-              style: TextStyle(
+            Text(
+              vote_is_final_text,
+              style: const TextStyle(
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -262,11 +301,11 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialog_context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(cancel_text),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialog_context).pop(true),
-            child: const Text('Confirm'),
+            child: Text(confirm_text),
           ),
         ],
       ),
@@ -293,10 +332,11 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
         confirmed = true;
       });
 
-      // Show success message
+      // Show success message with translated text
+      final success_message = vote_success_template.replaceAll('{choice}', choice_text);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vote for ${vote == 'boy' ? 'Boy' : 'Girl'} saved successfully!'),
+          content: Text(success_message),
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.green,
         ),
@@ -305,10 +345,10 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       debugPrint('Error saving vote: $e');
       if (!mounted) return;
 
-      // Show error message
+      // Show error message with translated text
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error saving vote: $e'),
+          content: Text('$vote_error_text: $e'),
           duration: const Duration(seconds: 3),
           backgroundColor: Colors.red,
         ),
@@ -316,11 +356,10 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
     }
   }
 
-  void on_celebration_pressed() async {
+  void on_celebration_pressed() {
     // Cancel any existing timers to avoid conflicts
     voting_card_hide_timer?.cancel();
     voting_card_show_timer?.cancel();
-    audio_play_timer?.cancel();
 
     // Hide voting card with fade out
     setState(() {
@@ -338,7 +377,7 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       },
     );
 
-    // Schedule voting card to reappear
+    // Schedule voting card to reappear after 10 seconds
     voting_card_show_timer = Timer(
       const Duration(seconds: k_voting_card_show_delay_seconds),
       () {
@@ -350,22 +389,8 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       },
     );
 
-    // Play confetti animation
-    controller_top_center.play();
-
-    // Play audio after delay
-    audio_play_timer = Timer(
-      const Duration(seconds: k_audio_play_delay_seconds),
-      () async {
-        if (!mounted || player.playing) return;
-        try {
-          await player.setAsset("assets/example_song/song.mp3");
-          await player.play();
-        } catch (e) {
-          debugPrint('Error playing audio: $e');
-        }
-      },
-    );
+    // Trigger slideshow music play via callback (if set)
+    on_trigger_music_play?.call();
   }
 
   // Do a query to check if the user already vote for this event

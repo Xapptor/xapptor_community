@@ -80,7 +80,7 @@ Widget slideshow_view({
                 video_player_widget = FadeInVideo(
                   controller: current_video_player_controller,
                   placeholder: const AssetImage(
-                    'assets/images/placeholder_gradient_64.png',
+                    'assets/images/placeholder_gradient_64.jpg',
                   ),
                 );
               }
@@ -97,7 +97,7 @@ Widget slideshow_view({
                   if (!possible_video_position_for_portrait && !possible_video_position_for_landscape)
                     FadeInImage(
                       placeholder: const AssetImage(
-                        'assets/images/placeholder_gradient_64.png',
+                        'assets/images/placeholder_gradient_64.jpg',
                       ),
                       image: ResizeImage(
                         image!.image,

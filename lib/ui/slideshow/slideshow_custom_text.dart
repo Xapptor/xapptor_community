@@ -4,7 +4,37 @@ Widget slideshow_custom_text(
   String text, {
   required CustomTextType type,
   required bool portrait,
+  TextStyle? custom_title_style,
+  TextStyle? custom_subtitle_style,
+  TextStyle? custom_body_style,
 }) {
+  // Use custom styles if provided, otherwise fall back to defaults
+  TextStyle? custom_style;
+  switch (type) {
+    case CustomTextType.title:
+      custom_style = custom_title_style;
+      break;
+    case CustomTextType.subtitle:
+      custom_style = custom_subtitle_style;
+      break;
+    case CustomTextType.body:
+      custom_style = custom_body_style;
+      break;
+  }
+
+  if (custom_style != null) {
+    // Adjust font size for portrait/landscape if using custom style
+    final double size_multiplier = portrait ? 1.0 : 1.4;
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: custom_style.copyWith(
+        fontSize: (custom_style.fontSize ?? 16) * size_multiplier,
+      ),
+    );
+  }
+
+  // Default style (legacy behavior)
   double font_size = 16;
 
   switch (type) {

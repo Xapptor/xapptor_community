@@ -35,11 +35,21 @@ class BarChartWidget extends StatelessWidget {
   final double girl_votes;
   final BarChartLabels labels;
 
+  // Customizable gradient colors
+  final Color? boy_gradient_start;
+  final Color? boy_gradient_end;
+  final Color? girl_gradient_start;
+  final Color? girl_gradient_end;
+
   const BarChartWidget({
     super.key,
     required this.boy_votes,
     required this.girl_votes,
     this.labels = const BarChartLabels(),
+    this.boy_gradient_start,
+    this.boy_gradient_end,
+    this.girl_gradient_start,
+    this.girl_gradient_end,
   });
 
   @override
@@ -151,10 +161,10 @@ class BarChartWidget extends StatelessWidget {
                   toY: boy_votes,
                   width: 42,
                   borderRadius: BorderRadius.circular(outline_border_radius),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFF64B5F6),
-                      Color(0xFF1976D2),
+                      boy_gradient_start ?? const Color(0xFF85C1E9), // Lighter blue
+                      boy_gradient_end ?? const Color(0xFF3498DB), // Deeper blue
                     ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
@@ -170,10 +180,10 @@ class BarChartWidget extends StatelessWidget {
                   toY: girl_votes,
                   width: 42,
                   borderRadius: BorderRadius.circular(outline_border_radius),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFFF48FB1),
-                      Color(0xFFD81B60),
+                      girl_gradient_start ?? const Color(0xFFF5B7B1), // Lighter pink
+                      girl_gradient_end ?? const Color(0xFFE74C3C), // Deeper pink/coral
                     ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,

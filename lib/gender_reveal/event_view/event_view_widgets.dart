@@ -30,6 +30,8 @@ mixin EventViewWidgetsMixin {
     required Widget Function(int source_language_index) wishlist_button_builder,
     int source_language_index = 0,
     TranslationTextListArray? event_text_list,
+    TextStyle? title_style,
+    TextStyle? subtitle_style,
   }) {
     // Get translated text or fallback to defaults
     // Index: 0 = Click me, 1 = Celebrate the Moment!,
@@ -97,15 +99,16 @@ mixin EventViewWidgetsMixin {
                   ),
                   const SizedBox(height: sized_box_space),
 
-                  // Title
+                  // Title - use custom style or fallback to theme
                   Text(
                     celebrate_text,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                        ),
+                    style: title_style ??
+                        Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: 2.0,
+                            ),
                   ),
                   const SizedBox(height: sized_box_space),
 
@@ -113,10 +116,13 @@ mixin EventViewWidgetsMixin {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      style: subtitle_style ??
+                          Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontWeight: FontWeight.w400,
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 1.0,
+                              ),
                       children: _build_welcome_text_spans(
                         template: welcome_template,
                         mother_name: mother_name,
@@ -298,7 +304,7 @@ mixin EventViewWidgetsMixin {
     required String father_name,
   }) {
     final List<TextSpan> spans = [];
-    final bold_style = const TextStyle(fontWeight: FontWeight.w800);
+    const bold_style = TextStyle(fontWeight: FontWeight.w800);
 
     // Regular expression to find {mother} and {father} placeholders
     final regex = RegExp(r'\{(mother|father)\}');

@@ -144,6 +144,12 @@ class Slideshow extends StatefulWidget {
   final String forward_label;
   final String share_label;
 
+  /// Custom text styles for title, subtitle, and body text.
+  /// If null, uses the default bold white text with heavy shadows.
+  final TextStyle? title_style;
+  final TextStyle? subtitle_style;
+  final TextStyle? body_style;
+
   /// Callback to provide FAB data to the parent.
   /// The parent should use this to build the FAB in its Scaffold's floatingActionButton.
   /// The parent must create and maintain its own GlobalKey<ExpandableFabState>.
@@ -170,6 +176,9 @@ class Slideshow extends StatefulWidget {
     this.play_label = "Play/Pause",
     this.forward_label = "Next Song",
     this.share_label = "Share",
+    this.title_style,
+    this.subtitle_style,
+    this.body_style,
     this.onFabData,
     this.share_url = "",
   });
@@ -664,12 +673,18 @@ class _SlideshowState extends State<Slideshow> {
                   widget.title,
                   type: CustomTextType.title,
                   portrait: portrait,
+                  custom_title_style: widget.title_style,
+                  custom_subtitle_style: widget.subtitle_style,
+                  custom_body_style: widget.body_style,
                 ),
                 const SizedBox(height: sized_box_space),
                 slideshow_custom_text(
                   widget.subtitle,
                   type: CustomTextType.subtitle,
                   portrait: portrait,
+                  custom_title_style: widget.title_style,
+                  custom_subtitle_style: widget.subtitle_style,
+                  custom_body_style: widget.body_style,
                 ),
               ],
             ),
