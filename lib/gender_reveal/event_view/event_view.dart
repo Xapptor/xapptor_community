@@ -32,6 +32,16 @@ class EventView extends StatefulWidget {
   final Color? language_picker_background_color;
   final Color? language_picker_text_color;
 
+  // Customizable gradient colors for bar chart
+  final Color? boy_gradient_start;
+  final Color? boy_gradient_end;
+  final Color? girl_gradient_start;
+  final Color? girl_gradient_end;
+
+  // FAB colors for slideshow music controls
+  final Color? fab_primary_color;
+  final Color? fab_secondary_color;
+
   // Customizable text styles for harmonized typography
   final TextStyle? title_style;
   final TextStyle? subtitle_style;
@@ -56,6 +66,12 @@ class EventView extends StatefulWidget {
     this.card_overlay_color,
     this.boy_color,
     this.girl_color,
+    this.boy_gradient_start,
+    this.boy_gradient_end,
+    this.girl_gradient_start,
+    this.girl_gradient_end,
+    this.fab_primary_color,
+    this.fab_secondary_color,
     this.language_picker_background_color,
     this.language_picker_text_color,
     this.title_style,
@@ -257,6 +273,9 @@ class _EventViewState extends State<EventView>
                                 play_label: fab_text?[6] ?? 'Play/Pause',
                                 forward_label: fab_text?[7] ?? 'Next Song',
                                 share_label: fab_text?[8] ?? 'Share',
+                                // FAB colors matching the app's color scheme
+                                primary_color: widget.fab_primary_color ?? const Color(0xFFD9C7FF),
+                                secondary_color: widget.fab_secondary_color ?? const Color(0xFFFFC2E0),
                                 // Custom text styles for harmonized typography
                                 title_style: widget.title_style,
                                 subtitle_style: widget.subtitle_style,
@@ -320,6 +339,10 @@ class _EventViewState extends State<EventView>
                                             girl_color: girl_color,
                                             source_language_index: source_language_index,
                                             event_text_list: widget.event_text_list,
+                                            boy_gradient_start: widget.boy_gradient_start,
+                                            boy_gradient_end: widget.boy_gradient_end,
+                                            girl_gradient_start: widget.girl_gradient_start,
+                                            girl_gradient_end: widget.girl_gradient_end,
                                           );
 
                                           final content = stacked

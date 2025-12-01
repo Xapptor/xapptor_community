@@ -161,7 +161,7 @@ Widget slideshow_fab({
         heroTag: 'slideshow_fab_share',
         icon: FontAwesomeIcons.share,
         tooltip: share_label,
-        color: secondary_color,
+        color: primary_color,
         on_pressed: on_share_pressed,
       ),
     ],

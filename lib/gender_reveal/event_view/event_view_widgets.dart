@@ -192,7 +192,7 @@ mixin EventViewWidgetsMixin {
                   const SizedBox(width: sized_box_space / 2),
                   Icon(
                     selected_vote == 'boy' ? Icons.male : Icons.female,
-                    color: selected_vote == 'boy' ? Colors.blue : Colors.pink,
+                    color: selected_vote == 'boy' ? boy_color : girl_color,
                   ),
                 ],
               ),
@@ -212,6 +212,10 @@ mixin EventViewWidgetsMixin {
     required Color girl_color,
     int source_language_index = 0,
     TranslationTextListArray? event_text_list,
+    Color? boy_gradient_start,
+    Color? boy_gradient_end,
+    Color? girl_gradient_start,
+    Color? girl_gradient_end,
   }) {
     // Get translated text for charts
     // Index: 6 = No votes yet (after template consolidation)
@@ -242,6 +246,10 @@ mixin EventViewWidgetsMixin {
                   girl_color: girl_color,
                   bar_chart_labels: bar_chart_labels,
                   pie_chart_labels: pie_chart_labels,
+                  boy_gradient_start: boy_gradient_start,
+                  boy_gradient_end: boy_gradient_end,
+                  girl_gradient_start: girl_gradient_start,
+                  girl_gradient_end: girl_gradient_end,
                 ),
         ),
       ),
@@ -269,6 +277,10 @@ mixin EventViewWidgetsMixin {
     required Color girl_color,
     BarChartLabels bar_chart_labels = const BarChartLabels(),
     PieChartLabels pie_chart_labels = const PieChartLabels(),
+    Color? boy_gradient_start,
+    Color? boy_gradient_end,
+    Color? girl_gradient_start,
+    Color? girl_gradient_end,
   }) {
     return Flex(
       direction: portrait ? Axis.vertical : Axis.horizontal,
@@ -279,6 +291,10 @@ mixin EventViewWidgetsMixin {
             girl_votes: girl_votes,
             boy_votes: boy_votes,
             labels: bar_chart_labels,
+            boy_gradient_start: boy_gradient_start,
+            boy_gradient_end: boy_gradient_end,
+            girl_gradient_start: girl_gradient_start,
+            girl_gradient_end: girl_gradient_end,
           ),
         ),
         if (portrait) const SizedBox(height: sized_box_space) else const SizedBox(width: sized_box_space),
