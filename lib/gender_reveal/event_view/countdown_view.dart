@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
-import 'package:xapptor_ui/values/ui.dart';
 
 const double main_alpha = 0.7;
 
@@ -177,6 +176,7 @@ class _TimeBlock extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               value,
@@ -187,7 +187,6 @@ class _TimeBlock extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: sized_box_space),
             Text(
               label,
               textAlign: TextAlign.center,
