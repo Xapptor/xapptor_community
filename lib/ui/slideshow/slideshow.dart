@@ -150,6 +150,16 @@ class Slideshow extends StatefulWidget {
   final TextStyle? subtitle_style;
   final TextStyle? body_style;
 
+  /// Optional decoration for the text container (card behind title/subtitle).
+  /// If null, no container is shown and text floats over the slideshow.
+  final BoxDecoration? text_container_decoration;
+
+  /// Optional padding for the text container.
+  final EdgeInsets? text_container_padding;
+
+  /// Optional margin for the text container.
+  final EdgeInsets? text_container_margin;
+
   /// Callback to provide FAB data to the parent.
   /// The parent should use this to build the FAB in its Scaffold's floatingActionButton.
   /// The parent must create and maintain its own GlobalKey<ExpandableFabState>.
@@ -179,6 +189,9 @@ class Slideshow extends StatefulWidget {
     this.title_style,
     this.subtitle_style,
     this.body_style,
+    this.text_container_decoration,
+    this.text_container_padding,
+    this.text_container_margin,
     this.onFabData,
     this.share_url = "",
   });
@@ -666,27 +679,33 @@ class _SlideshowState extends State<Slideshow> {
         if (all_images.isNotEmpty)
           Container(
             alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                slideshow_custom_text(
-                  widget.title,
-                  type: CustomTextType.title,
-                  portrait: portrait,
-                  custom_title_style: widget.title_style,
-                  custom_subtitle_style: widget.subtitle_style,
-                  custom_body_style: widget.body_style,
-                ),
-                const SizedBox(height: sized_box_space),
-                slideshow_custom_text(
-                  widget.subtitle,
-                  type: CustomTextType.subtitle,
-                  portrait: portrait,
-                  custom_title_style: widget.title_style,
-                  custom_subtitle_style: widget.subtitle_style,
-                  custom_body_style: widget.body_style,
-                ),
-              ],
+            margin: widget.text_container_margin,
+            child: Container(
+              decoration: widget.text_container_decoration,
+              padding: widget.text_container_padding,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  slideshow_custom_text(
+                    widget.title,
+                    type: CustomTextType.title,
+                    portrait: portrait,
+                    custom_title_style: widget.title_style,
+                    custom_subtitle_style: widget.subtitle_style,
+                    custom_body_style: widget.body_style,
+                  ),
+                  const SizedBox(height: sized_box_space),
+                  slideshow_custom_text(
+                    widget.subtitle,
+                    type: CustomTextType.subtitle,
+                    portrait: portrait,
+                    custom_title_style: widget.title_style,
+                    custom_subtitle_style: widget.subtitle_style,
+                    custom_body_style: widget.body_style,
+                  ),
+                ],
+              ),
             ),
           ),
       ],
