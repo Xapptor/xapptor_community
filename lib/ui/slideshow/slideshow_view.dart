@@ -6,6 +6,16 @@ import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/fade_in_video.dart';
 
+/// Placeholder widget shown while content is loading
+Widget _placeholder_widget() {
+  return Image.asset(
+    'assets/images/placeholder_gradient_64.jpg',
+    fit: BoxFit.cover,
+    width: double.infinity,
+    height: double.infinity,
+  );
+}
+
 Widget slideshow_view({
   required int column_index,
   required int view_index,
@@ -32,6 +42,9 @@ Widget slideshow_view({
   final double ratio_difference = (view_config['ratio_difference'] as num).toDouble();
   final int view_height = (view_config['height'] as num).round();
 
+  // Ensure at least 1 item so we can show a placeholder
+  final int effective_item_count = item_count > 0 ? item_count : 1;
+
   return Expanded(
     flex: view_config['flex'] as int,
     child: Container(
@@ -40,7 +53,7 @@ Widget slideshow_view({
         borderRadius: BorderRadius.circular(outline_border_radius),
         clipBehavior: Clip.hardEdge,
         child: CarouselSlider.builder(
-          itemCount: item_count,
+          itemCount: effective_item_count,
           itemBuilder: (context, i, _) {
             final Image? image = _get_random_image_for_orientation(
               orientation: slideshow_view_orientation,
@@ -48,10 +61,6 @@ Widget slideshow_view({
               landscape_images: landscape_images,
               all_images: all_images,
             );
-
-            if (image == null && !possible_video_position_for_portrait && !possible_video_position_for_landscape) {
-              return const SizedBox.shrink();
-            }
 
             String test_mode_text = orientation == SlideshowViewOrientation.square_or_similar
                 ? "P/L"
@@ -67,12 +76,13 @@ Widget slideshow_view({
             if (possible_video_position_for_portrait) test_mode_text += "\nV-P";
             if (possible_video_position_for_landscape) test_mode_text += "\nV-L";
 
-            Widget video_player_widget = const SizedBox.shrink();
-
+            // Handle video slots
             if (possible_video_position_for_portrait || possible_video_position_for_landscape) {
               final controllers = possible_video_position_for_portrait
                   ? portrait_video_player_controllers
                   : landscape_video_player_controllers;
+
+              Widget video_player_widget;
 
               if (controllers.isNotEmpty && i < controllers.length) {
                 final current_video_player_controller = controllers[i];
@@ -83,7 +93,74 @@ Widget slideshow_view({
                     'assets/images/placeholder_gradient_64.jpg',
                   ),
                 );
+              } else {
+                // Video not loaded yet - show placeholder
+                video_player_widget = _placeholder_widget();
               }
+
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(outline_border_radius),
+                child: Stack(
+                  alignment: Alignment.center,
+                  fit: StackFit.expand,
+                  children: [
+                    video_player_widget,
+                    if (test_mode)
+                      Center(
+                        child: Text(
+                          test_mode_text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.yellow,
+                            fontSize: portrait ? 26 : 36,
+                            fontWeight: FontWeight.bold,
+                            shadows: const [
+                              Shadow(
+                                blurRadius: 8.0,
+                                color: Colors.black,
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+
+            // Handle image slots
+            // If no image available for this orientation, show placeholder
+            if (image == null) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(outline_border_radius),
+                child: Stack(
+                  alignment: Alignment.center,
+                  fit: StackFit.expand,
+                  children: [
+                    _placeholder_widget(),
+                    if (test_mode)
+                      Center(
+                        child: Text(
+                          test_mode_text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.yellow,
+                            fontSize: portrait ? 26 : 36,
+                            fontWeight: FontWeight.bold,
+                            shadows: const [
+                              Shadow(
+                                blurRadius: 8.0,
+                                color: Colors.black,
+                                offset: Offset(2.0, 2.0),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
             }
 
             return ClipRRect(
@@ -92,20 +169,17 @@ Widget slideshow_view({
                 alignment: Alignment.center,
                 fit: StackFit.expand,
                 children: [
-                  if (possible_video_position_for_portrait || possible_video_position_for_landscape)
-                    video_player_widget,
-                  if (!possible_video_position_for_portrait && !possible_video_position_for_landscape)
-                    FadeInImage(
-                      placeholder: const AssetImage(
-                        'assets/images/placeholder_gradient_64.jpg',
-                      ),
-                      image: ResizeImage(
-                        image!.image,
-                        width: 1000,
-                      ),
-                      fit: BoxFit.cover,
-                      width: screen_width / number_of_columns,
+                  FadeInImage(
+                    placeholder: const AssetImage(
+                      'assets/images/placeholder_gradient_64.jpg',
                     ),
+                    image: ResizeImage(
+                      image.image,
+                      width: 1000,
+                    ),
+                    fit: BoxFit.cover,
+                    width: screen_width / number_of_columns,
+                  ),
                   if (test_mode)
                     Center(
                       child: Text(
