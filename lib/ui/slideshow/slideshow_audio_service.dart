@@ -256,9 +256,9 @@ class SlideshowAudioService {
       _emit_state();
     });
 
-    // Listen to current index changes
+    // Listen to current index changes - only emit state if index actually changed
     _audio_player.currentIndexStream.listen((index) {
-      if (index != null) {
+      if (index != null && index != _current_index) {
         debugPrint('SlideshowAudioService: currentIndexStream changed to $index');
         _current_index = index;
         _emit_state();

@@ -234,6 +234,8 @@ Widget slideshow_view({
                 final int max_start = duration_ms - (duration_ms / 10).round();
                 final int random_start = random_number_with_range(0, max_start);
 
+                // Always ensure video is muted before playing - background music handles audio
+                current_video_player_controller.setVolume(0);
                 current_video_player_controller
                   ..seekTo(Duration(milliseconds: random_start))
                   ..play();

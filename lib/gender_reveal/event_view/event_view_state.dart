@@ -472,8 +472,36 @@ mixin EventViewStateMixin on State<EventView>, TickerProviderStateMixin<EventVie
       }
     } catch (e) {
       debugPrint('Error checking if user voted: $e');
+
+      // Validate we still have required data before retry
+      if (current_user == null || event_id.isEmpty) {
+        debugPrint('Cannot retry: current_user or event_id is null/empty');
+        if (mounted) {
+          setState(() {
+            is_loading_vote_status = false;
+            show_voting_card = true;
+            enable_voting_card = true;
+          });
+        }
+        return;
+      }
+
       // Retry once after a short delay (Firestore might still be initializing)
       await Future.delayed(const Duration(milliseconds: 1500));
+
+      // Re-validate after delay (state could have changed)
+      if (current_user == null || event_id.isEmpty) {
+        debugPrint('Cannot retry after delay: current_user or event_id became null/empty');
+        if (mounted) {
+          setState(() {
+            is_loading_vote_status = false;
+            show_voting_card = true;
+            enable_voting_card = true;
+          });
+        }
+        return;
+      }
+
       try {
         final vote_query_retry = await XapptorDB.instance
             .collection("votes")
