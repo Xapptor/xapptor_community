@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:xapptor_community/ui/slideshow/slideshow_audio_state.dart';
 
 /// Mixin containing playback control logic for the audio service.
 mixin SlideshowAudioPlaybackMixin {
@@ -36,8 +35,7 @@ mixin SlideshowAudioPlaybackMixin {
 
   /// Play the current song.
   Future<void> play() async {
-    final bool has_songs =
-        use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
+    final bool has_songs = use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
     if (!is_initialized || !has_songs) return;
 
     if (!playlist_set && has_songs) {
@@ -81,8 +79,7 @@ mixin SlideshowAudioPlaybackMixin {
 
   /// Skip to next song.
   Future<void> next() async {
-    final bool has_songs =
-        use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
+    final bool has_songs = use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
     if (!is_initialized || !has_songs) return;
 
     if (!playlist_set) await create_playlist();
@@ -114,8 +111,7 @@ mixin SlideshowAudioPlaybackMixin {
 
   /// Skip to previous song.
   Future<void> previous() async {
-    final bool has_songs =
-        use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
+    final bool has_songs = use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
     if (!is_initialized || !has_songs) return;
 
     if (!playlist_set) await create_playlist();
@@ -139,8 +135,7 @@ mixin SlideshowAudioPlaybackMixin {
 
   int calculate_previous_index() {
     if (is_shuffle_enabled && shuffle_indices.isNotEmpty) {
-      shuffle_position =
-          (shuffle_position - 1 + shuffle_indices.length) % shuffle_indices.length;
+      shuffle_position = (shuffle_position - 1 + shuffle_indices.length) % shuffle_indices.length;
       return shuffle_indices[shuffle_position];
     }
     return (current_index - 1 + song_urls.length) % song_urls.length;
@@ -155,8 +150,7 @@ mixin SlideshowAudioPlaybackMixin {
 
   /// Toggle shuffle mode.
   Future<void> toggle_shuffle() async {
-    final bool has_songs =
-        use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
+    final bool has_songs = use_single_song_mode ? song_urls.isNotEmpty : audio_sources.isNotEmpty;
     if (!playlist_set && has_songs) await create_playlist();
 
     is_shuffle_enabled = !is_shuffle_enabled;

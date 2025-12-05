@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
+import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
 import 'package:xapptor_logic/image/get_image_size.dart';
 
 /// Mixin that handles lazy loading of images and videos for the slideshow.
@@ -92,8 +92,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     }
 
     try {
-      final VideoPlayerController controller =
-          VideoPlayerController.networkUrl(Uri.parse(url));
+      final VideoPlayerController controller = VideoPlayerController.networkUrl(Uri.parse(url));
 
       await controller.initialize();
       await controller.setVolume(0); // Always muted - background music handles audio
@@ -109,10 +108,8 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
         landscape_video_player_controllers.add(controller);
       }
 
-      debugPrint(
-        'Slideshow: Loaded video controller for $url '
-        '(total: ${active_video_controllers.length})'
-      );
+      debugPrint('Slideshow: Loaded video controller for $url '
+          '(total: ${active_video_controllers.length})');
       return controller;
     } catch (e) {
       debugPrint('Slideshow: Error loading video controller: $e');
@@ -125,8 +122,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     if (active_video_controllers.isEmpty) return;
 
     final String oldest_url = active_video_controllers.keys.first;
-    final VideoPlayerController? controller =
-        active_video_controllers.remove(oldest_url);
+    final VideoPlayerController? controller = active_video_controllers.remove(oldest_url);
 
     if (controller != null) {
       // Remove from backward compatibility lists
@@ -144,8 +140,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     required int index,
     required bool is_portrait,
   }) async {
-    final List<String> urls =
-        is_portrait ? portrait_video_urls : landscape_video_urls;
+    final List<String> urls = is_portrait ? portrait_video_urls : landscape_video_urls;
     if (index < 0 || index >= urls.length) return;
 
     final String url = urls[index];
@@ -186,7 +181,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// Clean up image cache to prevent memory bloat
   void cleanup_image_cache() {
     // For all orientations
-    final int max_cache_size = max_cached_images_per_orientation * 3;
+    const int max_cache_size = max_cached_images_per_orientation * 3;
 
     if (loaded_images_cache.length > max_cache_size) {
       // Remove oldest entries (first added)
