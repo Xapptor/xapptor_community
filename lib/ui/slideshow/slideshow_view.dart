@@ -14,6 +14,12 @@ typedef OnLazyLoadRequest = Future<void> Function({
   required SlideshowViewOrientation orientation,
 });
 
+/// Callback type for getting a video controller by URL index
+typedef GetVideoControllerByIndex = VideoPlayerController? Function({
+  required int index,
+  required bool is_portrait,
+});
+
 /// A stateful widget that represents a single slideshow view slot.
 /// Using a proper widget (instead of a function) allows Flutter to properly
 /// diff and reuse widgets, preventing unnecessary rebuilds and GPU texture leaks.
@@ -40,6 +46,9 @@ class SlideshowViewWidget extends StatefulWidget {
   /// Callback to request lazy loading of the next item when carousel advances
   final OnLazyLoadRequest? on_lazy_load_request;
 
+  /// Callback to get a video controller by URL index (not by controller list index)
+  final GetVideoControllerByIndex? get_video_controller_by_index;
+
   /// Total number of items available (including not-yet-loaded)
   final int total_video_count;
   final int total_image_count;
@@ -64,6 +73,7 @@ class SlideshowViewWidget extends StatefulWidget {
     required this.landscape_images,
     required this.all_images,
     this.on_lazy_load_request,
+    this.get_video_controller_by_index,
     this.total_video_count = 0,
     this.total_image_count = 0,
     super.key,
@@ -133,6 +143,8 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
                   portrait_images: widget.portrait_images,
                   landscape_images: widget.landscape_images,
                   all_images: widget.all_images,
+                  get_video_controller_by_index:
+                      widget.get_video_controller_by_index,
                 );
               },
               options: CarouselOptions(
@@ -169,12 +181,27 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
   }
 
   void _handle_video_page_change(int index) {
-    final controllers = widget.possible_video_position_for_portrait
-        ? widget.portrait_video_player_controllers
-        : widget.landscape_video_player_controllers;
+    // Use URL-based lookup to check if current video is loaded
+    VideoPlayerController? current_controller;
+    if (widget.get_video_controller_by_index != null) {
+      current_controller = widget.get_video_controller_by_index!(
+        index: index,
+        is_portrait: widget.possible_video_position_for_portrait,
+      );
+    }
 
-    // Request lazy loading of the next video
+    // Request lazy loading of CURRENT video first (if not loaded), then preload the next
     if (widget.on_lazy_load_request != null && widget.total_video_count > 0) {
+      // Load current video if not yet loaded
+      if (current_controller == null) {
+        widget.on_lazy_load_request!(
+          index: index,
+          is_video: true,
+          is_portrait: widget.possible_video_position_for_portrait,
+          orientation: widget.slideshow_view_orientation,
+        );
+      }
+      // Preload next video
       final int next_index = (index + 1) % widget.total_video_count;
       widget.on_lazy_load_request!(
         index: next_index,
@@ -184,18 +211,17 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
       );
     }
 
-    if (controllers.isEmpty || index >= controllers.length) return;
+    if (current_controller == null) return;
 
-    final controller = controllers[index];
-    final int duration_ms = controller.value.duration.inMilliseconds;
+    final int duration_ms = current_controller.value.duration.inMilliseconds;
 
     if (duration_ms <= 0) return;
 
     final int max_start = duration_ms - (duration_ms / 10).round();
     final int random_start = random_number_with_range(0, max_start);
 
-    controller.setVolume(0);
-    controller
+    current_controller.setVolume(0);
+    current_controller
       ..seekTo(Duration(milliseconds: random_start))
       ..play();
   }
@@ -235,6 +261,7 @@ Widget slideshow_view({
   required List<Image> landscape_images,
   required List<Image> all_images,
   OnLazyLoadRequest? on_lazy_load_request,
+  GetVideoControllerByIndex? get_video_controller_by_index,
   int total_video_count = 0,
   int total_image_count = 0,
 }) {
@@ -259,6 +286,7 @@ Widget slideshow_view({
     landscape_images: landscape_images,
     all_images: all_images,
     on_lazy_load_request: on_lazy_load_request,
+    get_video_controller_by_index: get_video_controller_by_index,
     total_video_count: total_video_count,
     total_image_count: total_image_count,
   );

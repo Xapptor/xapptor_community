@@ -122,22 +122,29 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
 
     if (paths.isEmpty) return;
 
-    if (kIsWeb) {
-      portrait_video_urls.addAll(paths);
-      landscape_video_urls.addAll(paths);
-
-      final int initial_count =
-          paths.length > SlideshowMediaLoaderMixin.max_initial_videos
-              ? SlideshowMediaLoaderMixin.max_initial_videos
-              : paths.length;
-
-      for (int i = 0; i < initial_count; i++) {
-        await load_video_controller(url: paths[i], is_portrait: true);
+    // First, categorize all videos by checking their orientation
+    // This loads each video temporarily just to get dimensions, then disposes
+    for (final url in paths) {
+      final bool? is_portrait = await check_video_orientation(url);
+      if (is_portrait != null) {
+        if (is_portrait) {
+          portrait_video_urls.add(url);
+        } else {
+          landscape_video_urls.add(url);
+        }
       }
-    } else {
-      for (final url in paths) {
-        await load_video_controller(url: url, is_portrait: true);
-      }
+    }
+
+    debugPrint('Slideshow: Categorized videos - ${portrait_video_urls.length} portrait, ${landscape_video_urls.length} landscape');
+
+    // Now load initial videos for each orientation (limited count)
+    // Load first portrait video if available
+    if (portrait_video_urls.isNotEmpty) {
+      await load_video_controller(url: portrait_video_urls[0], is_portrait: true);
+    }
+    // Load first landscape video if available
+    if (landscape_video_urls.isNotEmpty) {
+      await load_video_controller(url: landscape_video_urls[0], is_portrait: false);
     }
 
     if (mounted) setState(() {});

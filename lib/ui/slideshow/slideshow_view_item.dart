@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
 import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/fade_in_video.dart';
@@ -25,6 +26,7 @@ Widget build_carousel_item({
   required List<Image> portrait_images,
   required List<Image> landscape_images,
   required List<Image> all_images,
+  GetVideoControllerByIndex? get_video_controller_by_index,
 }) {
   final String test_mode_text = _build_test_mode_text(
     orientation: orientation,
@@ -46,6 +48,7 @@ Widget build_carousel_item({
       test_mode: test_mode,
       portrait: portrait,
       test_mode_text: test_mode_text,
+      get_video_controller_by_index: get_video_controller_by_index,
     );
   }
 
@@ -97,15 +100,31 @@ Widget _build_video_item({
   required bool test_mode,
   required bool portrait,
   required String test_mode_text,
+  GetVideoControllerByIndex? get_video_controller_by_index,
 }) {
-  final controllers = possible_video_position_for_portrait
-      ? portrait_video_player_controllers
-      : landscape_video_player_controllers;
-
   Widget video_player_widget;
 
-  if (controllers.isNotEmpty && index < controllers.length) {
-    final controller = controllers[index];
+  // Use URL-based lookup if available (preferred method)
+  // This correctly maps carousel index to video URL, then gets the controller
+  VideoPlayerController? controller;
+  if (get_video_controller_by_index != null) {
+    controller = get_video_controller_by_index(
+      index: index,
+      is_portrait: possible_video_position_for_portrait,
+    );
+  }
+
+  // Fallback to old list-based lookup (for backward compatibility)
+  if (controller == null) {
+    final controllers = possible_video_position_for_portrait
+        ? portrait_video_player_controllers
+        : landscape_video_player_controllers;
+    if (controllers.isNotEmpty && index < controllers.length) {
+      controller = controllers[index];
+    }
+  }
+
+  if (controller != null) {
     video_player_widget = FadeInVideo(
       key: ValueKey('video_${column_index}_${view_index}_$index'),
       controller: controller,

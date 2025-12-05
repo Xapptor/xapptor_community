@@ -37,12 +37,16 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   List<VideoPlayerController> landscape_video_player_controllers = [];
 
   // Maximum active videos/images on web to prevent memory issues
+  // Keep this LOW to prevent iOS Safari crashes
   static const int max_active_videos_web = 2;
   static const int max_cached_images_per_orientation = 5;
 
-  // Reduced initial load counts for lazy loading
+  // Initial load counts
   static const int max_initial_images = 6;
   static const int max_initial_videos = 2;
+
+  // Track video orientations separately from controllers (URL -> is_portrait)
+  final Map<String, bool> video_orientation_cache = {};
 
   /// Load a single image and categorize by orientation
   Future<void> load_single_image({
@@ -75,7 +79,11 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Load a single video controller on demand
+  /// Load a single video controller on demand.
+  /// Videos are categorized by their actual aspect ratio:
+  /// - Portrait videos (height > width) go to portrait_video_player_controllers
+  /// - Landscape videos (width >= height) go to landscape_video_player_controllers
+  /// The is_portrait parameter indicates which SLOT is requesting the video.
   Future<VideoPlayerController?> load_video_controller({
     required String url,
     required bool is_portrait,
@@ -85,9 +93,8 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       return active_video_controllers[url];
     }
 
-    // On web, enforce maximum active videos
+    // On web, enforce maximum active videos - dispose oldest to make room
     if (kIsWeb && active_video_controllers.length >= max_active_videos_web) {
-      // Dispose oldest controller to make room
       await dispose_oldest_video_controller();
     }
 
@@ -101,18 +108,63 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
       active_video_controllers[url] = controller;
 
-      // Add to appropriate list for backward compatibility
-      if (is_portrait) {
-        portrait_video_player_controllers.add(controller);
+      // Categorize by the video's ACTUAL aspect ratio
+      final video_width = controller.value.size.width;
+      final video_height = controller.value.size.height;
+      final bool video_is_portrait = video_height > video_width;
+
+      // Cache the orientation for future reference
+      video_orientation_cache[url] = video_is_portrait;
+
+      // Add to the appropriate controller list based on video's actual orientation
+      if (video_is_portrait) {
+        if (!portrait_video_player_controllers.contains(controller)) {
+          portrait_video_player_controllers.add(controller);
+        }
+        debugPrint('Slideshow: Loaded PORTRAIT video for $url '
+            '(${video_width.toInt()}x${video_height.toInt()})');
       } else {
-        landscape_video_player_controllers.add(controller);
+        if (!landscape_video_player_controllers.contains(controller)) {
+          landscape_video_player_controllers.add(controller);
+        }
+        debugPrint('Slideshow: Loaded LANDSCAPE video for $url '
+            '(${video_width.toInt()}x${video_height.toInt()})');
       }
 
-      debugPrint('Slideshow: Loaded video controller for $url '
-          '(total: ${active_video_controllers.length})');
       return controller;
     } catch (e) {
       debugPrint('Slideshow: Error loading video controller: $e');
+      return null;
+    }
+  }
+
+  /// Check video orientation without keeping controller loaded (for categorization)
+  Future<bool?> check_video_orientation(String url) async {
+    // Return cached orientation if available
+    if (video_orientation_cache.containsKey(url)) {
+      return video_orientation_cache[url];
+    }
+
+    try {
+      final VideoPlayerController temp_controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      await temp_controller.initialize();
+
+      final video_width = temp_controller.value.size.width;
+      final video_height = temp_controller.value.size.height;
+      final bool is_portrait = video_height > video_width;
+
+      // Cache the result
+      video_orientation_cache[url] = is_portrait;
+
+      // Dispose immediately - we only needed the dimensions
+      await temp_controller.dispose();
+
+      debugPrint('Slideshow: Checked orientation for $url: ${is_portrait ? "PORTRAIT" : "LANDSCAPE"} '
+          '(${video_width.toInt()}x${video_height.toInt()})');
+
+      return is_portrait;
+    } catch (e) {
+      debugPrint('Slideshow: Error checking video orientation: $e');
       return null;
     }
   }
@@ -208,6 +260,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     active_video_controllers.clear();
     portrait_video_player_controllers.clear();
     landscape_video_player_controllers.clear();
+    video_orientation_cache.clear();
 
     // Clear image cache
     loaded_images_cache.clear();
@@ -228,5 +281,19 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     } else {
       await request_image_load(index: index, orientation: orientation);
     }
+  }
+
+  /// Get a video controller by URL index (not by controller list index).
+  /// This correctly maps carousel index → URL → controller.
+  /// Returns null if the video at that index hasn't been loaded yet.
+  VideoPlayerController? get_video_controller_by_index({
+    required int index,
+    required bool is_portrait,
+  }) {
+    final List<String> urls = is_portrait ? portrait_video_urls : landscape_video_urls;
+    if (index < 0 || index >= urls.length) return null;
+
+    final String url = urls[index];
+    return active_video_controllers[url];
   }
 }

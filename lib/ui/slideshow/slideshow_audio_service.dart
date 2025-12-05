@@ -48,7 +48,10 @@ class SlideshowAudioService {
 
   Future<void> initialize({required Reference storage_ref}) async {
     if (_is_initialized) return;
-    if (_initialization_future != null) { await _initialization_future; return; }
+    if (_initialization_future != null) {
+      await _initialization_future;
+      return;
+    }
     _initialization_future = _do_initialize(storage_ref: storage_ref);
     await _initialization_future;
     _initialization_future = null;
@@ -59,14 +62,26 @@ class SlideshowAudioService {
     _emit_state();
     try {
       final list = await storage_ref.listAll();
-      if (list.items.isEmpty) { _is_loading = false; _emit_state(); return; }
+      if (list.items.isEmpty) {
+        _is_loading = false;
+        _emit_state();
+        return;
+      }
       _song_urls.clear();
       _song_urls.addAll(await Future.wait(list.items.map((r) => r.getDownloadURL())));
-      if (_use_single_song_mode) { _audio_sources.clear(); } else { await _load_all_songs(); }
+      if (_use_single_song_mode) {
+        _audio_sources.clear();
+      } else {
+        await _load_all_songs();
+      }
       await _create_playlist();
       _is_initialized = true;
-    } catch (e) { debugPrint('SlideshowAudioService: Error initializing: $e'); }
-    finally { _is_loading = false; _emit_state(); }
+    } catch (e) {
+      debugPrint('SlideshowAudioService: Error initializing: $e');
+    } finally {
+      _is_loading = false;
+      _emit_state();
+    }
   }
 
   Future<void> _load_all_songs() async {
@@ -77,9 +92,14 @@ class SlideshowAudioService {
     if (index < 0 || index >= _song_urls.length) return;
     try {
       final source = await _cache.create_audio_source(url: _song_urls[index], index: index);
-      if (index < _audio_sources.length) { _audio_sources[index] = source; }
-      else { _audio_sources.add(source); }
-    } catch (e) { debugPrint('SlideshowAudioService: Error loading song $index: $e'); }
+      if (index < _audio_sources.length) {
+        _audio_sources[index] = source;
+      } else {
+        _audio_sources.add(source);
+      }
+    } catch (e) {
+      debugPrint('SlideshowAudioService: Error loading song $index: $e');
+    }
   }
 
   Future<void> _create_playlist() async {
@@ -97,42 +117,82 @@ class SlideshowAudioService {
         });
       } else {
         // ignore: deprecated_member_use
-        final playlist = ConcatenatingAudioSource(useLazyPreparation: true, shuffleOrder: DefaultShuffleOrder(), children: _audio_sources);
+        final playlist = ConcatenatingAudioSource(
+          useLazyPreparation: true,
+          shuffleOrder: DefaultShuffleOrder(),
+          children: _audio_sources,
+        );
         await _audio_player.setAudioSource(playlist, initialIndex: 0);
         _playlist_set = true;
         _player_state_subscription = _audio_player.playerStateStream.listen((_) => _emit_state());
-        _current_index_subscription = _audio_player.currentIndexStream.listen((i) { if (i != null && i != _current_index) { _current_index = i; _emit_state(); } });
+        _current_index_subscription = _audio_player.currentIndexStream.listen((i) {
+          if (i != null && i != _current_index) {
+            _current_index = i;
+            _emit_state();
+          }
+        });
         await _audio_player.setLoopMode(LoopMode.all);
       }
       _emit_state();
-    } catch (e) { _playlist_set = false; _emit_state(); }
+    } catch (e) {
+      _playlist_set = false;
+      _emit_state();
+    }
   }
 
   Future<void> _load_single_song(int index) async {
     if (index < 0 || index >= _song_urls.length) return;
-    try { await _audio_player.stop(); await _audio_player.setUrl(_song_urls[index]); _current_index = index; } catch (_) {}
+    try {
+      await _audio_player.stop();
+      await _audio_player.setUrl(_song_urls[index]);
+      _current_index = index;
+    } catch (_) {}
   }
 
   void _handle_web_completion() {
     if (!_use_single_song_mode) return;
     int next;
-    if (_loop_mode == LoopMode.one) { next = _current_index; }
-    else if (_is_shuffle_enabled && _shuffle_indices.isNotEmpty) { _shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length; next = _shuffle_indices[_shuffle_position]; }
-    else { next = (_current_index + 1) % _song_urls.length; if (_loop_mode == LoopMode.off && next == 0) { _emit_state(); return; } }
-    _load_single_song(next).then((_) { if (_audio_player.playing || _loop_mode != LoopMode.off) _audio_player.play(); _emit_state(); });
+    if (_loop_mode == LoopMode.one) {
+      next = _current_index;
+    } else if (_is_shuffle_enabled && _shuffle_indices.isNotEmpty) {
+      _shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length;
+      next = _shuffle_indices[_shuffle_position];
+    } else {
+      next = (_current_index + 1) % _song_urls.length;
+      if (_loop_mode == LoopMode.off && next == 0) {
+        _emit_state();
+        return;
+      }
+    }
+    _load_single_song(next).then((_) {
+      if (_audio_player.playing || _loop_mode != LoopMode.off) _audio_player.play();
+      _emit_state();
+    });
   }
 
   Future<void> play() async {
     final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
     if (!_is_initialized || !has_songs) return;
     if (!_playlist_set) await _create_playlist();
-    try { await _audio_player.play(); _emit_state(); } catch (_) { _emit_state(); }
+    try {
+      await _audio_player.play();
+      _emit_state();
+    } catch (_) {
+      _emit_state();
+    }
   }
 
-  Future<void> pause() async { await _audio_player.pause(); _emit_state(); }
+  Future<void> pause() async {
+    await _audio_player.pause();
+    _emit_state();
+  }
 
   Future<void> toggle_play_pause() async {
-    try { _audio_player.playing ? await pause() : await play(); } catch (_) { _emit_state(); }
+    try {
+      _audio_player.playing ? await pause() : await play();
+    } catch (_) {
+      _emit_state();
+    }
   }
 
   Future<void> next() async {
@@ -143,8 +203,13 @@ class SlideshowAudioService {
       final next_idx = _is_shuffle_enabled && _shuffle_indices.isNotEmpty
           ? _shuffle_indices[(_shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length)]
           : (_current_index + 1) % _song_urls.length;
-      if (_use_single_song_mode) { final p = _audio_player.playing; await _load_single_song(next_idx); if (p) await _audio_player.play(); }
-      else { await _audio_player.seek(Duration.zero, index: next_idx); }
+      if (_use_single_song_mode) {
+        final p = _audio_player.playing;
+        await _load_single_song(next_idx);
+        if (p) await _audio_player.play();
+      } else {
+        await _audio_player.seek(Duration.zero, index: next_idx);
+      }
       _emit_state();
     } catch (_) {}
   }
@@ -155,15 +220,25 @@ class SlideshowAudioService {
     if (!_playlist_set) await _create_playlist();
     try {
       final prev_idx = _is_shuffle_enabled && _shuffle_indices.isNotEmpty
-          ? _shuffle_indices[(_shuffle_position = (_shuffle_position - 1 + _shuffle_indices.length) % _shuffle_indices.length)]
+          ? _shuffle_indices[(_shuffle_position =
+              (_shuffle_position - 1 + _shuffle_indices.length) % _shuffle_indices.length)]
           : (_current_index - 1 + _song_urls.length) % _song_urls.length;
-      if (_use_single_song_mode) { final p = _audio_player.playing; await _load_single_song(prev_idx); if (p) await _audio_player.play(); }
-      else { await _audio_player.seek(Duration.zero, index: prev_idx); }
+      if (_use_single_song_mode) {
+        final p = _audio_player.playing;
+        await _load_single_song(prev_idx);
+        if (p) await _audio_player.play();
+      } else {
+        await _audio_player.seek(Duration.zero, index: prev_idx);
+      }
       _emit_state();
     } catch (_) {}
   }
 
-  void toggle_mute() { _is_muted = !_is_muted; _audio_player.setVolume(_is_muted ? 0 : _volume); _emit_state_immediate(); }
+  void toggle_mute() {
+    _is_muted = !_is_muted;
+    _audio_player.setVolume(_is_muted ? 0 : _volume);
+    _emit_state_immediate();
+  }
 
   Future<void> toggle_shuffle() async {
     final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
@@ -173,33 +248,62 @@ class SlideshowAudioService {
       _shuffle_indices = List.generate(_song_urls.length, (i) => i)..shuffle(Random());
       _shuffle_position = _shuffle_indices.indexOf(_current_index);
       if (_shuffle_position < 0) _shuffle_position = 0;
-    } else { _shuffle_indices.clear(); _shuffle_position = 0; }
+    } else {
+      _shuffle_indices.clear();
+      _shuffle_position = 0;
+    }
     _emit_state_immediate();
   }
 
   Future<void> toggle_loop() async {
-    _loop_mode = _loop_mode == LoopMode.all ? LoopMode.one : _loop_mode == LoopMode.one ? LoopMode.off : LoopMode.all;
+    _loop_mode = _loop_mode == LoopMode.all
+        ? LoopMode.one
+        : _loop_mode == LoopMode.one
+            ? LoopMode.off
+            : LoopMode.all;
     await _audio_player.setLoopMode(_loop_mode);
     _emit_state_immediate();
   }
 
-  void set_mute(bool m) { _is_muted = m; _audio_player.setVolume(_is_muted ? 0 : _volume); _emit_state_immediate(); }
-  void set_volume(double v) { _volume = v.clamp(0.0, 1.0); if (!_is_muted) _audio_player.setVolume(_volume); _emit_state_immediate(); }
+  void set_mute(bool m) {
+    _is_muted = m;
+    _audio_player.setVolume(_is_muted ? 0 : _volume);
+    _emit_state_immediate();
+  }
+
+  void set_volume(double v) {
+    _volume = v.clamp(0.0, 1.0);
+    if (!_is_muted) _audio_player.setVolume(_volume);
+    _emit_state_immediate();
+  }
 
   void _emit_state() {
     final s = _build_state();
     if (_pending_state != null && _pending_state!.equals(s)) return;
     _pending_state = s;
     _debounce_timer?.cancel();
-    _debounce_timer = Timer(_debounce_duration, () { if (_pending_state != null) _state_controller.add(_pending_state!); });
+    _debounce_timer = Timer(_debounce_duration, () {
+      if (_pending_state != null) _state_controller.add(_pending_state!);
+    });
   }
 
-  void _emit_state_immediate() { _debounce_timer?.cancel(); _pending_state = _build_state(); _state_controller.add(_pending_state!); }
+  void _emit_state_immediate() {
+    _debounce_timer?.cancel();
+    _pending_state = _build_state();
+    _state_controller.add(_pending_state!);
+  }
 
   SlideshowAudioState _build_state() => SlideshowAudioState(
-    is_playing: _audio_player.playing, is_muted: _is_muted, is_loading: _is_loading, is_initialized: _is_initialized,
-    is_shuffle_enabled: _is_shuffle_enabled, loop_mode: _loop_mode, current_index: _current_index, total_songs: _song_urls.length, volume: _volume,
-  );
+        is_playing: _audio_player.playing,
+        is_muted: _is_muted,
+        is_loading: _is_loading,
+        is_initialized: _is_initialized,
+        is_shuffle_enabled: _is_shuffle_enabled,
+        loop_mode: _loop_mode,
+        current_index: _current_index,
+        total_songs: _song_urls.length,
+        volume: _volume,
+      );
 
   Future<void> dispose() async {
     _debounce_timer?.cancel();
