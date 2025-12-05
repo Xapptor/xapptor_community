@@ -158,7 +158,7 @@ class _TimeBlock extends StatelessWidget {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
       transitionBuilder: (child, animation) {
-        final offsetAnimation = Tween<Offset>(
+        final offset_animation = Tween<Offset>(
           begin: const Offset(0, 0.5),
           end: Offset.zero,
         ).animate(animation);
@@ -166,7 +166,7 @@ class _TimeBlock extends StatelessWidget {
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(
-            position: offsetAnimation,
+            position: offset_animation,
             child: child,
           ),
         );

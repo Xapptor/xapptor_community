@@ -1,19 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_audio_cache.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_audio_state.dart';
 
-/// A service that manages background music playback for the slideshow.
-///
-/// Features:
-/// - Downloads songs from Firebase Storage on-demand
-/// - Caches downloaded songs locally for performance
-/// - Manages playlist with 2-10 songs dynamically
-/// - Provides playback controls (play, pause, next, previous)
-/// - Handles volume and mute states
+export 'package:xapptor_community/ui/slideshow/slideshow_audio_state.dart';
+
+/// Manages background music playback. Uses single-song mode on web.
 class SlideshowAudioService {
   SlideshowAudioService._();
   static final SlideshowAudioService _instance = SlideshowAudioService._();
@@ -22,35 +17,25 @@ class SlideshowAudioService {
   final AudioPlayer _audio_player = AudioPlayer();
   final List<AudioSource> _audio_sources = [];
   final List<String> _song_urls = [];
-  final Map<String, String> _cached_paths = {};
+  final SlideshowAudioCache _cache = SlideshowAudioCache();
 
-  // Track if playlist has been set (replaces deprecated ConcatenatingAudioSource)
+  // Web platform detection - use single-song mode for ALL web browsers
+  bool get _use_single_song_mode => kIsWeb;
   bool _playlist_set = false;
-
-  bool _is_initialized = false;
-  bool _is_loading = false;
-  bool _is_muted = false;
-  bool _is_shuffle_enabled = false;
+  bool _is_initialized = false, _is_loading = false, _is_muted = false, _is_shuffle_enabled = false;
   double _volume = 1.0;
-
   int _current_index = 0;
-
-  // Repeat/Loop mode: 0 = Loop All, 1 = Loop One, 2 = No Loop
   LoopMode _loop_mode = LoopMode.all;
-
-  // Manual shuffle implementation since just_audio shuffle doesn't work reliably on web
   List<int> _shuffle_indices = [];
-  int _shuffle_position = 0; // Current position in the shuffled order
-
-  // Track if initialization is in progress to prevent concurrent init calls
+  int _shuffle_position = 0;
+  StreamSubscription? _player_state_subscription, _current_index_subscription;
+  Timer? _debounce_timer;
+  static const Duration _debounce_duration = Duration(milliseconds: 100);
+  SlideshowAudioState? _pending_state;
   Future<void>? _initialization_future;
-
-  // Stream controllers for state updates
-  final StreamController<SlideshowAudioState> _state_controller =
-      StreamController<SlideshowAudioState>.broadcast();
+  final StreamController<SlideshowAudioState> _state_controller = StreamController.broadcast();
 
   Stream<SlideshowAudioState> get state_stream => _state_controller.stream;
-
   bool get is_playing => _audio_player.playing;
   bool get is_muted => _is_muted;
   bool get is_loading => _is_loading;
@@ -61,445 +46,182 @@ class SlideshowAudioService {
   int get total_songs => _song_urls.length;
   double get volume => _volume;
 
-  /// Initialize the audio service with songs from Firebase Storage
-  Future<void> initialize({
-    required Reference storage_ref,
-  }) async {
-    // If already initialized, just return
+  Future<void> initialize({required Reference storage_ref}) async {
     if (_is_initialized) return;
-
-    // If initialization is already in progress, wait for it
-    if (_initialization_future != null) {
-      await _initialization_future;
-      return;
-    }
-
-    // Start initialization
+    if (_initialization_future != null) { await _initialization_future; return; }
     _initialization_future = _do_initialize(storage_ref: storage_ref);
     await _initialization_future;
     _initialization_future = null;
   }
 
-  Future<void> _do_initialize({
-    required Reference storage_ref,
-  }) async {
+  Future<void> _do_initialize({required Reference storage_ref}) async {
     _is_loading = true;
     _emit_state();
-
     try {
-      // List all songs in the storage reference
-      final ListResult list_result = await storage_ref.listAll();
-
-      if (list_result.items.isEmpty) {
-        debugPrint('SlideshowAudioService: No songs found in storage');
-        _is_loading = false;
-        _emit_state();
-        return;
-      }
-
-      // Get download URLs for all songs (2-10 expected)
-      final List<Future<String>> url_futures =
-          list_result.items.map((ref) => ref.getDownloadURL()).toList();
-
+      final list = await storage_ref.listAll();
+      if (list.items.isEmpty) { _is_loading = false; _emit_state(); return; }
       _song_urls.clear();
-      _song_urls.addAll(await Future.wait(url_futures));
-
-      debugPrint(
-          'SlideshowAudioService: Found ${_song_urls.length} songs in storage');
-
-      // Load ALL songs before creating playlist
-      // Load them in parallel for faster initialization
-      final List<Future<void>> load_futures = [];
-      for (int i = 0; i < _song_urls.length; i++) {
-        load_futures.add(_load_song(i));
-      }
-      await Future.wait(load_futures);
-
-      debugPrint(
-          'SlideshowAudioService: Loaded ${_audio_sources.length} audio sources');
-
-      // Create playlist with all songs loaded
+      _song_urls.addAll(await Future.wait(list.items.map((r) => r.getDownloadURL())));
+      if (_use_single_song_mode) { _audio_sources.clear(); } else { await _load_all_songs(); }
       await _create_playlist();
-
       _is_initialized = true;
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error initializing: $e');
-    } finally {
-      _is_loading = false;
-      _emit_state();
-    }
+    } catch (e) { debugPrint('SlideshowAudioService: Error initializing: $e'); }
+    finally { _is_loading = false; _emit_state(); }
   }
 
+  Future<void> _load_all_songs() async {
+    await Future.wait(List.generate(_song_urls.length, (i) => _load_song(i)));
+  }
 
-  /// Load a single song, downloading if necessary
   Future<void> _load_song(int index) async {
     if (index < 0 || index >= _song_urls.length) return;
-
-    final String url = _song_urls[index];
-
     try {
-      AudioSource source;
-
-      // For web, use network URL directly
-      if (kIsWeb) {
-        source = AudioSource.uri(Uri.parse(url), tag: 'song_$index');
-      } else {
-        // For mobile/desktop, check cache first
-        final String? cached_path = await _get_cached_path(url, index);
-
-        if (cached_path != null) {
-          source = AudioSource.file(cached_path, tag: 'song_$index');
-        } else {
-          // Download and cache the song
-          final String? downloaded_path = await _download_and_cache(url, index);
-
-          if (downloaded_path != null) {
-            source = AudioSource.file(downloaded_path, tag: 'song_$index');
-          } else {
-            // Fallback to streaming
-            source = AudioSource.uri(Uri.parse(url), tag: 'song_$index');
-          }
-        }
-      }
-
-      if (index < _audio_sources.length) {
-        _audio_sources[index] = source;
-      } else {
-        _audio_sources.add(source);
-      }
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error loading song $index: $e');
-    }
+      final source = await _cache.create_audio_source(url: _song_urls[index], index: index);
+      if (index < _audio_sources.length) { _audio_sources[index] = source; }
+      else { _audio_sources.add(source); }
+    } catch (e) { debugPrint('SlideshowAudioService: Error loading song $index: $e'); }
   }
 
-  /// Get cached file path if exists
-  Future<String?> _get_cached_path(String url, int index) async {
-    if (kIsWeb) return null;
-
-    final String cache_key = 'song_$index';
-
-    if (_cached_paths.containsKey(cache_key)) {
-      final String path = _cached_paths[cache_key]!;
-      final File file = File(path);
-
-      if (await file.exists()) {
-        return path;
-      }
-    }
-
-    // Check if file exists in cache directory
-    try {
-      final Directory cache_dir = await getTemporaryDirectory();
-      final String file_path = '${cache_dir.path}/slideshow_songs/$cache_key.mp3';
-      final File file = File(file_path);
-
-      if (await file.exists()) {
-        _cached_paths[cache_key] = file_path;
-        return file_path;
-      }
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error checking cache: $e');
-    }
-
-    return null;
-  }
-
-  /// Download song and save to cache
-  Future<String?> _download_and_cache(String url, int index) async {
-    if (kIsWeb) return null;
-
-    try {
-      final Directory cache_dir = await getTemporaryDirectory();
-      final Directory songs_dir =
-          Directory('${cache_dir.path}/slideshow_songs');
-
-      if (!await songs_dir.exists()) {
-        await songs_dir.create(recursive: true);
-      }
-
-      final String cache_key = 'song_$index';
-      final String file_path = '${songs_dir.path}/$cache_key.mp3';
-      final File file = File(file_path);
-
-      // Download using Firebase Storage reference
-      final ref = FirebaseStorage.instance.refFromURL(url);
-      final data = await ref.getData();
-
-      if (data != null) {
-        await file.writeAsBytes(data);
-        _cached_paths[cache_key] = file_path;
-        debugPrint('SlideshowAudioService: Cached song $index');
-        return file_path;
-      }
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error downloading song $index: $e');
-    }
-
-    return null;
-  }
-
-  /// Create the playlist from loaded audio sources
-  /// Uses the modern setAudioSources API instead of deprecated ConcatenatingAudioSource
   Future<void> _create_playlist() async {
-    if (_audio_sources.isEmpty) return;
-
-    // Use the new playlist API - setAudioSources replaces ConcatenatingAudioSource
-    await _audio_player.setAudioSources(_audio_sources, initialIndex: 0);
-    _playlist_set = true;
-
-    debugPrint('SlideshowAudioService: Playlist created with ${_audio_sources.length} songs');
-
-    // Listen to playback state changes
-    _audio_player.playerStateStream.listen((state) {
-      _emit_state();
-    });
-
-    // Listen to current index changes - only emit state if index actually changed
-    _audio_player.currentIndexStream.listen((index) {
-      if (index != null && index != _current_index) {
-        debugPrint('SlideshowAudioService: currentIndexStream changed to $index');
-        _current_index = index;
-        _emit_state();
+    final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
+    if (!has_songs) return;
+    try {
+      await _player_state_subscription?.cancel();
+      await _current_index_subscription?.cancel();
+      if (_use_single_song_mode) {
+        await _load_single_song(0);
+        _playlist_set = true;
+        _player_state_subscription = _audio_player.playerStateStream.listen((s) {
+          _emit_state();
+          if (s.processingState == ProcessingState.completed) _handle_web_completion();
+        });
+      } else {
+        // ignore: deprecated_member_use
+        final playlist = ConcatenatingAudioSource(useLazyPreparation: true, shuffleOrder: DefaultShuffleOrder(), children: _audio_sources);
+        await _audio_player.setAudioSource(playlist, initialIndex: 0);
+        _playlist_set = true;
+        _player_state_subscription = _audio_player.playerStateStream.listen((_) => _emit_state());
+        _current_index_subscription = _audio_player.currentIndexStream.listen((i) { if (i != null && i != _current_index) { _current_index = i; _emit_state(); } });
+        await _audio_player.setLoopMode(LoopMode.all);
       }
-    });
-
-    // Enable looping of playlist
-    await _audio_player.setLoopMode(LoopMode.all);
-
-    debugPrint('SlideshowAudioService: LoopMode.all enabled');
-
-    _emit_state();
+      _emit_state();
+    } catch (e) { _playlist_set = false; _emit_state(); }
   }
 
-  /// Play the current song
+  Future<void> _load_single_song(int index) async {
+    if (index < 0 || index >= _song_urls.length) return;
+    try { await _audio_player.stop(); await _audio_player.setUrl(_song_urls[index]); _current_index = index; } catch (_) {}
+  }
+
+  void _handle_web_completion() {
+    if (!_use_single_song_mode) return;
+    int next;
+    if (_loop_mode == LoopMode.one) { next = _current_index; }
+    else if (_is_shuffle_enabled && _shuffle_indices.isNotEmpty) { _shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length; next = _shuffle_indices[_shuffle_position]; }
+    else { next = (_current_index + 1) % _song_urls.length; if (_loop_mode == LoopMode.off && next == 0) { _emit_state(); return; } }
+    _load_single_song(next).then((_) { if (_audio_player.playing || _loop_mode != LoopMode.off) _audio_player.play(); _emit_state(); });
+  }
+
   Future<void> play() async {
-    if (!_is_initialized || _audio_sources.isEmpty) return;
-
-    // If playlist hasn't been created yet, create it now
-    if (!_playlist_set && _audio_sources.isNotEmpty) {
-      await _create_playlist();
-    }
-
-    await _audio_player.play();
-    _emit_state();
+    final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
+    if (!_is_initialized || !has_songs) return;
+    if (!_playlist_set) await _create_playlist();
+    try { await _audio_player.play(); _emit_state(); } catch (_) { _emit_state(); }
   }
 
-  /// Pause playback
-  Future<void> pause() async {
-    await _audio_player.pause();
-    _emit_state();
-  }
+  Future<void> pause() async { await _audio_player.pause(); _emit_state(); }
 
-  /// Toggle play/pause
   Future<void> toggle_play_pause() async {
-    if (_audio_player.playing) {
-      await pause();
-    } else {
-      await play();
-    }
+    try { _audio_player.playing ? await pause() : await play(); } catch (_) { _emit_state(); }
   }
 
-  /// Generate a new shuffled order of indices
-  void _generate_shuffle_indices() {
-    _shuffle_indices = List.generate(_audio_sources.length, (i) => i);
-    _shuffle_indices.shuffle(Random());
-    _shuffle_position = 0;
-    debugPrint('SlideshowAudioService: Generated shuffle indices: $_shuffle_indices');
-  }
-
-  /// Skip to next song
   Future<void> next() async {
-    if (!_is_initialized || _audio_sources.isEmpty) return;
-
-    // Ensure playlist exists before navigating
-    if (!_playlist_set) {
-      debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
-      await _create_playlist();
-    }
-
+    final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
+    if (!_is_initialized || !has_songs) return;
+    if (!_playlist_set) await _create_playlist();
     try {
-      debugPrint('SlideshowAudioService: next() called - shuffle: $_is_shuffle_enabled, current: $_current_index, total: ${_audio_sources.length}');
-
-      if (_is_shuffle_enabled) {
-        // Use our manual shuffle indices
-        _shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length;
-        final int next_index = _shuffle_indices[_shuffle_position];
-        debugPrint('SlideshowAudioService: Shuffle next, position=$_shuffle_position, seeking to index $next_index');
-        await _audio_player.seek(Duration.zero, index: next_index);
-      } else {
-        // Sequential order - manual index calculation
-        final int next_index = (_current_index + 1) % _audio_sources.length;
-        debugPrint('SlideshowAudioService: Sequential next, seeking to index $next_index');
-        await _audio_player.seek(Duration.zero, index: next_index);
-      }
+      final next_idx = _is_shuffle_enabled && _shuffle_indices.isNotEmpty
+          ? _shuffle_indices[(_shuffle_position = (_shuffle_position + 1) % _shuffle_indices.length)]
+          : (_current_index + 1) % _song_urls.length;
+      if (_use_single_song_mode) { final p = _audio_player.playing; await _load_single_song(next_idx); if (p) await _audio_player.play(); }
+      else { await _audio_player.seek(Duration.zero, index: next_idx); }
       _emit_state();
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error skipping to next: $e');
-    }
+    } catch (_) {}
   }
 
-  /// Skip to previous song
   Future<void> previous() async {
-    if (!_is_initialized || _audio_sources.isEmpty) return;
-
-    // Ensure playlist exists before navigating
-    if (!_playlist_set) {
-      debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
-      await _create_playlist();
-    }
-
+    final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
+    if (!_is_initialized || !has_songs) return;
+    if (!_playlist_set) await _create_playlist();
     try {
-      debugPrint('SlideshowAudioService: previous() called - shuffle: $_is_shuffle_enabled, current: $_current_index, total: ${_audio_sources.length}');
-
-      if (_is_shuffle_enabled) {
-        // Use our manual shuffle indices
-        _shuffle_position = (_shuffle_position - 1 + _shuffle_indices.length) % _shuffle_indices.length;
-        final int prev_index = _shuffle_indices[_shuffle_position];
-        debugPrint('SlideshowAudioService: Shuffle previous, position=$_shuffle_position, seeking to index $prev_index');
-        await _audio_player.seek(Duration.zero, index: prev_index);
-      } else {
-        // Sequential order - manual index calculation
-        final int prev_index = (_current_index - 1 + _audio_sources.length) % _audio_sources.length;
-        debugPrint('SlideshowAudioService: Sequential previous, seeking to index $prev_index');
-        await _audio_player.seek(Duration.zero, index: prev_index);
-      }
+      final prev_idx = _is_shuffle_enabled && _shuffle_indices.isNotEmpty
+          ? _shuffle_indices[(_shuffle_position = (_shuffle_position - 1 + _shuffle_indices.length) % _shuffle_indices.length)]
+          : (_current_index - 1 + _song_urls.length) % _song_urls.length;
+      if (_use_single_song_mode) { final p = _audio_player.playing; await _load_single_song(prev_idx); if (p) await _audio_player.play(); }
+      else { await _audio_player.seek(Duration.zero, index: prev_idx); }
       _emit_state();
-    } catch (e) {
-      debugPrint('SlideshowAudioService: Error skipping to previous: $e');
-    }
+    } catch (_) {}
   }
 
-  /// Toggle mute state
-  void toggle_mute() {
-    _is_muted = !_is_muted;
-    _audio_player.setVolume(_is_muted ? 0 : _volume);
-    _emit_state();
-  }
+  void toggle_mute() { _is_muted = !_is_muted; _audio_player.setVolume(_is_muted ? 0 : _volume); _emit_state_immediate(); }
 
-  /// Toggle shuffle mode
   Future<void> toggle_shuffle() async {
-    // Ensure playlist exists before toggling shuffle
-    if (!_playlist_set && _audio_sources.isNotEmpty) {
-      debugPrint('SlideshowAudioService: Playlist not ready yet, creating now');
-      await _create_playlist();
-    }
-
+    final has_songs = _use_single_song_mode ? _song_urls.isNotEmpty : _audio_sources.isNotEmpty;
+    if (!_playlist_set && has_songs) await _create_playlist();
     _is_shuffle_enabled = !_is_shuffle_enabled;
-
     if (_is_shuffle_enabled) {
-      // Generate our own shuffle indices since just_audio's shuffle doesn't work on web
-      _generate_shuffle_indices();
-
-      // Find current song position in shuffle order
+      _shuffle_indices = List.generate(_song_urls.length, (i) => i)..shuffle(Random());
       _shuffle_position = _shuffle_indices.indexOf(_current_index);
       if (_shuffle_position < 0) _shuffle_position = 0;
-
-      debugPrint('SlideshowAudioService: Shuffle enabled, indices: $_shuffle_indices, starting at position $_shuffle_position');
-    } else {
-      // Clear shuffle indices when disabled
-      _shuffle_indices.clear();
-      _shuffle_position = 0;
-      debugPrint('SlideshowAudioService: Shuffle disabled');
-    }
-
-    _emit_state();
+    } else { _shuffle_indices.clear(); _shuffle_position = 0; }
+    _emit_state_immediate();
   }
 
-  /// Set shuffle mode
-  Future<void> set_shuffle(bool enabled) async {
-    if (_is_shuffle_enabled == enabled) return;
-
-    _is_shuffle_enabled = enabled;
-
-    if (_is_shuffle_enabled) {
-      _generate_shuffle_indices();
-      _shuffle_position = _shuffle_indices.indexOf(_current_index);
-      if (_shuffle_position < 0) _shuffle_position = 0;
-    } else {
-      _shuffle_indices.clear();
-      _shuffle_position = 0;
-    }
-    _emit_state();
-  }
-
-  /// Toggle loop mode: Loop All -> Loop One -> No Loop -> Loop All
   Future<void> toggle_loop() async {
-    switch (_loop_mode) {
-      case LoopMode.all:
-        _loop_mode = LoopMode.one;
-        break;
-      case LoopMode.one:
-        _loop_mode = LoopMode.off;
-        break;
-      case LoopMode.off:
-        _loop_mode = LoopMode.all;
-        break;
-    }
-
+    _loop_mode = _loop_mode == LoopMode.all ? LoopMode.one : _loop_mode == LoopMode.one ? LoopMode.off : LoopMode.all;
     await _audio_player.setLoopMode(_loop_mode);
-    debugPrint('SlideshowAudioService: Loop mode changed to $_loop_mode');
-    _emit_state();
+    _emit_state_immediate();
   }
 
-  /// Set loop mode
-  Future<void> set_loop_mode(LoopMode mode) async {
-    if (_loop_mode == mode) return;
+  void set_mute(bool m) { _is_muted = m; _audio_player.setVolume(_is_muted ? 0 : _volume); _emit_state_immediate(); }
+  void set_volume(double v) { _volume = v.clamp(0.0, 1.0); if (!_is_muted) _audio_player.setVolume(_volume); _emit_state_immediate(); }
 
-    _loop_mode = mode;
-    await _audio_player.setLoopMode(_loop_mode);
-    _emit_state();
-  }
-
-  /// Set mute state
-  void set_mute(bool muted) {
-    _is_muted = muted;
-    _audio_player.setVolume(_is_muted ? 0 : _volume);
-    _emit_state();
-  }
-
-  /// Set volume (0.0 to 1.0)
-  void set_volume(double volume) {
-    _volume = volume.clamp(0.0, 1.0);
-
-    if (!_is_muted) {
-      _audio_player.setVolume(_volume);
-    }
-    _emit_state();
-  }
-
-  /// Emit current state to listeners
   void _emit_state() {
-    _state_controller.add(
-      SlideshowAudioState(
-        is_playing: _audio_player.playing,
-        is_muted: _is_muted,
-        is_loading: _is_loading,
-        is_initialized: _is_initialized,
-        is_shuffle_enabled: _is_shuffle_enabled,
-        loop_mode: _loop_mode,
-        current_index: _current_index,
-        total_songs: _song_urls.length,
-        volume: _volume,
-      ),
-    );
+    final s = _build_state();
+    if (_pending_state != null && _pending_state!.equals(s)) return;
+    _pending_state = s;
+    _debounce_timer?.cancel();
+    _debounce_timer = Timer(_debounce_duration, () { if (_pending_state != null) _state_controller.add(_pending_state!); });
   }
 
-  /// Dispose resources
-  void dispose() {
-    _audio_player.dispose();
-    _state_controller.close();
+  void _emit_state_immediate() { _debounce_timer?.cancel(); _pending_state = _build_state(); _state_controller.add(_pending_state!); }
+
+  SlideshowAudioState _build_state() => SlideshowAudioState(
+    is_playing: _audio_player.playing, is_muted: _is_muted, is_loading: _is_loading, is_initialized: _is_initialized,
+    is_shuffle_enabled: _is_shuffle_enabled, loop_mode: _loop_mode, current_index: _current_index, total_songs: _song_urls.length, volume: _volume,
+  );
+
+  Future<void> dispose() async {
+    _debounce_timer?.cancel();
+    await _player_state_subscription?.cancel();
+    await _current_index_subscription?.cancel();
+    await _audio_player.stop();
+    await _audio_player.dispose();
+    await _state_controller.close();
     _is_initialized = false;
+    _playlist_set = false;
     _audio_sources.clear();
     _song_urls.clear();
-    _cached_paths.clear();
+    _cache.clear();
   }
 
-  /// Reset the service for reuse
-  void reset() {
-    _audio_player.stop();
-    _is_initialized = false;
-    _is_loading = false;
-    _is_shuffle_enabled = false;
+  Future<void> reset() async {
+    _debounce_timer?.cancel();
+    _pending_state = null;
+    await _player_state_subscription?.cancel();
+    await _current_index_subscription?.cancel();
+    await _audio_player.stop();
+    _is_initialized = _is_loading = _is_shuffle_enabled = false;
     _loop_mode = LoopMode.all;
     _initialization_future = null;
     _audio_sources.clear();
@@ -508,38 +230,7 @@ class SlideshowAudioService {
     _current_index = 0;
     _shuffle_indices.clear();
     _shuffle_position = 0;
+    _cache.clear();
     _emit_state();
-  }
-}
-
-/// State class representing the current state of the audio service
-class SlideshowAudioState {
-  final bool is_playing;
-  final bool is_muted;
-  final bool is_loading;
-  final bool is_initialized;
-  final bool is_shuffle_enabled;
-  final LoopMode loop_mode;
-  final int current_index;
-  final int total_songs;
-  final double volume;
-
-  const SlideshowAudioState({
-    required this.is_playing,
-    required this.is_muted,
-    required this.is_loading,
-    required this.is_initialized,
-    required this.is_shuffle_enabled,
-    required this.loop_mode,
-    required this.current_index,
-    required this.total_songs,
-    required this.volume,
-  });
-
-  @override
-  String toString() {
-    return 'SlideshowAudioState(is_playing: $is_playing, is_muted: $is_muted, '
-        'is_loading: $is_loading, is_shuffle_enabled: $is_shuffle_enabled, '
-        'loop_mode: $loop_mode, current_index: $current_index/$total_songs)';
   }
 }

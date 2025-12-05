@@ -93,7 +93,7 @@ Widget slideshow_fab({
     children: [
       // 1. SHUFFLE ON/OFF
       _build_fab_child(
-        heroTag: 'slideshow_fab_shuffle',
+        hero_tag: 'slideshow_fab_shuffle',
         icon: FontAwesomeIcons.shuffle,
         tooltip: shuffle_label,
         color: primary_color,
@@ -103,7 +103,7 @@ Widget slideshow_fab({
 
       // 2. REPEAT/LOOP MODE
       _build_fab_child(
-        heroTag: 'slideshow_fab_repeat',
+        hero_tag: 'slideshow_fab_repeat',
         icon: loop_icon,
         tooltip: repeat_label,
         color: secondary_color,
@@ -115,7 +115,7 @@ Widget slideshow_fab({
 
       // 3. PREVIOUS SONG
       _build_fab_child(
-        heroTag: 'slideshow_fab_back',
+        hero_tag: 'slideshow_fab_back',
         icon: FontAwesomeIcons.backward,
         tooltip: back_label,
         color: primary_color,
@@ -124,7 +124,7 @@ Widget slideshow_fab({
 
       // 4. PLAY/PAUSE (CENTER - 4th of 7)
       _build_fab_child(
-        heroTag: 'slideshow_fab_play',
+        hero_tag: 'slideshow_fab_play',
         icon: is_loading
             ? FontAwesomeIcons.spinner
             : is_playing
@@ -139,7 +139,7 @@ Widget slideshow_fab({
 
       // 5. NEXT SONG
       _build_fab_child(
-        heroTag: 'slideshow_fab_forward',
+        hero_tag: 'slideshow_fab_forward',
         icon: FontAwesomeIcons.forward,
         tooltip: forward_label,
         color: primary_color,
@@ -148,7 +148,7 @@ Widget slideshow_fab({
 
       // 6. VOLUME ON/OFF
       _build_fab_child(
-        heroTag: 'slideshow_fab_volume',
+        hero_tag: 'slideshow_fab_volume',
         icon: sound_is_on ? FontAwesomeIcons.volumeHigh : FontAwesomeIcons.volumeXmark,
         tooltip: volume_label,
         color: secondary_color,
@@ -158,7 +158,7 @@ Widget slideshow_fab({
 
       // 7. SHARE BUTTON
       _build_fab_child(
-        heroTag: 'slideshow_fab_share',
+        hero_tag: 'slideshow_fab_share',
         icon: FontAwesomeIcons.share,
         tooltip: share_label,
         color: primary_color,
@@ -169,7 +169,7 @@ Widget slideshow_fab({
 }
 
 Widget _build_fab_child({
-  required String heroTag,
+  required String hero_tag,
   required IconData icon,
   required String tooltip,
   required Color color,
@@ -184,13 +184,13 @@ Widget _build_fab_child({
   final double icon_size = is_center ? 20.0 : 18.0;
 
   // Dim inactive toggle buttons
-  final Color button_color = is_active || !_is_toggle_button(heroTag) ? color : color.withAlpha((255 * 0.5).round());
+  final Color button_color = is_active || !_is_toggle_button(hero_tag) ? color : color.withAlpha((255 * 0.5).round());
 
   Widget button = SizedBox(
     width: button_size,
     height: button_size,
     child: FloatingActionButton(
-      heroTag: heroTag,
+      heroTag: hero_tag,
       onPressed: on_pressed,
       backgroundColor: button_color,
       elevation: is_center ? 6 : 4,
@@ -246,6 +246,6 @@ Widget _build_fab_child({
 }
 
 /// Check if button is a toggle button (should show active/inactive state)
-bool _is_toggle_button(String heroTag) {
-  return heroTag == 'slideshow_fab_volume' || heroTag == 'slideshow_fab_shuffle' || heroTag == 'slideshow_fab_repeat';
+bool _is_toggle_button(String hero_tag) {
+  return hero_tag == 'slideshow_fab_volume' || hero_tag == 'slideshow_fab_shuffle' || hero_tag == 'slideshow_fab_repeat';
 }

@@ -31,15 +31,15 @@ class _CountdownConfiguratorState extends State<CountdownConfigurator> {
               ElevatedButton(
                 onPressed: () async {
                   // Open date picker and set date
-                  final pickedDate = await showDatePicker(
+                  final picked_date = await showDatePicker(
                     context: context,
                     initialDate: date ?? DateTime.now(),
                     firstDate: DateTime(2020),
                     lastDate: DateTime(2100),
                   );
-                  if (pickedDate != null) {
+                  if (picked_date != null) {
                     setState(() {
-                      date = pickedDate;
+                      date = picked_date;
                     });
                   }
                 },

@@ -1,19 +1,18 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xapptor_community/gender_reveal/event_view/countdown_view.dart';
+import 'package:xapptor_community/gender_reveal/event_view/event_view_animations.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_state.dart';
+import 'package:xapptor_community/gender_reveal/event_view/event_view_translation.dart';
+import 'package:xapptor_community/gender_reveal/event_view/event_view_voting.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_widgets.dart';
 import 'package:xapptor_community/gender_reveal/event_view/reaction_recorder.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
-import 'package:confetti/confetti.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
-import 'package:xapptor_translation/translation_stream.dart';
 
 class EventView extends StatefulWidget {
   final String mother_name;
@@ -24,33 +23,21 @@ class EventView extends StatefulWidget {
   final TranslationTextListArray? wishlist_text_list;
   final TranslationTextListArray? slideshow_fab_text_list;
   final bool has_language_picker;
-
-  // Customizable colors for harmonized theming
   final Color? card_overlay_color;
   final Color? boy_color;
   final Color? girl_color;
   final Color? language_picker_background_color;
   final Color? language_picker_text_color;
-
-  // Customizable gradient colors for bar chart
   final Color? boy_gradient_start;
   final Color? boy_gradient_end;
   final Color? girl_gradient_start;
   final Color? girl_gradient_end;
-
-  // FAB colors for slideshow music controls
   final Color? fab_primary_color;
   final Color? fab_secondary_color;
-
-  // Customizable text styles for harmonized typography
   final TextStyle? title_style;
   final TextStyle? subtitle_style;
   final TextStyle? body_style;
-
-  /// Whether to show a language icon in the picker.
   final bool language_picker_show_icon;
-
-  /// Color for the language picker icon.
   final Color? language_picker_icon_color;
 
   const EventView({
@@ -86,123 +73,24 @@ class EventView extends StatefulWidget {
 }
 
 class _EventViewState extends State<EventView>
-    with TickerProviderStateMixin, EventViewStateMixin, EventViewWidgetsMixin {
-  // Implement getters required by EventViewWidgetsMixin
+    with TickerProviderStateMixin, EventViewAnimationsMixin, EventViewVotingMixin,
+         EventViewTranslationMixin, EventViewStateMixin, EventViewWidgetsMixin {
   @override
   String get mother_name => widget.mother_name;
-
   @override
   String get father_name => widget.father_name;
-
-  // Implement getter for translated dialog text (required by EventViewStateMixin)
   @override
   List<String>? get dialog_text_list => widget.event_text_list?.get(source_language_index);
 
-  // FAB key - owned by this widget, persists across rebuilds
   final GlobalKey<ExpandableFabState> _fab_key = GlobalKey<ExpandableFabState>();
-
-  // FAB data from Slideshow
-  SlideshowFabData? _fab_data;
-
-  // Translation state
-  int source_language_index = 0;
-  TranslationStream? translation_stream_event;
-  TranslationStream? translation_stream_wishlist;
-  List<TranslationStream> translation_stream_list = [];
-
-  void _on_fab_data_changed(SlideshowFabData data) {
-    setState(() {
-      _fab_data = data;
-      // Connect the music play callback to the mixin's on_trigger_music_play
-      // This allows on_celebration_pressed to trigger slideshow music
-      on_trigger_music_play = () {
-        // Only trigger play if music is not already playing
-        if (!data.is_playing) {
-          data.on_play_pressed();
-        }
-      };
-    });
-  }
-
-  update_text_list({
-    required int index,
-    required String new_text,
-    required int list_index,
-  }) {
-    if (list_index == 0 && widget.event_text_list != null) {
-      widget.event_text_list!.get(source_language_index)[index] = new_text;
-    } else if (list_index == 1 && widget.wishlist_text_list != null) {
-      widget.wishlist_text_list!.get(source_language_index)[index] = new_text;
-    }
-    // Note: list_index == 2 (slideshow_fab_text_list) is not handled here
-    // because it has pre-defined translations and doesn't use the translation stream.
-    setState(() {});
-  }
-
-  update_source_language({
-    required int new_source_language_index,
-  }) {
-    source_language_index = new_source_language_index;
-    setState(() {});
-  }
-
-  /// Load saved language preference from SharedPreferences
-  Future<void> _load_saved_language() async {
-    if (widget.event_text_list == null) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final target_language = prefs.getString('target_language');
-
-    if (target_language == null) return;
-
-    // Find the index of the saved language in the text list array
-    for (int i = 0; i < widget.event_text_list!.list.length; i++) {
-      if (widget.event_text_list!.list[i].source_language == target_language) {
-        if (i != source_language_index && mounted) {
-          setState(() {
-            source_language_index = i;
-          });
-        }
-        return;
-      }
-    }
-  }
-
-  void _init_translation_streams() {
-    if (widget.event_text_list != null) {
-      translation_stream_event = TranslationStream(
-        translation_text_list_array: widget.event_text_list!,
-        update_text_list_function: update_text_list,
-        list_index: 0,
-        source_language_index: source_language_index,
-      );
-      translation_stream_list.add(translation_stream_event!);
-    }
-
-    if (widget.wishlist_text_list != null) {
-      translation_stream_wishlist = TranslationStream(
-        translation_text_list_array: widget.wishlist_text_list!,
-        update_text_list_function: update_text_list,
-        list_index: 1,
-        source_language_index: source_language_index,
-      );
-      translation_stream_list.add(translation_stream_wishlist!);
-    }
-
-    // Note: slideshow_fab_text_list is NOT added to translation_stream_list
-    // because it has pre-defined translations for all supported languages.
-    // Adding it to the stream would cause the translation system to overwrite
-    // the pre-defined translations when language auto-detection runs.
-  }
+  final GlobalKey _slideshow_key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     initialize_state();
-    _init_translation_streams();
-
-    // Load saved language preference
-    _load_saved_language();
+    init_translation_streams();
+    load_saved_language();
   }
 
   @override
@@ -214,249 +102,143 @@ class _EventViewState extends State<EventView>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final screen_width = size.width;
-    final screen_height = size.height;
     final portrait = is_portrait(context);
-
-    final total_votes = boy_votes + girl_votes;
-    final has_votes = total_votes > 0;
-    // Use custom colors if provided, otherwise fall back to defaults
+    final has_votes = (boy_votes + girl_votes) > 0;
     final boy_color = widget.boy_color ?? Colors.blueAccent.shade200;
     final girl_color = widget.girl_color ?? Colors.pinkAccent.shade200;
     final card_overlay = widget.card_overlay_color ?? Colors.black.withAlpha((255 * 0.6).round());
-    final language_picker_bg = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
-    final language_picker_text = widget.language_picker_text_color ?? Colors.white;
+    final lang_bg = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
+    final lang_text = widget.language_picker_text_color ?? Colors.white;
 
-    bool small_countdown_start = false;
+    bool small_countdown = false;
     if (event != null) {
-      small_countdown_start =
-          (event!.reveal_date.millisecondsSinceEpoch - 7000) <= DateTime.now().millisecondsSinceEpoch;
+      small_countdown = (event!.reveal_date.millisecondsSinceEpoch - 7000) <= DateTime.now().millisecondsSinceEpoch;
     }
-
-    print('small_countdown_start=$small_countdown_start');
-
-    final fab = _fab_data?.build_fab(_fab_key);
 
     return Scaffold(
       body: event == null
-          ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade200),
-              ),
-            )
+          ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade200)))
           : SafeArea(
-              child: Stack(
-                children: [
-                  // Main background container
-                  Positioned.fill(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Builder(
-                            builder: (context) {
-                              // Get translated FAB labels from slideshow_fab_text_list
-                              // Index: 0 = Music Menu, 1 = Close, 2 = Toggle Volume, 3 = Toggle Shuffle,
-                              //        4 = Toggle Repeat, 5 = Previous Song, 6 = Play/Pause, 7 = Next Song, 8 = Share
-                              final fab_text = widget.slideshow_fab_text_list?.get(source_language_index);
-
-                              return Slideshow(
-                                image_paths: const [],
-                                use_examples: true,
-                                onFabData: _on_fab_data_changed,
-                                share_url: widget.share_url + event_id,
-                                menu_label: fab_text?[0] ?? 'Music Menu',
-                                close_label: fab_text?[1] ?? 'Close',
-                                volume_label: fab_text?[2] ?? 'Toggle Volume',
-                                shuffle_label: fab_text?[3] ?? 'Toggle Shuffle',
-                                repeat_label: fab_text?[4] ?? 'Toggle Repeat',
-                                back_label: fab_text?[5] ?? 'Previous Song',
-                                play_label: fab_text?[6] ?? 'Play/Pause',
-                                forward_label: fab_text?[7] ?? 'Next Song',
-                                share_label: fab_text?[8] ?? 'Share',
-                                // FAB colors matching the app's color scheme
-                                primary_color: widget.fab_primary_color ?? const Color(0xFFD9C7FF),
-                                secondary_color: widget.fab_secondary_color ?? const Color(0xFFFFC2E0),
-                                // Custom text styles for harmonized typography
-                                title_style: widget.title_style,
-                                subtitle_style: widget.subtitle_style,
-                                body_style: widget.body_style,
-                              );
-                            },
-                          ),
-                        ),
-                        if (event != null && enable_voting_card && !small_countdown_start)
-                          Center(
-                            child: AnimatedOpacity(
-                              opacity: show_voting_card ? 1.0 : 0.0,
-                              duration: const Duration(seconds: k_fade_animation_duration_seconds),
-                              curve: Curves.easeOut,
-                              child: Container(
-                                height: screen_height * (portrait ? 0.75 : 0.8),
-                                width: screen_width * (portrait ? 0.85 : 0.7),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: card_overlay,
-                                  borderRadius: BorderRadius.circular(outline_border_radius),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    CountdownView(
-                                      milliseconds_sice_epoch: (event!.reveal_date).millisecondsSinceEpoch,
-                                      labels: CountdownLabels.fromTextList(
-                                        widget.event_text_list?.get(source_language_index),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: LayoutBuilder(
-                                        builder: (context, constraints) {
-                                          final stacked = portrait || constraints.maxWidth < 760;
-
-                                          // ───────────────── intro section ─────────────────
-                                          final intro_section = build_intro_section(
-                                            context: context,
-                                            stacked: stacked,
-                                            constraints: constraints,
-                                            boy_color: boy_color,
-                                            girl_color: girl_color,
-                                            on_celebration_pressed: on_celebration_pressed,
-                                            on_vote_selected: on_vote_selected,
-                                            wishlist_button_builder: widget.wishlist_button_builder,
-                                            source_language_index: source_language_index,
-                                            event_text_list: widget.event_text_list,
-                                            title_style: widget.title_style,
-                                            subtitle_style: widget.subtitle_style,
-                                          );
-
-                                          // ───────────────── charts section ─────────────────
-                                          final charts_section = build_charts_wrapper(
-                                            context: context,
-                                            stacked: stacked,
-                                            constraints: constraints,
-                                            portrait: portrait,
-                                            has_votes: has_votes,
-                                            boy_color: boy_color,
-                                            girl_color: girl_color,
-                                            source_language_index: source_language_index,
-                                            event_text_list: widget.event_text_list,
-                                            boy_gradient_start: widget.boy_gradient_start,
-                                            boy_gradient_end: widget.boy_gradient_end,
-                                            girl_gradient_start: widget.girl_gradient_start,
-                                            girl_gradient_end: widget.girl_gradient_end,
-                                          );
-
-                                          final content = stacked
-                                              ? Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    intro_section,
-                                                    const SizedBox(height: sized_box_space * 4),
-                                                    charts_section,
-                                                  ],
-                                                )
-                                              : Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Flexible(
-                                                      flex: 48,
-                                                      child: intro_section,
-                                                    ),
-                                                    const SizedBox(width: sized_box_space),
-                                                    Flexible(
-                                                      flex: 52,
-                                                      child: charts_section,
-                                                    ),
-                                                  ],
-                                                );
-
-                                          // ⭐ This scrolls INSIDE the card when content > card height.
-                                          return SingleChildScrollView(
-                                            padding: EdgeInsets.only(
-                                              bottom: stacked ? 40 : 56,
-                                            ),
-                                            physics: const BouncingScrollPhysics(
-                                              parent: AlwaysScrollableScrollPhysics(),
-                                            ),
-                                            child: ConstrainedBox(
-                                              constraints: BoxConstraints(
-                                                minHeight: portrait ? constraints.maxHeight : 0,
-                                              ),
-                                              child: Align(
-                                                alignment: Alignment.topCenter,
-                                                child: content,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (small_countdown_start)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: SizedBox(
-                              height: screen_height / 4,
-                              width: screen_width / 4,
-                              child: const ReactionRecorder(),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  // Confetti overlay
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: ConfettiWidget(
-                        confettiController: controller_top_center,
-                        blastDirectionality: BlastDirectionality.explosive,
-                        blastDirection: math.pi / 2,
-                        emissionFrequency: 0.05,
-                        numberOfParticles: 12,
-                        gravity: 0.2,
-                        maxBlastForce: 20,
-                        minBlastForce: 5,
-                        shouldLoop: false,
-                      ),
-                    ),
-                  ),
-
-                  // Language Picker overlay
-                  if (widget.has_language_picker && translation_stream_list.isNotEmpty)
-                    Positioned(
-                      top: 8,
-                      right: sized_box_space,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: language_picker_bg,
-                          borderRadius: BorderRadius.circular(outline_border_radius),
-                        ),
-                        child: SizedBox(
-                          width: widget.language_picker_show_icon ? 170 : 150,
-                          child: LanguagePicker(
-                            translation_stream_list: translation_stream_list,
-                            language_picker_items_text_color: language_picker_text,
-                            update_source_language: update_source_language,
-                            source_language_index: source_language_index,
-                            show_icon: widget.language_picker_show_icon,
-                            icon_color: widget.language_picker_icon_color ?? language_picker_text,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              child: Stack(children: [
+                _build_main_content(size.width, size.height, portrait, has_votes, boy_color, girl_color, card_overlay, small_countdown),
+                if (widget.has_language_picker && translation_stream_list.isNotEmpty)
+                  _build_language_picker(lang_bg, lang_text),
+              ]),
             ),
-      floatingActionButton: fab,
+      floatingActionButton: fab_data?.build_fab(_fab_key),
       floatingActionButtonLocation: ExpandableFab.location,
+    );
+  }
+
+  Widget _build_main_content(double w, double h, bool portrait, bool has_votes, Color boy, Color girl, Color overlay, bool small) {
+    return Positioned.fill(
+      child: Stack(children: [
+        Positioned.fill(child: _build_slideshow()),
+        if (event != null && enable_voting_card && !small)
+          _build_voting_card(w, h, portrait, has_votes, boy, girl, overlay),
+        if (small) Positioned(bottom: 0, right: 0, child: SizedBox(height: h / 4, width: w / 4, child: const ReactionRecorder())),
+      ]),
+    );
+  }
+
+  Widget _build_slideshow() {
+    final fab_text = widget.slideshow_fab_text_list?.get(source_language_index);
+    return Slideshow(
+      key: _slideshow_key,
+      image_paths: const [],
+      use_examples: true,
+      on_fab_data: on_fab_data_changed,
+      share_url: widget.share_url + event_id,
+      menu_label: fab_text?[0] ?? 'Music Menu',
+      close_label: fab_text?[1] ?? 'Close',
+      volume_label: fab_text?[2] ?? 'Toggle Volume',
+      shuffle_label: fab_text?[3] ?? 'Toggle Shuffle',
+      repeat_label: fab_text?[4] ?? 'Toggle Repeat',
+      back_label: fab_text?[5] ?? 'Previous Song',
+      play_label: fab_text?[6] ?? 'Play/Pause',
+      forward_label: fab_text?[7] ?? 'Next Song',
+      share_label: fab_text?[8] ?? 'Share',
+      primary_color: widget.fab_primary_color ?? const Color(0xFFD9C7FF),
+      secondary_color: widget.fab_secondary_color ?? const Color(0xFFFFC2E0),
+      title_style: widget.title_style,
+      subtitle_style: widget.subtitle_style,
+      body_style: widget.body_style,
+    );
+  }
+
+  Widget _build_voting_card(double w, double h, bool portrait, bool has_votes, Color boy, Color girl, Color overlay) {
+    return Center(
+      child: AnimatedOpacity(
+        opacity: show_voting_card ? 1.0 : 0.0,
+        duration: const Duration(seconds: k_fade_animation_duration_seconds),
+        curve: Curves.easeOut,
+        child: Container(
+          height: h * (portrait ? 0.75 : 0.8),
+          width: w * (portrait ? 0.85 : 0.7),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: overlay, borderRadius: BorderRadius.circular(outline_border_radius)),
+          child: Column(mainAxisSize: MainAxisSize.max, children: [
+            CountdownView(
+              milliseconds_sice_epoch: event!.reveal_date.millisecondsSinceEpoch,
+              labels: CountdownLabels.fromTextList(widget.event_text_list?.get(source_language_index)),
+            ),
+            Expanded(child: _build_voting_content(portrait, has_votes, boy, girl)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _build_voting_content(bool portrait, bool has_votes, Color boy, Color girl) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final stacked = portrait || constraints.maxWidth < 760;
+      final intro = build_intro_section(
+        context: context, stacked: stacked, constraints: constraints,
+        boy_color: boy, girl_color: girl, on_celebration_pressed: on_celebration_pressed,
+        on_vote_selected: (vote) => on_vote_selected(vote, context),
+        wishlist_button_builder: widget.wishlist_button_builder, source_language_index: source_language_index,
+        event_text_list: widget.event_text_list, title_style: widget.title_style, subtitle_style: widget.subtitle_style,
+      );
+      final charts = build_charts_wrapper(
+        context: context, stacked: stacked, constraints: constraints, portrait: portrait,
+        has_votes: has_votes, boy_color: boy, girl_color: girl, source_language_index: source_language_index,
+        event_text_list: widget.event_text_list, boy_gradient_start: widget.boy_gradient_start,
+        boy_gradient_end: widget.boy_gradient_end, girl_gradient_start: widget.girl_gradient_start,
+        girl_gradient_end: widget.girl_gradient_end,
+      );
+      final content = stacked
+          ? Column(mainAxisSize: MainAxisSize.min, children: [intro, const SizedBox(height: sized_box_space * 4), charts])
+          : Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Flexible(flex: 48, child: intro), const SizedBox(width: sized_box_space), Flexible(flex: 52, child: charts)]);
+      return SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: stacked ? 40 : 56),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: portrait ? constraints.maxHeight : 0),
+          child: Align(alignment: Alignment.topCenter, child: content),
+        ),
+      );
+    });
+  }
+
+  Widget _build_language_picker(Color bg, Color text) {
+    return Positioned(
+      top: 8, right: sized_box_space,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(outline_border_radius)),
+        child: SizedBox(
+          width: widget.language_picker_show_icon ? 170 : 150,
+          child: LanguagePicker(
+            translation_stream_list: translation_stream_list,
+            language_picker_items_text_color: text,
+            update_source_language: update_source_language,
+            source_language_index: source_language_index,
+            show_icon: widget.language_picker_show_icon,
+            icon_color: widget.language_picker_icon_color ?? text,
+          ),
+        ),
+      ),
     );
   }
 }
