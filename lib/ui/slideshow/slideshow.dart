@@ -254,19 +254,18 @@ class _SlideshowState extends State<Slideshow>
     final bool video_p = config['possible_video_position_for_portrait'] ?? false;
     final bool video_l = config['possible_video_position_for_landscape'] ?? false;
 
-    // For video slots: use total available videos (URLs), not just loaded controllers
-    // This allows the carousel to cycle through all videos and trigger lazy loading
-    // For image slots: use loaded images count
+    // Use total available URLs (not loaded items) for both videos and images.
+    // This allows the carousel to cycle through all content and trigger lazy loading.
     int item_count;
     if (video_p || video_l) {
-      // Use total video URLs count so carousel can cycle and trigger lazy loading
       item_count = video_p ? portrait_video_urls.length : landscape_video_urls.length;
     } else {
+      // Use URL counts for images too (like videos) to enable cycling through all images
       item_count = orient == SlideshowViewOrientation.landscape
-          ? landscape_images.length
+          ? landscape_image_urls.length
           : orient == SlideshowViewOrientation.portrait
-              ? portrait_images.length
-              : all_images.length;
+              ? portrait_image_urls.length
+              : all_image_urls.length;
     }
 
     return slideshow_view(
@@ -290,6 +289,7 @@ class _SlideshowState extends State<Slideshow>
       all_images: all_images,
       on_lazy_load_request: handle_lazy_load_request,
       get_video_controller_by_index: get_video_controller_by_index,
+      get_image_by_index: get_image_by_index,
       total_video_count: video_p ? portrait_video_urls.length : landscape_video_urls.length,
       total_image_count: orient == SlideshowViewOrientation.portrait
           ? portrait_image_urls.length

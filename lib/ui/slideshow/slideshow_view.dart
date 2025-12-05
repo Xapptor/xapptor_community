@@ -20,6 +20,12 @@ typedef GetVideoControllerByIndex = VideoPlayerController? Function({
   required bool is_portrait,
 });
 
+/// Callback type for getting an image by URL index
+typedef GetImageByIndex = Image? Function({
+  required int index,
+  required SlideshowViewOrientation orientation,
+});
+
 /// A stateful widget that represents a single slideshow view slot.
 /// Using a proper widget (instead of a function) allows Flutter to properly
 /// diff and reuse widgets, preventing unnecessary rebuilds and GPU texture leaks.
@@ -49,6 +55,9 @@ class SlideshowViewWidget extends StatefulWidget {
   /// Callback to get a video controller by URL index (not by controller list index)
   final GetVideoControllerByIndex? get_video_controller_by_index;
 
+  /// Callback to get an image by URL index (not by loaded image list index)
+  final GetImageByIndex? get_image_by_index;
+
   /// Total number of items available (including not-yet-loaded)
   final int total_video_count;
   final int total_image_count;
@@ -74,6 +83,7 @@ class SlideshowViewWidget extends StatefulWidget {
     required this.all_images,
     this.on_lazy_load_request,
     this.get_video_controller_by_index,
+    this.get_image_by_index,
     this.total_video_count = 0,
     this.total_image_count = 0,
     super.key,
@@ -147,6 +157,7 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
                   all_images: widget.all_images,
                   get_video_controller_by_index:
                       widget.get_video_controller_by_index,
+                  get_image_by_index: widget.get_image_by_index,
                 );
               },
               options: CarouselOptions(
@@ -234,16 +245,49 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
       ..play();
   }
 
-  void _handle_image_page_change(int index) {
-    if (widget.on_lazy_load_request != null && widget.total_image_count > 0) {
-      final int next_index = (index + 1) % widget.total_image_count;
-      widget.on_lazy_load_request!(
-        index: next_index,
+  void _handle_image_page_change(int index) async {
+    if (widget.on_lazy_load_request == null || widget.total_image_count <= 0) {
+      return;
+    }
+
+    // Calculate the view offset for this specific view
+    final int views_per_column =
+        widget.slideshow_matrix[widget.column_index].length;
+    final int view_offset =
+        widget.column_index * views_per_column + widget.view_index;
+
+    // Calculate the effective index with view offset
+    final int effective_index = index + view_offset;
+
+    // Check if current image is loaded
+    Image? current_image;
+    if (widget.get_image_by_index != null) {
+      current_image = widget.get_image_by_index!(
+        index: effective_index,
+        orientation: widget.slideshow_view_orientation,
+      );
+    }
+
+    // Load current image if not yet loaded
+    if (current_image == null) {
+      await widget.on_lazy_load_request!(
+        index: effective_index % widget.total_image_count,
         is_video: false,
         is_portrait: false,
         orientation: widget.slideshow_view_orientation,
       );
+      // Force rebuild after loading
+      if (mounted) setState(() {});
     }
+
+    // Preload next image
+    final int next_effective_index = effective_index + 1;
+    widget.on_lazy_load_request!(
+      index: next_effective_index % widget.total_image_count,
+      is_video: false,
+      is_portrait: false,
+      orientation: widget.slideshow_view_orientation,
+    );
   }
 }
 
@@ -270,6 +314,7 @@ Widget slideshow_view({
   required List<Image> all_images,
   OnLazyLoadRequest? on_lazy_load_request,
   GetVideoControllerByIndex? get_video_controller_by_index,
+  GetImageByIndex? get_image_by_index,
   int total_video_count = 0,
   int total_image_count = 0,
 }) {
@@ -295,6 +340,7 @@ Widget slideshow_view({
     all_images: all_images,
     on_lazy_load_request: on_lazy_load_request,
     get_video_controller_by_index: get_video_controller_by_index,
+    get_image_by_index: get_image_by_index,
     total_video_count: total_video_count,
     total_image_count: total_image_count,
   );

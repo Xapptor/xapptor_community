@@ -323,4 +323,33 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     final String url = urls[index];
     return active_video_controllers[url];
   }
+
+  /// Get an image by URL index (not by loaded image list index).
+  /// This correctly maps carousel index → URL → cached Image.
+  /// The index is wrapped using modulo to cycle through all images.
+  /// Returns null if the image at that index hasn't been loaded yet.
+  Image? get_image_by_index({
+    required int index,
+    required SlideshowViewOrientation orientation,
+  }) {
+    List<String> urls;
+    switch (orientation) {
+      case SlideshowViewOrientation.portrait:
+        urls = portrait_image_urls;
+        break;
+      case SlideshowViewOrientation.landscape:
+        urls = landscape_image_urls;
+        break;
+      case SlideshowViewOrientation.square_or_similar:
+        urls = all_image_urls;
+        break;
+    }
+
+    if (urls.isEmpty) return null;
+
+    // Use modulo to wrap the index and cycle through all images
+    final int wrapped_index = index % urls.length;
+    final String url = urls[wrapped_index];
+    return loaded_images_cache[url];
+  }
 }

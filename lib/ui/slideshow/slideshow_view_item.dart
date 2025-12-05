@@ -27,6 +27,7 @@ Widget build_carousel_item({
   required List<Image> landscape_images,
   required List<Image> all_images,
   GetVideoControllerByIndex? get_video_controller_by_index,
+  GetImageByIndex? get_image_by_index,
 }) {
   final String test_mode_text = _build_test_mode_text(
     orientation: orientation,
@@ -67,6 +68,7 @@ Widget build_carousel_item({
     portrait_images: portrait_images,
     landscape_images: landscape_images,
     all_images: all_images,
+    get_image_by_index: get_image_by_index,
   );
 }
 
@@ -172,8 +174,23 @@ Widget _build_image_item({
   required List<Image> portrait_images,
   required List<Image> landscape_images,
   required List<Image> all_images,
+  GetImageByIndex? get_image_by_index,
 }) {
-  final Image? image = _get_image_for_orientation(
+  // Use URL-based lookup if available (preferred method for lazy loading)
+  // This correctly maps carousel index to image URL, then gets the cached image
+  Image? image;
+  if (get_image_by_index != null) {
+    // Calculate the effective index with view offset for uniqueness across views
+    final int view_offset = column_index * views_per_column + view_index;
+    final int effective_index = index + view_offset;
+    image = get_image_by_index(
+      index: effective_index,
+      orientation: orientation,
+    );
+  }
+
+  // Fallback to old list-based lookup (for backward compatibility)
+  image ??= _get_image_for_orientation(
     index: index,
     column_index: column_index,
     view_index: view_index,
