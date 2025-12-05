@@ -48,12 +48,13 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // Track video orientations separately from controllers (URL -> is_portrait)
   final Map<String, bool> video_orientation_cache = {};
 
-  /// Load a single image and categorize by orientation
-  Future<void> load_single_image({
+  /// Load a single image and categorize by orientation.
+  /// Returns true if a new image was loaded, false if already cached.
+  Future<bool> load_single_image({
     required String url,
   }) async {
     // Check if already loaded
-    if (loaded_images_cache.containsKey(url)) return;
+    if (loaded_images_cache.containsKey(url)) return false;
 
     try {
       final Image current_image = Image.network(url);
@@ -74,8 +75,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       if (!all_images.contains(current_image)) {
         all_images.add(current_image);
       }
+      return true;
     } catch (e) {
       debugPrint('Slideshow: Error loading image: $e');
+      return false;
     }
   }
 
@@ -84,13 +87,14 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// - Portrait videos (height > width) go to portrait_video_player_controllers
   /// - Landscape videos (width >= height) go to landscape_video_player_controllers
   /// The is_portrait parameter indicates which SLOT is requesting the video.
-  Future<VideoPlayerController?> load_video_controller({
+  /// Returns a record with the controller and whether it was newly loaded.
+  Future<({VideoPlayerController? controller, bool did_load})> load_video_controller({
     required String url,
     required bool is_portrait,
   }) async {
     // Check if already loaded
     if (active_video_controllers.containsKey(url)) {
-      return active_video_controllers[url];
+      return (controller: active_video_controllers[url], did_load: false);
     }
 
     // On web, enforce maximum active videos - dispose oldest OF THE SAME ORIENTATION
@@ -132,10 +136,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
             '(${video_width.toInt()}x${video_height.toInt()})');
       }
 
-      return controller;
+      return (controller: controller, did_load: true);
     } catch (e) {
       debugPrint('Slideshow: Error loading video controller: $e');
-      return null;
+      return (controller: null, did_load: false);
     }
   }
 
@@ -205,8 +209,9 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Request to load a video for a specific carousel position
-  /// Called by slideshow_view when carousel advances to a video slot
+  /// Request to load a video for a specific carousel position.
+  /// Called by slideshow_view when carousel advances to a video slot.
+  /// Only calls setState if a new video was actually loaded.
   Future<void> request_video_load({
     required int index,
     required bool is_portrait,
@@ -215,12 +220,14 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     if (index < 0 || index >= urls.length) return;
 
     final String url = urls[index];
-    await load_video_controller(url: url, is_portrait: is_portrait);
+    final result = await load_video_controller(url: url, is_portrait: is_portrait);
 
-    if (mounted) setState(() {});
+    // Only rebuild if we actually loaded a new video
+    if (result.did_load && mounted) setState(() {});
   }
 
-  /// Request to load an image for a specific carousel position
+  /// Request to load an image for a specific carousel position.
+  /// Only calls setState if a new image was actually loaded.
   Future<void> request_image_load({
     required int index,
     required SlideshowViewOrientation orientation,
@@ -241,12 +248,13 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     if (index < 0 || index >= urls.length) return;
 
     final String url = urls[index];
-    await load_single_image(url: url);
+    final bool did_load = await load_single_image(url: url);
 
     // Clean up cache if too large
     cleanup_image_cache();
 
-    if (mounted) setState(() {});
+    // Only rebuild if we actually loaded a new image
+    if (did_load && mounted) setState(() {});
   }
 
   /// Clean up image cache to prevent memory bloat

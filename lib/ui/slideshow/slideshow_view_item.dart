@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
-import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/fade_in_video.dart';
 
@@ -21,6 +20,7 @@ Widget build_carousel_item({
   required List<VideoPlayerController> landscape_video_player_controllers,
   required double screen_width,
   required int number_of_columns,
+  required int views_per_column,
   required bool test_mode,
   required bool portrait,
   required List<Image> portrait_images,
@@ -54,6 +54,10 @@ Widget build_carousel_item({
 
   // Handle image slots
   return _build_image_item(
+    index: index,
+    column_index: column_index,
+    view_index: view_index,
+    views_per_column: views_per_column,
     orientation: orientation,
     screen_width: screen_width,
     number_of_columns: number_of_columns,
@@ -125,15 +129,20 @@ Widget _build_video_item({
   }
 
   if (controller != null) {
+    // Include controller's hashCode in the key to force rebuild when controller changes
     video_player_widget = FadeInVideo(
-      key: ValueKey('video_${column_index}_${view_index}_$index'),
+      key: ValueKey('video_${column_index}_${view_index}_${index}_${controller.hashCode}'),
       controller: controller,
       placeholder: const AssetImage(
         'assets/images/placeholder_gradient_64.jpg',
       ),
     );
   } else {
-    video_player_widget = _placeholder_widget();
+    // Use a distinct key for placeholder so it's replaced when video loads
+    video_player_widget = Container(
+      key: ValueKey('placeholder_${column_index}_${view_index}_$index'),
+      child: _placeholder_widget(),
+    );
   }
 
   return ClipRRect(
@@ -150,6 +159,10 @@ Widget _build_video_item({
 }
 
 Widget _build_image_item({
+  required int index,
+  required int column_index,
+  required int view_index,
+  required int views_per_column,
   required SlideshowViewOrientation orientation,
   required double screen_width,
   required int number_of_columns,
@@ -161,6 +174,10 @@ Widget _build_image_item({
   required List<Image> all_images,
 }) {
   final Image? image = _get_image_for_orientation(
+    index: index,
+    column_index: column_index,
+    view_index: view_index,
+    views_per_column: views_per_column,
     orientation: orientation,
     portrait_images: portrait_images,
     landscape_images: landscape_images,
@@ -204,24 +221,37 @@ Widget _build_image_item({
   );
 }
 
+/// Gets an image for the given orientation using index-based selection.
+/// Each view gets a unique offset based on its position in the grid,
+/// preventing the same image from appearing in multiple views simultaneously.
 Image? _get_image_for_orientation({
+  required int index,
+  required int column_index,
+  required int view_index,
+  required int views_per_column,
   required SlideshowViewOrientation orientation,
   required List<Image> portrait_images,
   required List<Image> landscape_images,
   required List<Image> all_images,
 }) {
+  // Calculate a unique offset for this view based on its position in the grid.
+  // This ensures different views start at different points in the image list.
+  final int view_offset = column_index * views_per_column + view_index;
+
   switch (orientation) {
     case SlideshowViewOrientation.portrait:
       if (portrait_images.isEmpty) return null;
-      return portrait_images[
-          random_number_with_range(0, portrait_images.length - 1)];
+      // Use modulo to cycle through images, offset by view position
+      final int image_index = (index + view_offset) % portrait_images.length;
+      return portrait_images[image_index];
     case SlideshowViewOrientation.landscape:
       if (landscape_images.isEmpty) return null;
-      return landscape_images[
-          random_number_with_range(0, landscape_images.length - 1)];
+      final int image_index = (index + view_offset) % landscape_images.length;
+      return landscape_images[image_index];
     case SlideshowViewOrientation.square_or_similar:
       if (all_images.isEmpty) return null;
-      return all_images[random_number_with_range(0, all_images.length - 1)];
+      final int image_index = (index + view_offset) % all_images.length;
+      return all_images[image_index];
   }
 }
 

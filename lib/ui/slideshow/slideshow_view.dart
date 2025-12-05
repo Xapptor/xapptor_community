@@ -138,6 +138,8 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
                       widget.landscape_video_player_controllers,
                   screen_width: widget.screen_width,
                   number_of_columns: widget.number_of_columns,
+                  views_per_column:
+                      widget.slideshow_matrix[widget.column_index].length,
                   test_mode: widget.test_mode,
                   portrait: widget.portrait,
                   portrait_images: widget.portrait_images,
@@ -180,7 +182,7 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
     }
   }
 
-  void _handle_video_page_change(int index) {
+  void _handle_video_page_change(int index) async {
     // Use URL-based lookup to check if current video is loaded
     VideoPlayerController? current_controller;
     if (widget.get_video_controller_by_index != null) {
@@ -196,12 +198,24 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
     // 1 portrait + 1 landscape active at all times)
     if (widget.on_lazy_load_request != null && widget.total_video_count > 0) {
       if (current_controller == null) {
-        widget.on_lazy_load_request!(
+        // AWAIT the load so we can play the video after it's ready
+        await widget.on_lazy_load_request!(
           index: index,
           is_video: true,
           is_portrait: widget.possible_video_position_for_portrait,
           orientation: widget.slideshow_view_orientation,
         );
+
+        // After loading, check again for the controller
+        if (widget.get_video_controller_by_index != null) {
+          current_controller = widget.get_video_controller_by_index!(
+            index: index,
+            is_portrait: widget.possible_video_position_for_portrait,
+          );
+        }
+
+        // Force rebuild of this widget to show the newly loaded video
+        if (mounted) setState(() {});
       }
     }
 
