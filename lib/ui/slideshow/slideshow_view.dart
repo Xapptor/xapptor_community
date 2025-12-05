@@ -190,9 +190,11 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
       );
     }
 
-    // Request lazy loading of CURRENT video first (if not loaded), then preload the next
+    // Request lazy loading of CURRENT video if not loaded
+    // NOTE: We do NOT preload the next video because with max_active_videos_web = 2,
+    // preloading would immediately dispose the video we just loaded (since we need
+    // 1 portrait + 1 landscape active at all times)
     if (widget.on_lazy_load_request != null && widget.total_video_count > 0) {
-      // Load current video if not yet loaded
       if (current_controller == null) {
         widget.on_lazy_load_request!(
           index: index,
@@ -201,14 +203,6 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
           orientation: widget.slideshow_view_orientation,
         );
       }
-      // Preload next video
-      final int next_index = (index + 1) % widget.total_video_count;
-      widget.on_lazy_load_request!(
-        index: next_index,
-        is_video: true,
-        is_portrait: widget.possible_video_position_for_portrait,
-        orientation: widget.slideshow_view_orientation,
-      );
     }
 
     if (current_controller == null) return;

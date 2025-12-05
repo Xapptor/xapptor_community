@@ -93,9 +93,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       return active_video_controllers[url];
     }
 
-    // On web, enforce maximum active videos - dispose oldest to make room
+    // On web, enforce maximum active videos - dispose oldest OF THE SAME ORIENTATION
+    // This prevents disposing the video from the other slot that's currently displayed
     if (kIsWeb && active_video_controllers.length >= max_active_videos_web) {
-      await dispose_oldest_video_controller();
+      await dispose_oldest_video_controller_for_orientation(is_portrait: is_portrait);
     }
 
     try {
@@ -169,12 +170,29 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Dispose the oldest video controller to free memory
-  Future<void> dispose_oldest_video_controller() async {
+  /// Dispose the oldest video controller of a specific orientation to free memory.
+  /// This ensures we don't accidentally dispose the video from the OTHER orientation
+  /// that's currently being displayed.
+  Future<void> dispose_oldest_video_controller_for_orientation({
+    required bool is_portrait,
+  }) async {
     if (active_video_controllers.isEmpty) return;
 
-    final String oldest_url = active_video_controllers.keys.first;
-    final VideoPlayerController? controller = active_video_controllers.remove(oldest_url);
+    // Find the oldest video URL of the requested orientation
+    String? url_to_dispose;
+    for (final url in active_video_controllers.keys) {
+      final bool? video_is_portrait = video_orientation_cache[url];
+      if (video_is_portrait == is_portrait) {
+        url_to_dispose = url;
+        break; // First match is the oldest (Map preserves insertion order)
+      }
+    }
+
+    // If no video of the same orientation found, dispose the oldest regardless
+    // This handles edge cases where we only have videos of one orientation
+    url_to_dispose ??= active_video_controllers.keys.first;
+
+    final VideoPlayerController? controller = active_video_controllers.remove(url_to_dispose);
 
     if (controller != null) {
       // Remove from backward compatibility lists
@@ -182,7 +200,8 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       landscape_video_player_controllers.remove(controller);
 
       await controller.dispose();
-      debugPrint('Slideshow: Disposed video controller for $oldest_url');
+      debugPrint('Slideshow: Disposed ${is_portrait ? "portrait" : "landscape"} '
+          'video controller for $url_to_dispose');
     }
   }
 
