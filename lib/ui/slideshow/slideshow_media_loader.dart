@@ -68,6 +68,9 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // Track video orientations separately from controllers (URL -> is_portrait)
   final Map<String, bool> video_orientation_cache = {};
 
+  // Lock to prevent concurrent video loading which can exceed limits
+  final Set<String> _videos_currently_loading = {};
+
   // Supported video formats for validation
   static const List<String> supported_video_formats_web = ['mp4', 'webm', 'm3u8'];
   static const List<String> supported_video_formats_mobile = ['mp4', 'mov', 'webm', 'm3u8', 'mkv', 'avi'];
@@ -145,11 +148,22 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       return (controller: active_video_controllers[url], did_load: false);
     }
 
+    // Check if this video is currently being loaded (prevents concurrent duplicate loads)
+    if (_videos_currently_loading.contains(url)) {
+      debugPrint('Slideshow: Video already loading, skipping duplicate request: $url');
+      return (controller: null, did_load: false);
+    }
+
     // On web, enforce maximum active videos - dispose oldest OF THE SAME ORIENTATION
     // This prevents disposing the video from the other slot that's currently displayed
-    if (kIsWeb && active_video_controllers.length >= max_active_videos_web) {
+    // Include videos currently loading in the count to prevent exceeding limit
+    final int total_active = active_video_controllers.length + _videos_currently_loading.length;
+    if (kIsWeb && total_active >= max_active_videos_web) {
       await dispose_oldest_video_controller_for_orientation(is_portrait: is_portrait);
     }
+
+    // Mark as loading before starting
+    _videos_currently_loading.add(url);
 
     try {
       final VideoPlayerController controller = VideoPlayerController.networkUrl(Uri.parse(url));
@@ -184,8 +198,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
             '(${video_width.toInt()}x${video_height.toInt()})');
       }
 
+      _videos_currently_loading.remove(url);
       return (controller: controller, did_load: true);
     } catch (e) {
+      _videos_currently_loading.remove(url);
       debugPrint('Slideshow: Error loading video controller: $e');
       return (controller: null, did_load: false);
     }
@@ -391,6 +407,9 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// Dispose all media resources.
   /// Uses safe disposal pattern for iOS Safari memory leak prevention.
   Future<void> dispose_media_resources() async {
+    // Clear loading lock
+    _videos_currently_loading.clear();
+
     // Dispose all active video controllers with safe disposal
     for (var controller in active_video_controllers.values) {
       await _safe_dispose_controller(controller);

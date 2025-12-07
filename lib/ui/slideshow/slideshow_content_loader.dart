@@ -18,6 +18,7 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   List<String> video_urls = [];
 
   bool is_content_initialized = false;
+  bool _is_loading_content = false;
 
   /// Batch size for URL fetching to prevent network congestion.
   static const int _url_fetch_batch_size = 5;
@@ -26,22 +27,35 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   static const Duration _url_fetch_batch_delay = Duration(milliseconds: 100);
 
   /// Load content from Firebase Storage or local paths.
+  /// Guards against duplicate calls during initialization.
   Future<void> load_content({
     required bool use_examples,
     required List<String>? image_paths,
     required List<String>? video_paths,
   }) async {
+    // Prevent duplicate loading - if already initialized or currently loading, skip
+    if (is_content_initialized || _is_loading_content) {
+      debugPrint('Slideshow: Skipping duplicate load_content call '
+          '(initialized: $is_content_initialized, loading: $_is_loading_content)');
+      return;
+    }
+    _is_loading_content = true;
+
     if (use_examples) {
       await _load_example_urls();
     }
 
-    await _categorize_and_load_content(
-      use_examples: use_examples,
-      image_paths: image_paths,
-      video_paths: video_paths,
-    );
+    try {
+      await _categorize_and_load_content(
+        use_examples: use_examples,
+        image_paths: image_paths,
+        video_paths: video_paths,
+      );
 
-    is_content_initialized = true;
+      is_content_initialized = true;
+    } finally {
+      _is_loading_content = false;
+    }
     if (mounted) setState(() {});
   }
 
