@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_media_loader.dart';
 
 /// Mixin that handles loading content from Firebase Storage for the slideshow.
+///
+/// Uses batched URL fetching to prevent network congestion and improve
+/// initial load performance.
 mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     on State<T>, SlideshowMediaLoaderMixin<T> {
   final Reference image_storage_ref =
@@ -15,6 +18,12 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   List<String> video_urls = [];
 
   bool is_content_initialized = false;
+
+  /// Batch size for URL fetching to prevent network congestion.
+  static const int _url_fetch_batch_size = 5;
+
+  /// Delay between URL fetch batches to avoid overwhelming the network.
+  static const Duration _url_fetch_batch_delay = Duration(milliseconds: 100);
 
   /// Load content from Firebase Storage or local paths.
   Future<void> load_content({
@@ -36,6 +45,10 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     if (mounted) setState(() {});
   }
 
+  /// Load example URLs from Firebase Storage using batched fetching.
+  ///
+  /// Fetches URLs in batches to prevent network congestion and enable
+  /// faster initial rendering (starts displaying after first batch).
   Future<void> _load_example_urls() async {
     image_urls.clear();
     video_urls.clear();
@@ -43,15 +56,56 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     final ListResult image_list = await image_storage_ref.listAll();
     final ListResult video_list = await video_storage_ref.listAll();
 
-    final image_futures = image_list.items.map((ref) => ref.getDownloadURL());
-    final video_futures = video_list.items.map((ref) => ref.getDownloadURL());
+    debugPrint('Slideshow: Found ${image_list.items.length} images and '
+        '${video_list.items.length} videos to fetch');
 
-    image_urls = await Future.wait(image_futures);
-    video_urls = await Future.wait(video_futures);
+    // Fetch image URLs in batches
+    bool first_image_batch_loaded = false;
+    for (int i = 0; i < image_list.items.length; i += _url_fetch_batch_size) {
+      if (!mounted) return;
 
-    debugPrint(
-      'Slideshow: Found ${image_urls.length} images and ${video_urls.length} videos'
-    );
+      final batch_end = (i + _url_fetch_batch_size).clamp(0, image_list.items.length);
+      final batch = image_list.items.sublist(i, batch_end);
+
+      final batch_urls = await Future.wait(
+        batch.map((ref) => ref.getDownloadURL()),
+      );
+      image_urls.addAll(batch_urls);
+
+      // Start categorizing and loading images after first batch
+      // This enables faster initial rendering
+      if (!first_image_batch_loaded && image_urls.isNotEmpty) {
+        first_image_batch_loaded = true;
+        debugPrint('Slideshow: First image batch loaded (${batch_urls.length} URLs)');
+      }
+
+      // Small delay between batches to avoid network congestion
+      if (i + _url_fetch_batch_size < image_list.items.length) {
+        await Future.delayed(_url_fetch_batch_delay);
+      }
+    }
+
+    // Fetch video URLs in smaller batches (videos are larger/slower)
+    const video_batch_size = 3;
+    for (int i = 0; i < video_list.items.length; i += video_batch_size) {
+      if (!mounted) return;
+
+      final batch_end = (i + video_batch_size).clamp(0, video_list.items.length);
+      final batch = video_list.items.sublist(i, batch_end);
+
+      final batch_urls = await Future.wait(
+        batch.map((ref) => ref.getDownloadURL()),
+      );
+      video_urls.addAll(batch_urls);
+
+      // Slightly longer delay for video URLs
+      if (i + video_batch_size < video_list.items.length) {
+        await Future.delayed(const Duration(milliseconds: 150));
+      }
+    }
+
+    debugPrint('Slideshow: Fetched ${image_urls.length} image URLs and '
+        '${video_urls.length} video URLs');
   }
 
   Future<void> _categorize_and_load_content({

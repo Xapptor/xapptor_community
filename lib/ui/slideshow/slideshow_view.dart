@@ -158,6 +158,7 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
                   get_video_controller_by_index:
                       widget.get_video_controller_by_index,
                   get_image_by_index: widget.get_image_by_index,
+                  device_pixel_ratio: MediaQuery.of(context).devicePixelRatio,
                 );
               },
               options: CarouselOptions(
@@ -204,9 +205,6 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
     }
 
     // Request lazy loading of CURRENT video if not loaded
-    // NOTE: We do NOT preload the next video because with max_active_videos_web = 2,
-    // preloading would immediately dispose the video we just loaded (since we need
-    // 1 portrait + 1 landscape active at all times)
     if (widget.on_lazy_load_request != null && widget.total_video_count > 0) {
       if (current_controller == null) {
         // AWAIT the load so we can play the video after it's ready
@@ -243,6 +241,37 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
     current_controller
       ..seekTo(Duration(milliseconds: random_start))
       ..play();
+
+    // Pre-seek next video for smoother transitions (without loading new controller)
+    // This pre-buffers the next video's start position while the current one plays
+    _preload_next_video_position(index);
+  }
+
+  /// Pre-seek the next video to a random position for smoother carousel transitions.
+  /// This doesn't load a new controller (which would dispose the current one),
+  /// but prepares the next video if it's already loaded.
+  void _preload_next_video_position(int current_index) {
+    if (widget.get_video_controller_by_index == null || widget.total_video_count <= 1) {
+      return;
+    }
+
+    final int next_index = (current_index + 1) % widget.total_video_count;
+    final next_controller = widget.get_video_controller_by_index!(
+      index: next_index,
+      is_portrait: widget.possible_video_position_for_portrait,
+    );
+
+    if (next_controller == null) return;
+
+    // Pre-seek to a random position so it's ready when the carousel advances
+    final int duration_ms = next_controller.value.duration.inMilliseconds;
+    if (duration_ms <= 0) return;
+
+    final int max_start = duration_ms - (duration_ms / 10).round();
+    final int random_start = random_number_with_range(0, max_start);
+
+    // Seek without playing - it will play when carousel transitions
+    next_controller.seekTo(Duration(milliseconds: random_start));
   }
 
   void _handle_image_page_change(int index) async {

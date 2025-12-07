@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
-import 'package:xapptor_ui/values/ui.dart';
 import 'package:xapptor_ui/widgets/fade_in_video.dart';
 
 /// Builds a single carousel item for the slideshow view.
@@ -28,6 +27,7 @@ Widget build_carousel_item({
   required List<Image> all_images,
   GetVideoControllerByIndex? get_video_controller_by_index,
   GetImageByIndex? get_image_by_index,
+  double device_pixel_ratio = 1.0,
 }) {
   final String test_mode_text = _build_test_mode_text(
     orientation: orientation,
@@ -69,6 +69,7 @@ Widget build_carousel_item({
     landscape_images: landscape_images,
     all_images: all_images,
     get_image_by_index: get_image_by_index,
+    device_pixel_ratio: device_pixel_ratio,
   );
 }
 
@@ -147,16 +148,14 @@ Widget _build_video_item({
     );
   }
 
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(outline_border_radius),
-    child: Stack(
-      alignment: Alignment.center,
-      fit: StackFit.expand,
-      children: [
-        video_player_widget,
-        if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
-      ],
-    ),
+  // Removed redundant ClipRRect - parent already clips
+  return Stack(
+    alignment: Alignment.center,
+    fit: StackFit.expand,
+    children: [
+      video_player_widget,
+      if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
+    ],
   );
 }
 
@@ -175,6 +174,7 @@ Widget _build_image_item({
   required List<Image> landscape_images,
   required List<Image> all_images,
   GetImageByIndex? get_image_by_index,
+  double device_pixel_ratio = 1.0,
 }) {
   // Use URL-based lookup if available (preferred method for lazy loading)
   // This correctly maps carousel index to image URL, then gets the cached image
@@ -202,39 +202,39 @@ Widget _build_image_item({
   );
 
   if (image == null) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(outline_border_radius),
-      child: Stack(
-        alignment: Alignment.center,
-        fit: StackFit.expand,
-        children: [
-          _placeholder_widget(),
-          if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
-        ],
-      ),
-    );
-  }
-
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(outline_border_radius),
-    child: Stack(
+    // Removed redundant ClipRRect - parent already clips
+    return Stack(
       alignment: Alignment.center,
       fit: StackFit.expand,
       children: [
-        FadeInImage(
-          placeholder: const AssetImage(
-            'assets/images/placeholder_gradient_64.jpg',
-          ),
-          image: ResizeImage(
-            image.image,
-            width: 1000,
-          ),
-          fit: BoxFit.cover,
-          width: screen_width / number_of_columns,
-        ),
+        _placeholder_widget(),
         if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
       ],
-    ),
+    );
+  }
+
+  // Calculate optimal resize width based on screen size and device pixel ratio
+  // This ensures sharp images on high-DPI displays without loading unnecessarily large images
+  final int optimal_width = ((screen_width / number_of_columns) * device_pixel_ratio).toInt().clamp(500, 2000);
+
+  // Removed redundant ClipRRect - parent already clips
+  return Stack(
+    alignment: Alignment.center,
+    fit: StackFit.expand,
+    children: [
+      FadeInImage(
+        placeholder: const AssetImage(
+          'assets/images/placeholder_gradient_64.jpg',
+        ),
+        image: ResizeImage(
+          image.image,
+          width: optimal_width,
+        ),
+        fit: BoxFit.cover,
+        width: screen_width / number_of_columns,
+      ),
+      if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
+    ],
   );
 }
 
