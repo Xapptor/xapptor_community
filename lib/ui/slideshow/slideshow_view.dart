@@ -164,7 +164,10 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
               options: CarouselOptions(
                 height: double.maxFinite,
                 viewportFraction: 1,
-                enableInfiniteScroll: true,
+                // Disable infinite scroll for video carousels to prevent memory accumulation
+                // Safari has strict limits on video elements and WebGL contexts
+                enableInfiniteScroll: !widget.possible_video_position_for_portrait &&
+                    !widget.possible_video_position_for_landscape,
                 autoPlay: true,
                 autoPlayInterval: _auto_play_interval,
                 autoPlayAnimationDuration: widget.animation_duration,
@@ -229,6 +232,20 @@ class _SlideshowViewWidgetState extends State<SlideshowViewWidget> {
     }
 
     if (current_controller == null) return;
+
+    // Pause and reset ALL other videos to release Safari decoder buffers
+    // Safari only supports 4 simultaneous playing videos
+    final controllers = widget.possible_video_position_for_portrait
+        ? widget.portrait_video_player_controllers
+        : widget.landscape_video_player_controllers;
+
+    for (int i = 0; i < controllers.length; i++) {
+      final controller = controllers[i];
+      if (controller != current_controller) {
+        controller.pause();
+        controller.seekTo(Duration.zero); // Release seek buffers
+      }
+    }
 
     final int duration_ms = current_controller.value.duration.inMilliseconds;
 

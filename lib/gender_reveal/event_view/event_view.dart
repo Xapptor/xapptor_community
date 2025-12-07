@@ -83,7 +83,6 @@ class _EventViewState extends State<EventView>
   List<String>? get dialog_text_list => widget.event_text_list?.get(source_language_index);
 
   final GlobalKey<ExpandableFabState> _fab_key = GlobalKey<ExpandableFabState>();
-  final GlobalKey _slideshow_key = GlobalKey();
 
   @override
   void initState() {
@@ -144,7 +143,7 @@ class _EventViewState extends State<EventView>
   Widget _build_slideshow() {
     final fab_text = widget.slideshow_fab_text_list?.get(source_language_index);
     return Slideshow(
-      key: _slideshow_key,
+      key: const ValueKey('event_view_slideshow'),
       image_paths: const [],
       use_examples: true,
       on_fab_data: on_fab_data_changed,
