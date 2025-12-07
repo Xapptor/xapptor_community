@@ -9,19 +9,27 @@ mixin SlideshowAudioPlaybackMixin {
   AudioPlayer get audio_player;
   List<String> get song_urls;
   List<AudioSource> get audio_sources;
+
   bool get playlist_set;
   set playlist_set(bool value);
+
   bool get is_initialized;
+
   bool get is_shuffle_enabled;
   set is_shuffle_enabled(bool value);
+
   bool get is_muted;
   set is_muted(bool value);
+
   int get current_index;
   set current_index(int value);
+
   double get volume;
   set volume(double value);
+
   LoopMode get loop_mode;
   set loop_mode(LoopMode value);
+
   bool get use_single_song_mode;
 
   // Shuffle state

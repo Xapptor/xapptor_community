@@ -46,7 +46,9 @@ class SlideshowAudioService {
   int get total_songs => _song_urls.length;
   double get volume => _volume;
 
-  Future<void> initialize({required Reference storage_ref}) async {
+  Future<void> initialize({
+    required Reference storage_ref,
+  }) async {
     if (_is_initialized) return;
     if (_initialization_future != null) {
       await _initialization_future;
@@ -57,7 +59,9 @@ class SlideshowAudioService {
     _initialization_future = null;
   }
 
-  Future<void> _do_initialize({required Reference storage_ref}) async {
+  Future<void> _do_initialize({
+    required Reference storage_ref,
+  }) async {
     _is_loading = true;
     _emit_state();
     try {
