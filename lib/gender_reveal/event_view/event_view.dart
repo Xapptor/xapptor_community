@@ -199,8 +199,9 @@ class _EventViewState extends State<EventView>
           decoration: BoxDecoration(color: overlay, borderRadius: BorderRadius.circular(outline_border_radius)),
           child: Column(mainAxisSize: MainAxisSize.max, children: [
             CountdownView(
-              milliseconds_sice_epoch: event!.reveal_date.millisecondsSinceEpoch,
+              milliseconds_sice_epoch: countdown_target_milliseconds,
               labels: CountdownLabels.fromTextList(widget.event_text_list?.get(source_language_index)),
+              on_countdown_complete: on_countdown_complete,
             ),
             Expanded(child: _build_voting_content(portrait, has_votes, boy, girl)),
           ]),

@@ -19,6 +19,10 @@ mixin EventViewWidgetsMixin {
   Animation<double> get shake_animation;
   Animation<double> get glow_animation;
 
+  /// Whether the wishlist button should be enabled.
+  /// Override in implementing class to control wishlist visibility.
+  bool get wishlist_enabled => false;
+
   Widget build_intro_section({
     required BuildContext context,
     required bool stacked,
@@ -133,7 +137,15 @@ mixin EventViewWidgetsMixin {
 
                   const SizedBox(height: sized_box_space),
 
-                  wishlist_button_builder(source_language_index),
+                  // Wishlist button - disabled until countdown complete or fake countdown
+                  AnimatedOpacity(
+                    opacity: wishlist_enabled ? 1.0 : 0.5,
+                    duration: const Duration(milliseconds: 300),
+                    child: IgnorePointer(
+                      ignoring: !wishlist_enabled,
+                      child: wishlist_button_builder(source_language_index),
+                    ),
+                  ),
                 ],
               ),
             ),

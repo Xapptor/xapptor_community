@@ -48,10 +48,14 @@ class CountdownView extends StatefulWidget {
   final int milliseconds_sice_epoch;
   final CountdownLabels labels;
 
+  /// Callback when countdown reaches zero.
+  final VoidCallback? on_countdown_complete;
+
   const CountdownView({
     super.key,
     required this.milliseconds_sice_epoch,
     this.labels = const CountdownLabels(),
+    this.on_countdown_complete,
   });
 
   @override
@@ -62,6 +66,7 @@ class _CountdownViewState extends State<CountdownView> {
   late DateTime _target;
   Timer? _ticker;
   Duration _remaining = Duration.zero;
+  bool _countdown_complete_fired = false;
 
   @override
   void initState() {
@@ -94,6 +99,12 @@ class _CountdownViewState extends State<CountdownView> {
       return;
     }
     setState(() => _remaining = diff);
+
+    // Fire countdown complete callback once when reaching zero
+    if (diff == Duration.zero && !_countdown_complete_fired) {
+      _countdown_complete_fired = true;
+      widget.on_countdown_complete?.call();
+    }
   }
 
   String _two_digits(int value) => value == 0 ? '0' : value.toString().padLeft(2, '0');

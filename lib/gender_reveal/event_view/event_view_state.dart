@@ -6,8 +6,10 @@ import 'package:xapptor_community/gender_reveal/event_view/event_view.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_animations.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_translation.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_voting.dart';
+import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
 import 'package:xapptor_db/xapptor_db.dart';
 import 'package:xapptor_router/V2/get_last_path_segment_v2.dart';
+import 'package:xapptor_router/V2/app_screens_v2.dart';
 
 /// Mixin containing state management logic for EventView.
 mixin EventViewStateMixin
@@ -23,6 +25,23 @@ mixin EventViewStateMixin
   /// This allows the countdown and other event data to update automatically
   /// when the event creator modifies the event (e.g., changes reveal_date).
   StreamSubscription<DocumentSnapshot>? _event_subscription;
+
+  // ==========================================================================
+  // FAKE COUNTDOWN STATE
+  // ==========================================================================
+
+  /// Whether to use a fake countdown (for users arriving after reveal time).
+  bool use_fake_countdown = false;
+
+  /// The end time for the fake countdown.
+  DateTime? fake_countdown_end;
+
+  /// Whether the wishlist button should be enabled.
+  /// Enabled when: real countdown reached OR using fake countdown.
+  bool wishlist_enabled = false;
+
+  /// Whether navigation to reveal screen has been triggered.
+  bool _reveal_navigation_triggered = false;
 
   void initialize_state() {
     on_voting_card_visibility_changed = (bool show, bool enable) {
@@ -63,10 +82,14 @@ mixin EventViewStateMixin
         // Start listening to votes on first load
         if (is_first_load) {
           listen_to_votes();
+          // Check if we need fake countdown (user arrived after reveal time)
+          _check_countdown_status();
         }
 
         if (reveal_date_changed) {
           debugPrint('Event reveal_date changed, updating countdown...');
+          // Re-check countdown status when reveal date changes
+          _check_countdown_status();
         }
 
         if (mounted) setState(() {});
@@ -76,6 +99,61 @@ mixin EventViewStateMixin
         _retry_listen_to_event();
       },
     );
+  }
+
+  /// Check if user arrived after reveal time and needs fake countdown.
+  void _check_countdown_status() {
+    if (event == null) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final reveal_time = event!.reveal_date.millisecondsSinceEpoch;
+
+    if (now >= reveal_time) {
+      // User arrived AFTER reveal time - start fake countdown
+      _start_fake_countdown();
+    } else {
+      // Real countdown is still active
+      use_fake_countdown = false;
+      wishlist_enabled = false;
+    }
+  }
+
+  /// Start a fake countdown for users who arrived late.
+  /// This creates anticipation even for latecomers.
+  void _start_fake_countdown() {
+    if (use_fake_countdown) return; // Already started
+
+    debugPrint('EventView: Starting fake countdown (user arrived late)');
+
+    use_fake_countdown = true;
+    wishlist_enabled = true; // Enable wishlist for late arrivals
+    fake_countdown_end = DateTime.now().add(
+      const Duration(seconds: k_fake_countdown_duration_seconds),
+    );
+
+    if (mounted) setState(() {});
+  }
+
+  /// Get the countdown target time (real or fake).
+  int get countdown_target_milliseconds {
+    if (use_fake_countdown && fake_countdown_end != null) {
+      return fake_countdown_end!.millisecondsSinceEpoch;
+    }
+    return event?.reveal_date.millisecondsSinceEpoch ?? 0;
+  }
+
+  /// Called when countdown (real or fake) reaches zero.
+  void on_countdown_complete() {
+    if (_reveal_navigation_triggered) return;
+    _reveal_navigation_triggered = true;
+
+    debugPrint('EventView: Countdown complete, navigating to reveal screen');
+
+    // Enable wishlist before navigation
+    wishlist_enabled = true;
+
+    // Navigate to reveal screen
+    open_screen_v2('reveal/$event_id');
   }
 
   Future<void> _retry_listen_to_event() async {
