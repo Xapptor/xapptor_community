@@ -46,13 +46,16 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   /// @deprecated Use [loaded_images_cache] with [get_image_by_index] instead
   List<Image> landscape_images = [];
+
   /// @deprecated Use [loaded_images_cache] with [get_image_by_index] instead
   List<Image> portrait_images = [];
+
   /// @deprecated Use [loaded_images_cache] with [get_image_by_index] instead
   List<Image> all_images = [];
 
   /// @deprecated Use [active_video_controllers] with [get_video_controller_by_index] instead
   List<VideoPlayerController> portrait_video_player_controllers = [];
+
   /// @deprecated Use [active_video_controllers] with [get_video_controller_by_index] instead
   List<VideoPlayerController> landscape_video_player_controllers = [];
 
@@ -60,10 +63,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // Need at least 2 per orientation (portrait + landscape slots can both be visible)
   // Safari supports ~4-6 simultaneous video elements before performance degrades
   static const int max_active_videos_web = 4;
-  static const int max_cached_images_per_orientation = 5;
+  static const int max_cached_images_per_orientation = 3;
 
   // Initial load counts
-  static const int max_initial_images = 6;
+  static const int max_initial_images = 2;
   static const int max_initial_videos = 2;
 
   // Track video orientations separately from controllers (URL -> is_portrait)
