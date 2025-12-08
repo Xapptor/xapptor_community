@@ -1,3 +1,4 @@
+const int k_first_shake_delay_seconds = 10;
 const int k_min_shake_interval_seconds = 3;
 const int k_max_shake_interval_seconds = 6;
 const int k_confetti_duration_seconds = 6;

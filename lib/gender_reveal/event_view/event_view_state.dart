@@ -26,11 +26,12 @@ mixin EventViewStateMixin
 
   void initialize_state() {
     on_voting_card_visibility_changed = (bool show, bool enable) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           show_voting_card = show;
           enable_voting_card = enable;
         });
+      }
     };
     _listen_to_event();
     check_if_user_voted();
@@ -44,11 +45,7 @@ mixin EventViewStateMixin
     event_id = get_last_path_segment_v2();
 
     _event_subscription?.cancel();
-    _event_subscription = XapptorDB.instance
-        .collection("events")
-        .doc(event_id)
-        .snapshots()
-        .listen(
+    _event_subscription = XapptorDB.instance.collection("events").doc(event_id).snapshots().listen(
       (event_doc) {
         if (!event_doc.exists) {
           debugPrint('Event not found: $event_id');
@@ -59,8 +56,7 @@ mixin EventViewStateMixin
 
         // Check if this is the first load or if data changed
         final bool is_first_load = event == null;
-        final bool reveal_date_changed =
-            event != null && event!.reveal_date != new_event.reveal_date;
+        final bool reveal_date_changed = event != null && event!.reveal_date != new_event.reveal_date;
 
         event = new_event;
 

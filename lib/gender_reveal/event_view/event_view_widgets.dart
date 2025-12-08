@@ -38,7 +38,7 @@ mixin EventViewWidgetsMixin {
     //        2 = Welcome message template (with {mother} and {father} placeholders),
     //        3 = Boy, 4 = Girl, 5 = You voted for a, 6 = No votes yet
     final text = event_text_list?.get(source_language_index);
-    final click_me_text = text?[0] ?? 'Click me';
+    final click_me_text = text?[0] ?? 'Enjoy the moment';
     final celebrate_text = text?[1] ?? 'Celebrate the Moment!';
     final welcome_template = text?[2] ?? 'Welcome to the {mother} & {father} gender reveal celebration!';
     final boy_text = text?[3] ?? 'Boy';

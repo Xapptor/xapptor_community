@@ -6,8 +6,7 @@ import 'package:xapptor_community/gender_reveal/event_view/event_view_constants.
 /// Mixin containing animation logic for EventView.
 /// This includes glow animation for vote buttons and shake animation
 /// for the celebration icon.
-mixin EventViewAnimationsMixin<T extends StatefulWidget>
-    on State<T>, TickerProviderStateMixin<T> {
+mixin EventViewAnimationsMixin<T extends StatefulWidget> on State<T>, TickerProviderStateMixin<T> {
   // Animation controllers
   late AnimationController glow_controller;
   late Animation<double> glow_animation;
@@ -20,8 +19,7 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget>
   Timer? voting_card_show_timer;
 
   // Tooltip state
-  final GlobalKey<TooltipState> celebration_tooltip_key =
-      GlobalKey<TooltipState>();
+  final GlobalKey<TooltipState> celebration_tooltip_key = GlobalKey<TooltipState>();
   bool tooltip_shown = false;
 
   // Voting card visibility state
@@ -60,7 +58,7 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget>
     );
 
     shake_controller.addStatusListener(on_shake_status_changed);
-    schedule_next_shake();
+    schedule_next_shake(is_first_shake: true);
   }
 
   /// Handle shake animation status changes.
@@ -71,17 +69,27 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget>
       celebration_tooltip_key.currentState?.ensureTooltipVisible();
     } else if (status == AnimationStatus.completed) {
       shake_controller.reset();
-      schedule_next_shake();
+      schedule_next_shake(is_first_shake: false);
       tooltip_shown = true;
     }
   }
 
   /// Schedule the next shake animation at a random interval.
-  void schedule_next_shake() {
+  /// First shake waits longer (10 seconds) to let user see the UI first.
+  void schedule_next_shake({
+    bool is_first_shake = false,
+  }) {
     shake_timer?.cancel();
 
-    const range = k_max_shake_interval_seconds - k_min_shake_interval_seconds;
-    final seconds = k_min_shake_interval_seconds + math.Random().nextInt(range);
+    final int seconds;
+    if (is_first_shake) {
+      // First shake waits 10 seconds
+      seconds = k_first_shake_delay_seconds;
+    } else {
+      // Subsequent shakes use random interval (3-5 seconds)
+      const range = k_max_shake_interval_seconds - k_min_shake_interval_seconds;
+      seconds = k_min_shake_interval_seconds + math.Random().nextInt(range);
+    }
 
     shake_timer = Timer(Duration(seconds: seconds), () {
       if (!mounted) return;
