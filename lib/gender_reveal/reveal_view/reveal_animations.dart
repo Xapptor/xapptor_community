@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
 
 /// Widget that displays the gender reveal celebration animations.
@@ -12,6 +14,9 @@ class RevealAnimations extends StatefulWidget {
 
   /// The baby's name to display (optional).
   final String? baby_name;
+
+  /// The expected delivery date (optional).
+  final Timestamp? baby_delivery_date;
 
   /// Color for boy reveal (blue shades).
   final Color boy_color;
@@ -28,15 +33,21 @@ class RevealAnimations extends StatefulWidget {
   /// Text to display for "It's a Girl!".
   final String girl_text;
 
+  /// Text template for baby name section (e.g., "{name} is on the way!").
+  /// Use {name} as placeholder for the baby's name.
+  final String baby_on_the_way_text;
+
   const RevealAnimations({
     super.key,
     required this.gender,
     this.baby_name,
+    this.baby_delivery_date,
     required this.boy_color,
     required this.girl_color,
     this.on_animation_complete,
     this.boy_text = "It's a Boy!",
     this.girl_text = "It's a Girl!",
+    this.baby_on_the_way_text = "{name} is on the way!",
   });
 
   @override
@@ -52,11 +63,13 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   // Animation controllers
   late AnimationController _pulse_controller;
   late AnimationController _text_scale_controller;
+  late AnimationController _bounce_controller;
   late AnimationController _name_fade_controller;
 
   // Animations
   late Animation<double> _pulse_animation;
   late Animation<double> _text_scale_animation;
+  late Animation<double> _bounce_animation;
   late Animation<double> _name_fade_animation;
 
   // State
@@ -70,6 +83,19 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   bool get _is_boy => widget.gender.toLowerCase() == 'boy';
   Color get _reveal_color => _is_boy ? widget.boy_color : widget.girl_color;
   String get _reveal_text => _is_boy ? widget.boy_text : widget.girl_text;
+
+  /// Formats the delivery date as "Month Year" (e.g., "January 2026").
+  String? get _formatted_delivery_date {
+    if (widget.baby_delivery_date == null) return null;
+    final date = widget.baby_delivery_date!.toDate();
+    return DateFormat.yMMMM().format(date);
+  }
+
+  /// Gets the "on the way" text with the baby name replaced.
+  String get _on_the_way_text {
+    if (widget.baby_name == null || widget.baby_name!.isEmpty) return '';
+    return widget.baby_on_the_way_text.replaceAll('{name}', widget.baby_name!);
+  }
 
   @override
   void initState() {
@@ -99,7 +125,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       CurvedAnimation(parent: _pulse_controller, curve: Curves.easeInOut),
     );
 
-    // Text scale animation for dramatic reveal
+    // Text scale animation for dramatic reveal (bounce forward effect)
     _text_scale_controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: k_text_scale_animation_duration_ms),
@@ -107,6 +133,26 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     _text_scale_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _text_scale_controller, curve: Curves.elasticOut),
     );
+
+    // Bounce animation for continuous subtle bounce effect after reveal
+    _bounce_controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _bounce_animation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.08).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.08, end: 1.0).chain(
+          CurveTween(curve: Curves.bounceOut),
+        ),
+        weight: 50,
+      ),
+    ]).animate(_bounce_controller);
 
     // Name fade animation
     _name_fade_controller = AnimationController(
@@ -140,8 +186,12 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       _show_gender_text = true;
     });
 
-    // Start text scale animation
-    _text_scale_controller.forward();
+    // Start text scale animation with bounce
+    _text_scale_controller.forward().then((_) {
+      if (!mounted) return;
+      // Start continuous bounce after initial reveal
+      _bounce_controller.repeat();
+    });
 
     // Start confetti from multiple directions
     _center_confetti_controller.play();
@@ -201,6 +251,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     // Dispose animation controllers
     _pulse_controller.dispose();
     _text_scale_controller.dispose();
+    _bounce_controller.dispose();
     _name_fade_controller.dispose();
 
     super.dispose();
@@ -282,6 +333,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     final portrait = size.height > size.width;
     final text_size = portrait ? k_gender_text_size_portrait : k_gender_text_size_landscape;
     final name_text_size = portrait ? k_baby_name_text_size_portrait : k_baby_name_text_size_landscape;
+    final date_text_size = portrait ? k_delivery_date_text_size_portrait : k_delivery_date_text_size_landscape;
 
     return Stack(
       children: [
@@ -290,83 +342,116 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
 
         // Center content
         Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Pulse animation before reveal
-              if (!_show_gender_text)
-                AnimatedBuilder(
-                  animation: _pulse_animation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulse_animation.value,
-                      child: Icon(
-                        Icons.favorite,
-                        size: 80,
-                        color: Colors.white.withAlpha(180),
-                      ),
-                    );
-                  },
-                ),
-
-              // Gender reveal text
-              if (_show_gender_text)
-                AnimatedBuilder(
-                  animation: _text_scale_animation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _text_scale_animation.value,
-                      child: Text(
-                        _reveal_text,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: text_size,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 20,
-                              color: _reveal_color.withAlpha(180),
-                              offset: const Offset(0, 0),
-                            ),
-                            const Shadow(
-                              blurRadius: 40,
-                              color: Colors.black26,
-                              offset: Offset(2, 2),
-                            ),
-                          ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Pulse animation before reveal
+                if (!_show_gender_text)
+                  AnimatedBuilder(
+                    animation: _pulse_animation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _pulse_animation.value,
+                        child: Icon(
+                          Icons.favorite,
+                          size: 80,
+                          color: Colors.white.withAlpha(180),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
 
-              const SizedBox(height: 16),
-
-              // Baby name
-              if (_show_baby_name && widget.baby_name != null)
-                FadeTransition(
-                  opacity: _name_fade_animation,
-                  child: Text(
-                    widget.baby_name!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: name_text_size,
-                      fontWeight: FontWeight.w300,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 15,
-                          color: _reveal_color.withAlpha(150),
-                          offset: const Offset(0, 0),
+                // Gender reveal text with bounce effect
+                if (_show_gender_text)
+                  AnimatedBuilder(
+                    animation: Listenable.merge([_text_scale_animation, _bounce_animation]),
+                    builder: (context, child) {
+                      // Combine initial scale with continuous bounce
+                      final scale = _text_scale_animation.value *
+                          (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
+                      return Transform.scale(
+                        scale: scale,
+                        child: Text(
+                          _reveal_text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: text_size,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 20,
+                                color: _reveal_color.withAlpha(180),
+                                offset: const Offset(0, 0),
+                              ),
+                              const Shadow(
+                                blurRadius: 40,
+                                color: Colors.black26,
+                                offset: Offset(2, 2),
+                              ),
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
+
+                const SizedBox(height: 24),
+
+                // Baby name and delivery date section
+                if (_show_baby_name && widget.baby_name != null)
+                  FadeTransition(
+                    opacity: _name_fade_animation,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // "{name} is on the way!" text
+                        Text(
+                          _on_the_way_text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: name_text_size,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white,
+                            letterSpacing: 1.5,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 15,
+                                color: _reveal_color.withAlpha(150),
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Delivery date if available
+                        if (_formatted_delivery_date != null) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            _formatted_delivery_date!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: date_text_size,
+                              fontWeight: FontWeight.w300,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.white.withAlpha(220),
+                              letterSpacing: 2,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10,
+                                  color: _reveal_color.withAlpha(100),
+                                  offset: const Offset(0, 0),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
 

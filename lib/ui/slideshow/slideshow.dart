@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_audio_service.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_custom_text.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
-import 'package:xapptor_community/ui/slideshow/loading_message.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_fab_data.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_content_loader.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_media_loader.dart';
@@ -80,8 +79,7 @@ class Slideshow extends StatefulWidget {
   State<Slideshow> createState() => _SlideshowState();
 }
 
-class _SlideshowState extends State<Slideshow>
-    with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin {
+class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin {
   final Cubic _animation_curve = Curves.fastOutSlowIn;
   final Duration _animation_duration = const Duration(milliseconds: 1000);
 
@@ -205,9 +203,7 @@ class _SlideshowState extends State<Slideshow>
 
   @override
   Widget build(BuildContext context) {
-    if (all_images.isEmpty) {
-      return loading_message(loading_message: widget.loading_message);
-    }
+    if (all_images.isEmpty) return const Center(child: CircularProgressIndicator());
 
     final mq = MediaQuery.of(context);
     final portrait = mq.size.height > mq.size.width;
@@ -235,7 +231,11 @@ class _SlideshowState extends State<Slideshow>
     );
   }
 
-  Widget _build_grid(double screen_width, int columns, bool portrait) {
+  Widget _build_grid(
+    double screen_width,
+    int columns,
+    bool portrait,
+  ) {
     return Row(
       children: List.generate(
         _slideshow_matrix!.length,
@@ -313,15 +313,23 @@ class _SlideshowState extends State<Slideshow>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            slideshow_custom_text(widget.title, type: CustomTextType.title,
-                portrait: portrait, custom_title_style: widget.title_style,
-                custom_subtitle_style: widget.subtitle_style,
-                custom_body_style: widget.body_style),
+            slideshow_custom_text(
+              widget.title,
+              type: CustomTextType.title,
+              portrait: portrait,
+              custom_title_style: widget.title_style,
+              custom_subtitle_style: widget.subtitle_style,
+              custom_body_style: widget.body_style,
+            ),
             const SizedBox(height: sized_box_space),
-            slideshow_custom_text(widget.subtitle, type: CustomTextType.subtitle,
-                portrait: portrait, custom_title_style: widget.title_style,
-                custom_subtitle_style: widget.subtitle_style,
-                custom_body_style: widget.body_style),
+            slideshow_custom_text(
+              widget.subtitle,
+              type: CustomTextType.subtitle,
+              portrait: portrait,
+              custom_title_style: widget.title_style,
+              custom_subtitle_style: widget.subtitle_style,
+              custom_body_style: widget.body_style,
+            ),
           ],
         ),
       ),

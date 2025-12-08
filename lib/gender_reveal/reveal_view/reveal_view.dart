@@ -122,6 +122,11 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
     return text != null && text.length > 16 ? text[16] : 'Reveal Now!';
   }
 
+  String get _baby_on_the_way_text {
+    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    return text != null && text.length > 17 ? text[17] : '{name} is on the way!';
+  }
+
   void _handle_replay() {
     setState(() {
       _reveal_triggered = false;
@@ -181,10 +186,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
                   key: _animation_key,
                   gender: baby_gender ?? 'boy',
                   baby_name: event?.baby_name,
+                  baby_delivery_date: event?.baby_delivery_date,
                   boy_color: widget.boy_color,
                   girl_color: widget.girl_color,
                   boy_text: _its_a_boy_text,
                   girl_text: _its_a_girl_text,
+                  baby_on_the_way_text: _baby_on_the_way_text,
                   on_animation_complete: on_animation_complete,
                 ),
               ),

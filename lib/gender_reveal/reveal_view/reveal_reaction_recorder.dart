@@ -3,8 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
-import 'package:xapptor_community/gender_reveal/reveal_view/video_recorder/video_recorder.dart'
-    as video_recorder;
+import 'package:xapptor_community/gender_reveal/reveal_view/video_recorder/video_recorder.dart' as video_recorder;
 
 /// Enhanced reaction recorder widget for the gender reveal screen.
 /// Records the user's reaction during the reveal animation.
@@ -395,12 +394,10 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
             if (_is_recording) _build_recording_indicator(),
 
             // Recording complete indicator
-            if (_recording_complete && !_is_recording)
-              _build_recording_complete_indicator(),
+            if (_recording_complete && !_is_recording) _build_recording_complete_indicator(),
 
             // Login prompt for non-authenticated users
-            if (!widget.enable_recording && _camera_initialized)
-              _build_login_prompt(),
+            if (!widget.enable_recording && _camera_initialized) _build_login_prompt(),
           ],
         ),
       ),

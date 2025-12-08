@@ -38,6 +38,7 @@ class EventModel {
   final String secondary_color;
   final String subtitle;
   final String title;
+  final Timestamp? baby_delivery_date;
 
   EventModel({
     required this.id,
@@ -52,6 +53,7 @@ class EventModel {
     required this.secondary_color,
     required this.subtitle,
     required this.title,
+    this.baby_delivery_date,
   });
 
   factory EventModel.fromDoc(DocumentSnapshot doc) {
@@ -72,6 +74,7 @@ class EventModel {
       secondary_color: data['secondary_color'] ?? 'FFFFFF',
       subtitle: data['subtitle'] ?? '',
       title: data['title'] ?? '',
+      baby_delivery_date: data['baby_delivery_date'] as Timestamp?,
     );
   }
 
@@ -88,6 +91,7 @@ class EventModel {
       'secondary_color': secondary_color,
       'subtitle': subtitle,
       'title': title,
+      if (baby_delivery_date != null) 'baby_delivery_date': baby_delivery_date,
     };
   }
 }
