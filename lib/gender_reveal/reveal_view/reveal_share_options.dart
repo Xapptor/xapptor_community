@@ -323,7 +323,10 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
           IconButton(
             onPressed: () {
               if (widget.reaction_video_path != null) {
-                final reaction_file = XFile(widget.reaction_video_path!);
+                final reaction_file = XFile(
+                  widget.reaction_video_path!,
+                  mimeType: 'video/mp4',
+                );
 
                 SharePlus.instance.share(
                   ShareParams(
