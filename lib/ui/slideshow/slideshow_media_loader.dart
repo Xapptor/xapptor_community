@@ -56,9 +56,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// @deprecated Use [active_video_controllers] with [get_video_controller_by_index] instead
   List<VideoPlayerController> landscape_video_player_controllers = [];
 
-  // Maximum active videos/images on web to prevent memory issues
-  // Keep this LOW to prevent iOS Safari crashes
-  static const int max_active_videos_web = 2;
+  // Maximum active videos on web to prevent memory issues
+  // Need at least 2 per orientation (portrait + landscape slots can both be visible)
+  // Safari supports ~4-6 simultaneous video elements before performance degrades
+  static const int max_active_videos_web = 4;
   static const int max_cached_images_per_orientation = 5;
 
   // Initial load counts
@@ -67,6 +68,12 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   // Track video orientations separately from controllers (URL -> is_portrait)
   final Map<String, bool> video_orientation_cache = {};
+
+  // Track when each video was loaded to avoid disposing recently loaded videos
+  final Map<String, DateTime> _video_load_timestamps = {};
+
+  // Minimum time a video must be loaded before it can be disposed (prevents flicker)
+  static const Duration _min_video_lifetime = Duration(seconds: 5);
 
   // Lock to prevent concurrent video loading which can exceed limits
   final Set<String> _videos_currently_loading = {};
@@ -174,6 +181,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
       await controller.play();
 
       active_video_controllers[url] = controller;
+      _video_load_timestamps[url] = DateTime.now();
 
       // Categorize by the video's ACTUAL aspect ratio
       final video_width = controller.value.size.width;
@@ -301,27 +309,52 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// This ensures we don't accidentally dispose the video from the OTHER orientation
   /// that's currently being displayed.
   ///
+  /// Respects minimum video lifetime to prevent disposing videos that just started playing.
   /// Uses safe disposal pattern for iOS Safari memory leak prevention.
   Future<void> dispose_oldest_video_controller_for_orientation({
     required bool is_portrait,
   }) async {
     if (active_video_controllers.isEmpty) return;
 
-    // Find the oldest video URL of the requested orientation
+    final now = DateTime.now();
+
+    // Find the oldest video URL of the requested orientation that has lived long enough
     String? url_to_dispose;
     for (final url in active_video_controllers.keys) {
       final bool? video_is_portrait = video_orientation_cache[url];
       if (video_is_portrait == is_portrait) {
+        // Check if video has been loaded long enough to be disposable
+        final load_time = _video_load_timestamps[url];
+        if (load_time != null && now.difference(load_time) < _min_video_lifetime) {
+          // Skip this video - it was just loaded
+          continue;
+        }
         url_to_dispose = url;
-        break; // First match is the oldest (Map preserves insertion order)
+        break; // First match that's old enough is the oldest disposable
       }
     }
 
-    // If no video of the same orientation found, dispose the oldest regardless
-    // This handles edge cases where we only have videos of one orientation
-    url_to_dispose ??= active_video_controllers.keys.first;
+    // If no disposable video of the same orientation found, try any orientation
+    if (url_to_dispose == null) {
+      for (final url in active_video_controllers.keys) {
+        final load_time = _video_load_timestamps[url];
+        if (load_time != null && now.difference(load_time) < _min_video_lifetime) {
+          continue;
+        }
+        url_to_dispose = url;
+        break;
+      }
+    }
+
+    // If still nothing to dispose (all videos are too new), skip disposal
+    // This may temporarily exceed the limit but prevents video flicker
+    if (url_to_dispose == null) {
+      debugPrint('Slideshow: All videos too new to dispose, skipping disposal');
+      return;
+    }
 
     final VideoPlayerController? controller = active_video_controllers.remove(url_to_dispose);
+    _video_load_timestamps.remove(url_to_dispose);
 
     if (controller != null) {
       // Remove from backward compatibility lists
@@ -409,6 +442,7 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   Future<void> dispose_media_resources() async {
     // Clear loading lock
     _videos_currently_loading.clear();
+    _video_load_timestamps.clear();
 
     // Dispose all active video controllers with safe disposal
     for (var controller in active_video_controllers.values) {
