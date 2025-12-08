@@ -139,6 +139,10 @@ class _SlideshowState extends State<Slideshow>
   void dispose() {
     dispose_media_resources();
     _audio_state_subscription?.cancel();
+    // Reset audio service to free memory (don't fully dispose singleton)
+    _audio_service.reset();
+    // Clear static content caches to free memory on iOS Safari
+    SlideshowContentLoaderMixin.clear_all_static_caches();
     super.dispose();
   }
 

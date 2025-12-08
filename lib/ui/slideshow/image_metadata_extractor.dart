@@ -34,6 +34,10 @@ class ImageMetadataExtractor {
   /// Most image formats have dimensions in the first few KB.
   static const int _max_header_bytes = 16384; // 16KB
 
+  /// Maximum cache entries to prevent unbounded memory growth.
+  /// Each entry is ~100 bytes, so 500 entries = ~50KB.
+  static const int _max_cache_entries = 500;
+
   /// Extract image metadata using minimal bandwidth.
   /// Returns null if extraction fails.
   static Future<ImageMetadata?> get_metadata(String url) async {
@@ -98,6 +102,7 @@ class ImageMetadataExtractor {
       }
 
       if (metadata != null) {
+        _enforce_cache_limit();
         _cache[url] = metadata;
         debugPrint('ImageMetadataExtractor: Extracted - $metadata');
         return metadata;
@@ -316,6 +321,14 @@ class ImageMetadataExtractor {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Enforce maximum cache size by removing oldest entries.
+  static void _enforce_cache_limit() {
+    while (_cache.length >= _max_cache_entries) {
+      final oldest_key = _cache.keys.first;
+      _cache.remove(oldest_key);
     }
   }
 

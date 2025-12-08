@@ -32,6 +32,10 @@ class VideoMetadataExtractor {
   /// MP4 moov atom is usually in first 64KB or last 64KB of file.
   static const int _max_header_bytes = 65536; // 64KB
 
+  /// Maximum cache entries to prevent unbounded memory growth.
+  /// Each entry is ~100 bytes, so 200 entries = ~20KB.
+  static const int _max_cache_entries = 200;
+
   /// Extract video metadata using minimal bandwidth.
   /// Returns null if extraction fails.
   static Future<VideoMetadata?> get_metadata(String url) async {
@@ -64,6 +68,7 @@ class VideoMetadataExtractor {
       if (range_response.statusCode == 206) {
         final metadata = _parse_mp4_metadata(range_response.bodyBytes);
         if (metadata != null) {
+          _enforce_cache_limit();
           _cache[url] = metadata;
           debugPrint('VideoMetadataExtractor: Extracted from header - $metadata');
           return metadata;
@@ -72,6 +77,7 @@ class VideoMetadataExtractor {
         // Server doesn't support range requests, try to parse what we got
         final metadata = _parse_mp4_metadata(range_response.bodyBytes);
         if (metadata != null) {
+          _enforce_cache_limit();
           _cache[url] = metadata;
           debugPrint('VideoMetadataExtractor: Extracted (no range support) - $metadata');
           return metadata;
@@ -90,6 +96,7 @@ class VideoMetadataExtractor {
           if (end_range_response.statusCode == 206) {
             final metadata = _parse_mp4_metadata(end_range_response.bodyBytes);
             if (metadata != null) {
+              _enforce_cache_limit();
               _cache[url] = metadata;
               debugPrint('VideoMetadataExtractor: Extracted from end - $metadata');
               return metadata;
@@ -276,6 +283,14 @@ class VideoMetadataExtractor {
   /// Read a 16-bit big-endian unsigned integer from bytes.
   static int _read_uint16(Uint8List bytes, int offset) {
     return (bytes[offset] << 8) | bytes[offset + 1];
+  }
+
+  /// Enforce maximum cache size by removing oldest entries.
+  static void _enforce_cache_limit() {
+    while (_cache.length >= _max_cache_entries) {
+      final oldest_key = _cache.keys.first;
+      _cache.remove(oldest_key);
+    }
   }
 
   /// Clear the metadata cache.

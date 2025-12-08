@@ -431,9 +431,25 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
         landscape_images.remove(image);
         portrait_images.remove(image);
         all_images.remove(image);
+
+        // IMPORTANT: Evict from Flutter's image cache to free GPU memory
+        // This is critical on iOS Safari which has strict memory limits
+        _evict_image_from_flutter_cache(key);
       }
 
       debugPrint('Slideshow: Cleaned up $to_remove images from cache');
+    }
+  }
+
+  /// Evict an image from Flutter's internal image cache to free memory.
+  /// Without this, decoded image bitmaps remain in memory even after
+  /// removing the Image widget from the widget tree.
+  void _evict_image_from_flutter_cache(String url) {
+    try {
+      final NetworkImage provider = NetworkImage(url);
+      PaintingBinding.instance.imageCache.evict(provider);
+    } catch (e) {
+      debugPrint('Slideshow: Error evicting image from cache: $e');
     }
   }
 
@@ -453,11 +469,24 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     landscape_video_player_controllers.clear();
     video_orientation_cache.clear();
 
+    // Evict all images from Flutter's internal cache before clearing our cache
+    // This is CRITICAL for iOS Safari memory management
+    for (final url in loaded_images_cache.keys) {
+      _evict_image_from_flutter_cache(url);
+    }
+
     // Clear image cache
     loaded_images_cache.clear();
     landscape_images.clear();
     portrait_images.clear();
     all_images.clear();
+
+    // Clear URL lists
+    portrait_image_urls.clear();
+    landscape_image_urls.clear();
+    all_image_urls.clear();
+    portrait_video_urls.clear();
+    landscape_video_urls.clear();
 
     // Clear metadata extractor caches
     VideoMetadataExtractor.clear_cache();

@@ -62,6 +62,10 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   /// this allows copying the loaded data to the new instance.
   static final Map<String, _CachedContentData> _globally_cached_content = {};
 
+  /// Maximum number of content caches to keep. Prevents unbounded memory growth
+  /// when navigating between different slideshow instances.
+  static const int _max_cached_content_entries = 3;
+
   /// Batch size for URL fetching to prevent network congestion.
   static const int _url_fetch_batch_size = 5;
 
@@ -136,7 +140,11 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   }
 
   /// Save current content data to the global cache.
+  /// Enforces maximum cache size to prevent unbounded memory growth.
   void _save_to_cache(String content_key) {
+    // Enforce maximum cache size before adding new entry
+    _enforce_cache_limit();
+
     _globally_cached_content[content_key] = _CachedContentData(
       image_urls: List.from(image_urls),
       video_urls: List.from(video_urls),
@@ -151,6 +159,28 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
       landscape_images: List.from(landscape_images),
     );
     debugPrint('Slideshow: Saved content to cache for $content_key');
+  }
+
+  /// Enforce maximum cache size by removing oldest entries.
+  /// This prevents unbounded memory growth when navigating between slideshows.
+  void _enforce_cache_limit() {
+    while (_globally_cached_content.length >= _max_cached_content_entries) {
+      // Remove the oldest entry (first key in insertion order)
+      final oldest_key = _globally_cached_content.keys.first;
+      _globally_cached_content.remove(oldest_key);
+      _globally_initialized_paths.remove(oldest_key);
+      debugPrint('Slideshow: Evicted oldest cache entry: $oldest_key');
+    }
+  }
+
+  /// Clear all static caches. Call this when the slideshow is permanently disposed
+  /// (e.g., when navigating away from the page containing the slideshow).
+  /// This is important for iOS Safari memory management.
+  static void clear_all_static_caches() {
+    _globally_loading_paths.clear();
+    _globally_initialized_paths.clear();
+    _globally_cached_content.clear();
+    debugPrint('Slideshow: Cleared all static content caches');
   }
 
   /// Restore content data from the global cache.
