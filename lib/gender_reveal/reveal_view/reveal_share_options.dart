@@ -23,6 +23,9 @@ class RevealShareOptions extends StatefulWidget {
   /// The path to the recorded reaction video (if any).
   final String? reaction_video_path;
 
+  /// The format of the reaction video ('mp4' or 'webm').
+  final String reaction_video_format;
+
   /// Builder for the Amazon wishlist button.
   final Widget Function(int source_language_index) wishlist_button_builder;
 
@@ -52,6 +55,7 @@ class RevealShareOptions extends StatefulWidget {
     required this.father_name,
     required this.event_url,
     this.reaction_video_path,
+    this.reaction_video_format = 'mp4',
     required this.wishlist_button_builder,
     this.source_language_index = 0,
     required this.boy_color,
@@ -323,9 +327,23 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
           IconButton(
             onPressed: () {
               if (widget.reaction_video_path != null) {
+                // Use the format passed from the recorder
+                final extension = widget.reaction_video_format;
+                final mime_type = extension == 'webm' ? 'video/webm' : 'video/mp4';
+
+                // Generate filename: baby_name + date + extension
+                final safe_name = widget.baby_name != null && widget.baby_name!.isNotEmpty
+                    ? widget.baby_name!.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_').toLowerCase()
+                    : 'baby';
+                final date = DateTime.now();
+                final date_str =
+                    '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
+                final file_name = '${safe_name}_reveal_$date_str.$extension';
+
                 final reaction_file = XFile(
                   widget.reaction_video_path!,
-                  mimeType: 'video/mp4',
+                  mimeType: mime_type,
+                  name: file_name,
                 );
 
                 SharePlus.instance.share(

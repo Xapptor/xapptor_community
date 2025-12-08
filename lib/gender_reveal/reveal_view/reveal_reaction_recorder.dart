@@ -3,6 +3,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
+import 'package:xapptor_community/gender_reveal/reveal_view/video_recorder/video_recorder.dart'
+    as video_recorder;
 
 /// Enhanced reaction recorder widget for the gender reveal screen.
 /// Records the user's reaction during the reveal animation.
@@ -26,9 +28,10 @@ class RevealReactionRecorder extends StatefulWidget {
   /// Duration of the recording.
   final Duration recording_duration;
 
-  /// Callback when recording completes with the file path.
-  /// Returns null if recording was not enabled or failed.
-  final void Function(String? video_path)? on_recording_complete;
+  /// Callback when recording completes with the file path and format.
+  /// Returns null path if recording was not enabled or failed.
+  /// Format is 'mp4' or 'webm' depending on what was actually recorded.
+  final void Function(String? video_path, String format)? on_recording_complete;
 
   /// Callback when recording starts.
   final VoidCallback? on_recording_started;
@@ -78,9 +81,27 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   double _recording_progress = 0.0;
   Timer? _progress_timer;
 
+  // Web-specific: native MediaRecorder for MP4 support on Chrome
+  dynamic _web_video_recorder;
+  bool _use_native_video_recorder = false;
+
+  // Track the actual format used for recording
+  String _actual_recording_format = 'mp4'; // 'mp4' or 'webm'
+
   @override
   void initState() {
     super.initState();
+    // On web, check if MP4 recording is supported (Chrome 126+)
+    // If so, we'll use native MediaRecorder for iOS-compatible videos
+    if (kIsWeb) {
+      _use_native_video_recorder = video_recorder.isMP4RecordingSupported();
+      debugPrint(
+        'RevealReactionRecorder: MP4 support=$_use_native_video_recorder, '
+        'format=${video_recorder.getPreferredExtension()}, '
+        'mimeType=${video_recorder.getPreferredMimeType()}',
+      );
+      debugPrint('RevealReactionRecorder: Browser support: ${video_recorder.getBrowserSupportInfo()}');
+    }
     if (widget.show_preview) {
       _initialize_camera();
     }
@@ -136,13 +157,30 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   }
 
   /// Start video recording.
+  /// On web with MP4 support (Chrome 126+), uses native MediaRecorder.
+  /// Otherwise, uses the camera package's recorder.
   Future<void> _start_recording() async {
     if (!mounted || !_camera_initialized || _controller == null) return;
     if (_is_recording || _recording_complete) return;
     if (!widget.enable_recording) return;
 
     try {
-      await _controller!.startVideoRecording();
+      // On web with MP4 support, use native MediaRecorder for iOS-compatible videos
+      if (kIsWeb && _use_native_video_recorder) {
+        final success = await _start_web_native_recording();
+        if (!success) {
+          // Native recording failed, fall back to camera package (WebM)
+          _actual_recording_format = 'webm';
+          await _controller!.startVideoRecording();
+        } else {
+          // Native recording started, use its format
+          _actual_recording_format = video_recorder.getPreferredExtension();
+        }
+      } else {
+        // Camera package: WebM on web, MP4 on mobile
+        _actual_recording_format = kIsWeb ? 'webm' : 'mp4';
+        await _controller!.startVideoRecording();
+      }
 
       if (!mounted) return;
 
@@ -170,11 +208,59 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
         },
       );
 
-      // Schedule recording stop
-      _recording_timer = Timer(widget.recording_duration, _stop_recording);
+      // Schedule recording stop (only if not using web native recorder, which handles its own duration)
+      if (!kIsWeb || !_use_native_video_recorder || _web_video_recorder == null) {
+        _recording_timer = Timer(widget.recording_duration, _stop_recording);
+      }
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error starting recording: $e');
-      widget.on_recording_complete?.call(null);
+      widget.on_recording_complete?.call(null, _actual_recording_format);
+    }
+  }
+
+  /// Start recording using native web MediaRecorder (for MP4 on Chrome).
+  /// Returns true if native recording started successfully, false if it failed.
+  Future<bool> _start_web_native_recording() async {
+    if (!kIsWeb) return false;
+
+    try {
+      // Access the video element from the camera controller
+      // The camera package exposes this through the preview widget
+      final video_element = _get_web_video_element();
+      if (video_element == null) {
+        debugPrint('RevealReactionRecorder: Could not get video element for native recording');
+        return false;
+      }
+
+      _web_video_recorder = video_recorder.WebVideoRecorder(
+        videoElement: video_element,
+        recordingDuration: widget.recording_duration,
+      );
+
+      await (_web_video_recorder as video_recorder.WebVideoRecorder).startRecording();
+      debugPrint('RevealReactionRecorder: Started native web recording (${video_recorder.getPreferredExtension()})');
+      return true;
+    } catch (e) {
+      debugPrint('RevealReactionRecorder: Native web recording failed: $e');
+      _web_video_recorder = null;
+      return false;
+    }
+  }
+
+  /// Get the video element from the web camera implementation.
+  dynamic _get_web_video_element() {
+    if (!kIsWeb) return null;
+
+    try {
+      // The camera_web package uses an HtmlElementView with a video element
+      // We need to find it in the DOM
+      if (_controller?.value.previewSize == null) return null;
+
+      // Use the web-specific helper to find the camera video element
+      return video_recorder.findCameraVideoElement();
+    } catch (e) {
+      debugPrint('RevealReactionRecorder: Error getting video element: $e');
+      return null;
     }
   }
 
@@ -186,25 +272,55 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
     if (!mounted || _controller == null || !_is_recording) return;
 
     try {
-      final XFile video_file = await _controller!.stopVideoRecording();
+      String? video_path;
+
+      // Check if we're using native web recorder
+      if (kIsWeb && _web_video_recorder != null) {
+        video_path = await _stop_web_native_recording();
+      } else {
+        final XFile video_file = await _controller!.stopVideoRecording();
+        video_path = video_file.path;
+      }
 
       if (!mounted) return;
 
       setState(() {
         _is_recording = false;
         _recording_complete = true;
-        _video_path = video_file.path;
+        _video_path = video_path;
         _recording_progress = 1.0;
       });
 
-      widget.on_recording_complete?.call(video_file.path);
+      widget.on_recording_complete?.call(video_path, _actual_recording_format);
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error stopping recording: $e');
       setState(() {
         _is_recording = false;
         _recording_complete = true;
       });
-      widget.on_recording_complete?.call(null);
+      widget.on_recording_complete?.call(null, _actual_recording_format);
+    }
+  }
+
+  /// Stop native web recording and return the video URL.
+  Future<String?> _stop_web_native_recording() async {
+    if (_web_video_recorder == null) return null;
+
+    try {
+      final recorder = _web_video_recorder as video_recorder.WebVideoRecorder;
+      final video_url = await recorder.stopRecording();
+
+      if (video_url != null) {
+        debugPrint(
+          'RevealReactionRecorder: Native web recording complete '
+          '(${recorder.fileExtension}): $video_url',
+        );
+      }
+
+      return video_url;
+    } catch (e) {
+      debugPrint('RevealReactionRecorder: Error stopping native web recording: $e');
+      return null;
     }
   }
 
@@ -214,6 +330,7 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
     _start_delay_timer?.cancel();
     _progress_timer?.cancel();
     _stop_recording_if_needed();
+    _dispose_video_recorder();
     _controller?.dispose();
     super.dispose();
   }
@@ -221,10 +338,25 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   Future<void> _stop_recording_if_needed() async {
     if (_is_recording && _controller != null) {
       try {
-        await _controller!.stopVideoRecording();
+        if (kIsWeb && _web_video_recorder != null) {
+          await (_web_video_recorder as video_recorder.WebVideoRecorder).stopRecording();
+        } else {
+          await _controller!.stopVideoRecording();
+        }
       } catch (e) {
         // Ignore errors during cleanup
       }
+    }
+  }
+
+  void _dispose_video_recorder() {
+    if (_web_video_recorder != null) {
+      try {
+        (_web_video_recorder as video_recorder.WebVideoRecorder).dispose();
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+      _web_video_recorder = null;
     }
   }
 

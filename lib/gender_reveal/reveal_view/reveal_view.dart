@@ -284,6 +284,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
               father_name: widget.father_name,
               event_url: '${widget.share_url}$event_id',
               reaction_video_path: reaction_uploaded ? reaction_video_path : null,
+              reaction_video_format: reaction_video_format,
               wishlist_button_builder: widget.wishlist_button_builder,
               source_language_index: widget.source_language_index,
               boy_color: widget.boy_color,

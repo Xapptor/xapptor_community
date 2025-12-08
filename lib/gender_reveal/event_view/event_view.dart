@@ -113,11 +113,6 @@ class _EventViewState extends State<EventView>
     final lang_bg = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
     final lang_text = widget.language_picker_text_color ?? Colors.white;
 
-    bool small_countdown = false;
-    if (event != null) {
-      small_countdown = (event!.reveal_date.millisecondsSinceEpoch - 7000) <= DateTime.now().millisecondsSinceEpoch;
-    }
-
     return Scaffold(
       body: event == null
           ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade200)))
@@ -131,7 +126,6 @@ class _EventViewState extends State<EventView>
                   boy_color,
                   girl_color,
                   card_overlay,
-                  small_countdown,
                 ),
                 if (widget.has_language_picker && translation_stream_list.isNotEmpty)
                   _build_language_picker(lang_bg, lang_text),
@@ -150,13 +144,11 @@ class _EventViewState extends State<EventView>
     Color boy,
     Color girl,
     Color overlay,
-    bool small,
   ) {
     return Positioned.fill(
       child: Stack(children: [
         Positioned.fill(child: _build_slideshow()),
-        if (event != null && enable_voting_card && !small)
-          _build_voting_card(w, h, portrait, has_votes, boy, girl, overlay),
+        if (event != null && enable_voting_card) _build_voting_card(w, h, portrait, has_votes, boy, girl, overlay),
       ]),
     );
   }
@@ -186,7 +178,15 @@ class _EventViewState extends State<EventView>
     );
   }
 
-  Widget _build_voting_card(double w, double h, bool portrait, bool has_votes, Color boy, Color girl, Color overlay) {
+  Widget _build_voting_card(
+    double w,
+    double h,
+    bool portrait,
+    bool has_votes,
+    Color boy,
+    Color girl,
+    Color overlay,
+  ) {
     return Center(
       child: AnimatedOpacity(
         opacity: show_voting_card ? 1.0 : 0.0,
@@ -210,7 +210,12 @@ class _EventViewState extends State<EventView>
     );
   }
 
-  Widget _build_voting_content(bool portrait, bool has_votes, Color boy, Color girl) {
+  Widget _build_voting_content(
+    bool portrait,
+    bool has_votes,
+    Color boy,
+    Color girl,
+  ) {
     return LayoutBuilder(builder: (context, constraints) {
       final stacked = portrait || constraints.maxWidth < 760;
       final intro = build_intro_section(
@@ -279,7 +284,10 @@ class _EventViewState extends State<EventView>
     });
   }
 
-  Widget _build_language_picker(Color bg, Color text) {
+  Widget _build_language_picker(
+    Color bg,
+    Color text,
+  ) {
     return Positioned(
       top: 8,
       right: sized_box_space,

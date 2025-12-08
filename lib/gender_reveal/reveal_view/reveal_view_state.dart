@@ -26,6 +26,7 @@ mixin RevealViewStateMixin on State<RevealView> {
 
   // Reaction recording state
   String? reaction_video_path;
+  String reaction_video_format = 'mp4'; // 'mp4' or 'webm'
   bool is_uploading_reaction = false;
   bool reaction_uploaded = false;
   String? reaction_upload_error;
@@ -101,12 +102,16 @@ mixin RevealViewStateMixin on State<RevealView> {
   }
 
   /// Called when reaction recording completes.
-  void on_reaction_recording_complete(String? video_path) {
+  /// The format parameter indicates what format was actually recorded ('mp4' or 'webm').
+  void on_reaction_recording_complete(String? video_path, String format) {
     if (!mounted) return;
 
     setState(() {
       reaction_video_path = video_path;
+      reaction_video_format = format;
     });
+
+    debugPrint('RevealViewState: Recording complete - path: $video_path, format: $format');
 
     // Auto-upload if user is logged in and video was recorded
     if (video_path != null && is_user_logged_in) {
@@ -124,7 +129,11 @@ mixin RevealViewStateMixin on State<RevealView> {
     });
 
     try {
-      final storage_path = 'events/$event_id/reactions/$current_user_id.mp4';
+      // Use correct file extension and MIME type based on format
+      final file_extension = reaction_video_format;
+      final content_type = reaction_video_format == 'webm' ? 'video/webm' : 'video/mp4';
+
+      final storage_path = 'events/$event_id/reactions/$current_user_id.$file_extension';
       final ref = FirebaseStorage.instance.ref().child(storage_path);
 
       // Upload the file
@@ -134,14 +143,14 @@ mixin RevealViewStateMixin on State<RevealView> {
         final bytes = await x_file.readAsBytes();
         await ref.putData(
           bytes,
-          SettableMetadata(contentType: 'video/mp4'),
+          SettableMetadata(contentType: content_type),
         );
       } else {
         // For mobile, use File directly
         final file = File(video_path);
         await ref.putFile(
           file,
-          SettableMetadata(contentType: 'video/mp4'),
+          SettableMetadata(contentType: content_type),
         );
       }
 
