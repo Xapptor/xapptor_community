@@ -59,7 +59,7 @@ class CountdownView extends StatefulWidget {
 }
 
 class _CountdownViewState extends State<CountdownView> {
-  late final DateTime _target;
+  late DateTime _target;
   Timer? _ticker;
   Duration _remaining = Duration.zero;
 
@@ -69,6 +69,16 @@ class _CountdownViewState extends State<CountdownView> {
     _target = DateTime.fromMillisecondsSinceEpoch(widget.milliseconds_sice_epoch);
     _sync_remaining();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _sync_remaining());
+  }
+
+  @override
+  void didUpdateWidget(CountdownView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update target time if the reveal_date changed (real-time Firestore update)
+    if (oldWidget.milliseconds_sice_epoch != widget.milliseconds_sice_epoch) {
+      _target = DateTime.fromMillisecondsSinceEpoch(widget.milliseconds_sice_epoch);
+      _sync_remaining();
+    }
   }
 
   @override

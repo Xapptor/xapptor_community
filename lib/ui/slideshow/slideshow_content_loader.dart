@@ -36,6 +36,42 @@ class _CachedContentData {
 ///
 /// Uses batched URL fetching to prevent network congestion and improve
 /// initial load performance.
+///
+/// TODO: VIDEO UPLOAD - FAST-START OPTIMIZATION (CRITICAL FOR PERFORMANCE)
+/// =========================================================================
+/// When implementing user video uploads (mobile app), videos MUST be processed
+/// with FFmpeg "fast-start" before uploading to Firebase Storage.
+///
+/// WHY: Without fast-start, the "moov" atom (metadata with video dimensions)
+/// is at the END of the file. This forces VideoMetadataExtractor to download
+/// the ENTIRE video just to check orientation, causing:
+/// - 18+ seconds delay for 6 videos vs ~0.6 seconds with fast-start
+/// - Excessive memory usage on iOS Safari (can cause crashes)
+///
+/// HOW TO IMPLEMENT (Mobile only - not possible on web):
+/// 1. Add dependency: ffmpeg_kit_flutter: ^6.0.3
+/// 2. Before uploading, process the video:
+///
+///    import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+///
+///    Future<String?> addFastStart(String inputPath, String outputPath) async {
+///      final session = await FFmpegKit.execute(
+///        '-i "$inputPath" -c copy -movflags +faststart "$outputPath"'
+///      );
+///      final returnCode = await session.getReturnCode();
+///      if (returnCode?.isValueSuccess() ?? false) {
+///        return outputPath;  // Upload this file to Firebase
+///      }
+///      return null;
+///    }
+///
+/// 3. Upload the processed file (outputPath) to Firebase Storage
+///
+/// MANUAL CONVERSION (for existing videos):
+///    ffmpeg -i input.mp4 -c copy -movflags +faststart output.mp4
+///
+/// This is LOSSLESS and FAST (just moves bytes, no re-encoding).
+/// =========================================================================
 mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     on State<T>, SlideshowMediaLoaderMixin<T> {
   final Reference image_storage_ref =
