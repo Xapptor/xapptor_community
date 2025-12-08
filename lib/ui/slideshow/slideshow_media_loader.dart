@@ -107,17 +107,8 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
         debugPrint('Slideshow: Got image dimensions via efficient extraction: ${size.width}x${size.height}');
       }
 
-      // CRITICAL: Use cacheWidth/cacheHeight to limit GPU memory usage
-      // Without this, each image decodes at full resolution (1920x1440 = 11MB GPU memory)
-      // With 50+ images, this causes iOS Safari to crash/reload at 512MB limit
-      // Target max dimension ~800px for slideshow cells reduces memory by ~80%
-      const int max_cache_dimension = 800;
-
-      // Create the image widget with constrained cache size
       final Image current_image = Image.network(
         url,
-        cacheWidth: max_cache_dimension,
-        cacheHeight: max_cache_dimension,
         fit: BoxFit.cover,
       );
 
