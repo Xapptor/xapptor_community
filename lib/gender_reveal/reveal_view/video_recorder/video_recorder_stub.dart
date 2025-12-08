@@ -1,5 +1,5 @@
-/// Stub implementation for non-web platforms.
-/// This file is used when the app runs on mobile/desktop platforms.
+// Stub implementation for non-web platforms.
+// This file is used when the app runs on mobile/desktop platforms.
 
 /// Find the camera video element (stub - always returns null on non-web).
 dynamic find_camera_video_element() => null;

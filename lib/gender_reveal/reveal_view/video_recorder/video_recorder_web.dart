@@ -54,21 +54,6 @@ bool is_mp4_recording_supported() {
   }
 }
 
-/// Check if browser actually reports MP4 support (for logging).
-bool _browser_reports_mp4_support() {
-  try {
-    if (html.MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
-      return true;
-    }
-    if (html.MediaRecorder.isTypeSupported('video/mp4')) {
-      return true;
-    }
-    return false;
-  } catch (e) {
-    return false;
-  }
-}
-
 /// Get the preferred MIME type for recording.
 /// Returns MP4 if supported (Chrome 126+) or forced, otherwise WebM.
 String get_preferred_mime_type() {

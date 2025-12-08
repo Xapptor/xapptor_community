@@ -92,16 +92,6 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
     return const RevealShareTexts();
   }
 
-  String get _boy_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
-    return text != null && text.length > 11 ? text[11] : 'Boy';
-  }
-
-  String get _girl_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
-    return text != null && text.length > 12 ? text[12] : 'Girl';
-  }
-
   String get _its_a_boy_text {
     final text = widget.reveal_text_list?.get(widget.source_language_index);
     return text != null && text.length > 13 ? text[13] : "It's a Boy!";

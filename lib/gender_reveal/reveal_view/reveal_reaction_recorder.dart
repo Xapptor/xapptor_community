@@ -71,7 +71,6 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   bool _camera_initialization_attempted = false;
   bool _is_recording = false;
   bool _recording_complete = false;
-  String? _video_path;
 
   Timer? _recording_timer;
   Timer? _start_delay_timer;
@@ -286,7 +285,6 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
       setState(() {
         _is_recording = false;
         _recording_complete = true;
-        _video_path = video_path;
         _recording_progress = 1.0;
       });
 

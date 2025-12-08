@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -42,11 +44,8 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
 
     debugPrint('Starting real-time votes listener for event: $event_id');
 
-    votes_subscription = XapptorDB.instance
-        .collection("votes")
-        .where("event_id", isEqualTo: event_id)
-        .snapshots()
-        .listen(
+    votes_subscription =
+        XapptorDB.instance.collection("votes").where("event_id", isEqualTo: event_id).snapshots().listen(
       (QuerySnapshot snapshot) {
         if (!mounted) return;
 
@@ -194,17 +193,14 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
 
     final text = dialog_text_list;
     final login_required_title = text?[17] ?? 'Login Required';
-    final login_required_message =
-        text?[18] ?? 'You need to log in to vote. Would you like to log in now?';
+    final login_required_message = text?[18] ?? 'You need to log in to vote. Would you like to log in now?';
     final cancel_text = text?[19] ?? 'Cancel';
     final login_text = text?[20] ?? 'Log In';
     final confirm_vote_title = text?[21] ?? 'Confirm your vote';
-    final vote_confirmation_template =
-        text?[22] ?? 'Are you sure you want to vote for {choice}?';
+    final vote_confirmation_template = text?[22] ?? 'Are you sure you want to vote for {choice}?';
     final vote_is_final_text = text?[23] ?? 'Your vote is final.';
     final confirm_text = text?[24] ?? 'Confirm';
-    final vote_success_template =
-        text?[25] ?? 'Vote for {choice} saved successfully!';
+    final vote_success_template = text?[25] ?? 'Vote for {choice} saved successfully!';
     final vote_error_text = text?[26] ?? 'Error saving vote';
     final boy_text = text?[3] ?? 'Boy';
     final girl_text = text?[4] ?? 'Girl';
@@ -237,8 +233,7 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
     }
 
     final choice_text = vote == 'boy' ? boy_text : girl_text;
-    final confirmation_message =
-        vote_confirmation_template.replaceAll('{choice}', choice_text);
+    final confirmation_message = vote_confirmation_template.replaceAll('{choice}', choice_text);
 
     final result = await showDialog<bool>(
       context: context,
@@ -291,8 +286,7 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
         confirmed = true;
       });
 
-      final success_message =
-          vote_success_template.replaceAll('{choice}', choice_text);
+      final success_message = vote_success_template.replaceAll('{choice}', choice_text);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(success_message),

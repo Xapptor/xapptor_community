@@ -53,10 +53,7 @@ mixin RevealViewStateMixin on State<RevealView> {
     }
 
     try {
-      final event_doc = await XapptorDB.instance
-          .collection("events")
-          .doc(event_id)
-          .get();
+      final event_doc = await XapptorDB.instance.collection("events").doc(event_id).get();
 
       if (!event_doc.exists) {
         debugPrint('RevealView: Event not found: $event_id');
@@ -66,7 +63,7 @@ mixin RevealViewStateMixin on State<RevealView> {
         return;
       }
 
-      final event_data = event_doc.data() as Map<String, dynamic>?;
+      final Map<String, dynamic>? event_data = event_doc.data();
 
       if (!mounted) return;
 

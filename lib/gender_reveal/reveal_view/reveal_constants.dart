@@ -1,5 +1,5 @@
-/// Constants for the gender reveal animation screen.
-/// These values are tuned for optimal UX and memory performance on iOS Safari.
+// Constants for the gender reveal animation screen.
+// These values are tuned for optimal UX and memory performance on iOS Safari.
 
 // =============================================================================
 // TIMING CONSTANTS
