@@ -3,6 +3,35 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_media_loader.dart';
 
+/// Cached content data for sharing between State instances.
+class _CachedContentData {
+  final List<String> image_urls;
+  final List<String> video_urls;
+  final List<String> portrait_image_urls;
+  final List<String> landscape_image_urls;
+  final List<String> all_image_urls;
+  final List<String> portrait_video_urls;
+  final List<String> landscape_video_urls;
+  final Map<String, Image> loaded_images_cache;
+  final List<Image> all_images;
+  final List<Image> portrait_images;
+  final List<Image> landscape_images;
+
+  _CachedContentData({
+    required this.image_urls,
+    required this.video_urls,
+    required this.portrait_image_urls,
+    required this.landscape_image_urls,
+    required this.all_image_urls,
+    required this.portrait_video_urls,
+    required this.landscape_video_urls,
+    required this.loaded_images_cache,
+    required this.all_images,
+    required this.portrait_images,
+    required this.landscape_images,
+  });
+}
+
 /// Mixin that handles loading content from Firebase Storage for the slideshow.
 ///
 /// Uses batched URL fetching to prevent network congestion and improve
@@ -20,6 +49,19 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   bool is_content_initialized = false;
   bool _is_loading_content = false;
 
+  /// Static set to track which storage paths are currently being loaded across ALL instances.
+  /// This prevents duplicate loading when widget tree changes cause State recreation.
+  static final Set<String> _globally_loading_paths = {};
+
+  /// Static set to track which storage paths have been fully initialized.
+  /// This prevents re-initialization when widget rebuilds create new State objects.
+  static final Set<String> _globally_initialized_paths = {};
+
+  /// Static cache of loaded content data, keyed by content_key.
+  /// When a new State is created while content was already loaded,
+  /// this allows copying the loaded data to the new instance.
+  static final Map<String, _CachedContentData> _globally_cached_content = {};
+
   /// Batch size for URL fetching to prevent network congestion.
   static const int _url_fetch_batch_size = 5;
 
@@ -27,19 +69,50 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   static const Duration _url_fetch_batch_delay = Duration(milliseconds: 100);
 
   /// Load content from Firebase Storage or local paths.
-  /// Guards against duplicate calls during initialization.
+  /// Guards against duplicate calls during initialization using both instance AND static flags.
+  /// Static flags prevent duplicate loading when Flutter recreates State objects.
   Future<void> load_content({
     required bool use_examples,
     required List<String>? image_paths,
     required List<String>? video_paths,
   }) async {
-    // Prevent duplicate loading - if already initialized or currently loading, skip
+    // Create a unique key for this content source
+    final String content_key = use_examples
+        ? 'examples:${image_storage_ref.fullPath}'
+        : 'local:${image_paths?.length ?? 0}:${video_paths?.length ?? 0}';
+
+    // Check GLOBAL static flags first (survives State recreation)
+    if (_globally_initialized_paths.contains(content_key)) {
+      debugPrint('Slideshow: Already globally initialized for $content_key, restoring from cache');
+      _restore_from_cache(content_key);
+      is_content_initialized = true;
+      if (mounted) setState(() {});
+      return;
+    }
+
+    if (_globally_loading_paths.contains(content_key)) {
+      debugPrint('Slideshow: Content is being loaded by another instance for $content_key, waiting...');
+      // Wait for the other instance to finish loading, then restore from cache
+      await _wait_for_loading_to_complete(content_key);
+      if (_globally_initialized_paths.contains(content_key)) {
+        debugPrint('Slideshow: Loading completed, restoring from cache');
+        _restore_from_cache(content_key);
+        is_content_initialized = true;
+        if (mounted) setState(() {});
+      }
+      return;
+    }
+
+    // Also check instance flags (for same-instance duplicate calls)
     if (is_content_initialized || _is_loading_content) {
       debugPrint('Slideshow: Skipping duplicate load_content call '
           '(initialized: $is_content_initialized, loading: $_is_loading_content)');
       return;
     }
+
+    // Mark as loading in both instance and global scope
     _is_loading_content = true;
+    _globally_loading_paths.add(content_key);
 
     if (use_examples) {
       await _load_example_urls();
@@ -53,10 +126,71 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
       );
 
       is_content_initialized = true;
+      _globally_initialized_paths.add(content_key);
+      _save_to_cache(content_key);
     } finally {
       _is_loading_content = false;
+      _globally_loading_paths.remove(content_key);
     }
     if (mounted) setState(() {});
+  }
+
+  /// Save current content data to the global cache.
+  void _save_to_cache(String content_key) {
+    _globally_cached_content[content_key] = _CachedContentData(
+      image_urls: List.from(image_urls),
+      video_urls: List.from(video_urls),
+      portrait_image_urls: List.from(portrait_image_urls),
+      landscape_image_urls: List.from(landscape_image_urls),
+      all_image_urls: List.from(all_image_urls),
+      portrait_video_urls: List.from(portrait_video_urls),
+      landscape_video_urls: List.from(landscape_video_urls),
+      loaded_images_cache: Map.from(loaded_images_cache),
+      all_images: List.from(all_images),
+      portrait_images: List.from(portrait_images),
+      landscape_images: List.from(landscape_images),
+    );
+    debugPrint('Slideshow: Saved content to cache for $content_key');
+  }
+
+  /// Restore content data from the global cache.
+  void _restore_from_cache(String content_key) {
+    final cached = _globally_cached_content[content_key];
+    if (cached == null) {
+      debugPrint('Slideshow: No cached data found for $content_key');
+      return;
+    }
+
+    image_urls = List.from(cached.image_urls);
+    video_urls = List.from(cached.video_urls);
+    portrait_image_urls = List.from(cached.portrait_image_urls);
+    landscape_image_urls = List.from(cached.landscape_image_urls);
+    all_image_urls = List.from(cached.all_image_urls);
+    portrait_video_urls = List.from(cached.portrait_video_urls);
+    landscape_video_urls = List.from(cached.landscape_video_urls);
+    loaded_images_cache.addAll(cached.loaded_images_cache);
+    all_images.addAll(cached.all_images);
+    portrait_images.addAll(cached.portrait_images);
+    landscape_images.addAll(cached.landscape_images);
+
+    debugPrint('Slideshow: Restored ${all_images.length} images from cache for $content_key');
+  }
+
+  /// Wait for another instance to finish loading content.
+  /// Polls until the content_key is no longer in the loading set.
+  Future<void> _wait_for_loading_to_complete(String content_key) async {
+    const poll_interval = Duration(milliseconds: 100);
+    const max_wait = Duration(seconds: 30);
+    final start_time = DateTime.now();
+
+    while (_globally_loading_paths.contains(content_key)) {
+      if (!mounted) return;
+      if (DateTime.now().difference(start_time) > max_wait) {
+        debugPrint('Slideshow: Timed out waiting for loading to complete');
+        return;
+      }
+      await Future.delayed(poll_interval);
+    }
   }
 
   /// Load example URLs from Firebase Storage using batched fetching.
