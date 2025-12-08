@@ -243,18 +243,36 @@ class _EventViewState extends State<EventView>
       );
       final content = stacked
           ? Column(
-              mainAxisSize: MainAxisSize.min, children: [intro, const SizedBox(height: sized_box_space * 4), charts])
-          : Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Flexible(flex: 48, child: intro),
-              const SizedBox(width: sized_box_space),
-              Flexible(flex: 52, child: charts)
-            ]);
-      return SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: stacked ? 40 : 56),
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: portrait ? constraints.maxHeight : 0),
-          child: Align(alignment: Alignment.topCenter, child: content),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                intro,
+                const SizedBox(height: sized_box_space * 4),
+                charts,
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(flex: 48, child: intro),
+                const SizedBox(width: sized_box_space),
+                Flexible(flex: 52, child: charts)
+              ],
+            );
+      return Scrollbar(
+        thumbVisibility: portrait ? true : false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: stacked ? 40 : 56),
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: portrait ? constraints.maxHeight : 0,
+            ),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: content,
+            ),
+          ),
         ),
       );
     });

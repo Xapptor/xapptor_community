@@ -176,9 +176,12 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     // On web, enforce maximum active videos - dispose oldest OF THE SAME ORIENTATION
     // This prevents disposing the video from the other slot that's currently displayed
     // Include videos currently loading in the count to prevent exceeding limit
+    // CRITICAL: Don't await disposal - it takes 1.5s on Safari and blocks video loading
+    // Fire-and-forget: disposal runs in background while new video loads
     final int total_active = active_video_controllers.length + _videos_currently_loading.length;
     if (kIsWeb && total_active >= max_active_videos_web) {
-      await dispose_oldest_video_controller_for_orientation(is_portrait: is_portrait);
+      // ignore: unawaited_futures
+      dispose_oldest_video_controller_for_orientation(is_portrait: is_portrait);
     }
 
     // Mark as loading before starting
@@ -297,24 +300,25 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   /// Safely dispose a video controller with iOS Safari memory leak fix.
   /// Safari doesn't always release video element memory immediately after disposal.
-  /// CRITICAL: Uses 500ms delay on web to allow Safari to release WebGL contexts.
+  /// CRITICAL: Uses delays on web to allow Safari to release WebGL contexts.
+  /// NOTE: This runs in background (fire-and-forget) so delays don't block loading.
   Future<void> _safe_dispose_controller(VideoPlayerController controller) async {
     try {
       await controller.pause();
       await controller.seekTo(Duration.zero);
 
-      // CRITICAL: Safari needs 1000ms+ to release video decoder and WebGL context
-      // Without this delay, Safari accumulates GPU memory until crash
-      // 100ms was insufficient, 500ms still caused issues - increased to 1000ms
+      // Safari needs time to release video decoder before dispose
+      // 500ms pre-dispose delay allows decoder to wind down
       if (kIsWeb) {
-        await Future.delayed(const Duration(milliseconds: 1000));
+        await Future.delayed(const Duration(milliseconds: 500));
       }
 
       await controller.dispose();
 
-      // Additional delay after dispose to ensure WebGL context fully released
+      // Post-dispose delay ensures WebGL context fully released
+      // This prevents GPU memory accumulation on Safari
       if (kIsWeb) {
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 250));
       }
     } catch (e) {
       debugPrint('Slideshow: Error during safe disposal: $e');
