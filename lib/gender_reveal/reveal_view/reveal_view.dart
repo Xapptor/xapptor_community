@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:xapptor_community/gender_reveal/reveal_view/glowing_reveal_button.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_animations.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_reaction_recorder.dart';
@@ -67,6 +68,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   // Key for forcing animation rebuild on replay
   Key _animation_key = UniqueKey();
 
+  // Whether the reveal has been triggered (button pressed)
+  bool _reveal_triggered = false;
+
   @override
   void initState() {
     super.initState();
@@ -113,11 +117,26 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
     return text != null && text.length > 15 ? text[15] : 'Login to save your reaction';
   }
 
+  String get _reveal_now_text {
+    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    return text != null && text.length > 16 ? text[16] : 'Reveal Now!';
+  }
+
   void _handle_replay() {
     setState(() {
+      _reveal_triggered = false;
       animation_complete = false;
       show_share_options = false;
       _animation_key = UniqueKey();
+    });
+  }
+
+  void _handle_reveal_button_pressed() {
+    // TODO: Add sound effect here
+    // This is where you can trigger a VFX/reveal sound.
+    // Example: audio_player.play('reveal_sound.mp3');
+    setState(() {
+      _reveal_triggered = true;
     });
   }
 
@@ -152,26 +171,85 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
       body: SafeArea(
         child: Stack(
           children: [
-            // Main reveal animation
-            Positioned.fill(
-              child: RevealAnimations(
-                key: _animation_key,
-                gender: baby_gender ?? 'boy',
-                baby_name: event?.baby_name,
-                boy_color: widget.boy_color,
-                girl_color: widget.girl_color,
-                boy_text: _its_a_boy_text,
-                girl_text: _its_a_girl_text,
-                on_animation_complete: on_animation_complete,
+            // Show reveal button or animation based on state
+            if (!_reveal_triggered)
+              _build_reveal_button_view()
+            else ...[
+              // Main reveal animation
+              Positioned.fill(
+                child: RevealAnimations(
+                  key: _animation_key,
+                  gender: baby_gender ?? 'boy',
+                  baby_name: event?.baby_name,
+                  boy_color: widget.boy_color,
+                  girl_color: widget.girl_color,
+                  boy_text: _its_a_boy_text,
+                  girl_text: _its_a_girl_text,
+                  on_animation_complete: on_animation_complete,
+                ),
               ),
-            ),
 
-            // Camera preview
-            _build_camera_preview(portrait, camera_size),
+              // Camera preview (only show during/after reveal)
+              _build_camera_preview(portrait, camera_size),
+            ],
 
             // Share options overlay (after animation completes)
             if (show_share_options) _build_share_overlay(portrait),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _build_reveal_button_view() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            colors: [
+              Colors.grey.shade900,
+              Colors.black,
+            ],
+            radius: 1.2,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Teaser text
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  '${widget.mother_name} & ${widget.father_name}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withAlpha((255 * 0.9).round()),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 48),
+              // Reveal button
+              GlowingRevealButton(
+                label: _reveal_now_text,
+                boy_color: widget.boy_color,
+                girl_color: widget.girl_color,
+                on_pressed: _handle_reveal_button_pressed,
+              ),
+              const SizedBox(height: 32),
+              // Hint text
+              Text(
+                '✨',
+                style: TextStyle(
+                  fontSize: 32,
+                  color: Colors.white.withAlpha((255 * 0.6).round()),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
