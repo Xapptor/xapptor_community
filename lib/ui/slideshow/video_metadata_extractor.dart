@@ -64,9 +64,13 @@ class VideoMetadataExtractor {
         headers: {'Range': 'bytes=0-${_max_header_bytes - 1}'},
       ).timeout(const Duration(seconds: 15));
 
+      debugPrint('VideoMetadataExtractor: Range response status=${range_response.statusCode}, '
+          'bytes=${range_response.bodyBytes.length}, content-length=$content_length');
+
       // Check if server supports range requests
       if (range_response.statusCode == 206) {
         final metadata = _parse_mp4_metadata(range_response.bodyBytes);
+        debugPrint('VideoMetadataExtractor: Parsed from 206 response: $metadata');
         if (metadata != null) {
           _enforce_cache_limit();
           _cache[url] = metadata;
@@ -76,6 +80,7 @@ class VideoMetadataExtractor {
       } else if (range_response.statusCode == 200) {
         // Server doesn't support range requests, try to parse what we got
         final metadata = _parse_mp4_metadata(range_response.bodyBytes);
+        debugPrint('VideoMetadataExtractor: Parsed from 200 response: $metadata');
         if (metadata != null) {
           _enforce_cache_limit();
           _cache[url] = metadata;
@@ -121,25 +126,37 @@ class VideoMetadataExtractor {
     try {
       // Look for tkhd atom (track header) which contains dimensions
       final tkhd_index = _find_atom(bytes, 'tkhd');
+      debugPrint('VideoMetadataExtractor: tkhd_index=$tkhd_index');
       if (tkhd_index != -1) {
-        return _parse_tkhd_atom(bytes, tkhd_index);
+        final result = _parse_tkhd_atom(bytes, tkhd_index);
+        debugPrint('VideoMetadataExtractor: tkhd parsed result=$result');
+        if (result != null) return result;
       }
 
       // Alternative: look for stsd atom which may contain video dimensions
       final stsd_index = _find_atom(bytes, 'stsd');
+      debugPrint('VideoMetadataExtractor: stsd_index=$stsd_index');
       if (stsd_index != -1) {
-        return _parse_stsd_atom(bytes, stsd_index);
+        final result = _parse_stsd_atom(bytes, stsd_index);
+        debugPrint('VideoMetadataExtractor: stsd parsed result=$result');
+        if (result != null) return result;
       }
 
       // Try to find dimensions in avc1 or hvc1 atoms (H.264/H.265 video)
       final avc1_index = _find_atom(bytes, 'avc1');
+      debugPrint('VideoMetadataExtractor: avc1_index=$avc1_index');
       if (avc1_index != -1) {
-        return _parse_visual_sample_entry(bytes, avc1_index);
+        final result = _parse_visual_sample_entry(bytes, avc1_index);
+        debugPrint('VideoMetadataExtractor: avc1 parsed result=$result');
+        if (result != null) return result;
       }
 
       final hvc1_index = _find_atom(bytes, 'hvc1');
+      debugPrint('VideoMetadataExtractor: hvc1_index=$hvc1_index');
       if (hvc1_index != -1) {
-        return _parse_visual_sample_entry(bytes, hvc1_index);
+        final result = _parse_visual_sample_entry(bytes, hvc1_index);
+        debugPrint('VideoMetadataExtractor: hvc1 parsed result=$result');
+        if (result != null) return result;
       }
 
       return null;
