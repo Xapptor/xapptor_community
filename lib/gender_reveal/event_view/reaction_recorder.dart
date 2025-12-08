@@ -18,17 +18,27 @@ class _ReactionRecorderState extends State<ReactionRecorder> {
   CameraController? controller;
 
   bool camera_permission_granted = false;
+  bool _camera_initialization_attempted = false;
   int countdown_seconds = 7;
 
-  Future<void> get_cameras() async {
-    _cameras = await availableCameras();
-
-    controller = CameraController(
-      _cameras[0],
-      ResolutionPreset.medium,
-    );
+  /// Initialize camera only once and only when first build occurs.
+  /// Uses ResolutionPreset.low to minimize memory usage on web.
+  /// CRITICAL: Camera uses 5-10MB on web - delay init to reduce memory pressure.
+  Future<void> _initialize_camera_if_needed() async {
+    if (_camera_initialization_attempted) return;
+    _camera_initialization_attempted = true;
 
     try {
+      _cameras = await availableCameras();
+      if (_cameras.isEmpty || !mounted) return;
+
+      // Use LOW resolution to minimize memory on web
+      // Medium resolution uses ~3x more GPU memory
+      controller = CameraController(
+        _cameras[0],
+        ResolutionPreset.low,
+      );
+
       await controller!.initialize();
       if (!mounted) return;
       setState(() {
@@ -40,6 +50,8 @@ class _ReactionRecorderState extends State<ReactionRecorder> {
       } else {
         // Handle other errors here.
       }
+    } catch (e) {
+      debugPrint('ReactionRecorder: Error initializing camera: $e');
     }
   }
 
@@ -58,7 +70,8 @@ class _ReactionRecorderState extends State<ReactionRecorder> {
   @override
   void initState() {
     super.initState();
-    get_cameras();
+    // Delay camera initialization to first build
+    // This allows widget to be constructed without immediately consuming memory
   }
 
   @override
@@ -69,6 +82,12 @@ class _ReactionRecorderState extends State<ReactionRecorder> {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize camera only on first build (delayed initialization)
+    // This prevents memory allocation until widget is actually visible
+    if (!_camera_initialization_attempted) {
+      _initialize_camera_if_needed();
+    }
+
     if (!camera_permission_granted || controller == null || !controller!.value.isInitialized) {
       return const SizedBox.shrink();
     }

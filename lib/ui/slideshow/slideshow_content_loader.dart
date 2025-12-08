@@ -64,7 +64,8 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
 
   /// Maximum number of content caches to keep. Prevents unbounded memory growth
   /// when navigating between different slideshow instances.
-  static const int _max_cached_content_entries = 3;
+  /// Reduced to 1 for iOS Safari memory constraints - each cache holds decoded images.
+  static const int _max_cached_content_entries = 1;
 
   /// Batch size for URL fetching to prevent network congestion.
   static const int _url_fetch_batch_size = 5;
@@ -163,13 +164,34 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
 
   /// Enforce maximum cache size by removing oldest entries.
   /// This prevents unbounded memory growth when navigating between slideshows.
+  /// Also evicts images from Flutter's internal cache to free GPU memory.
   void _enforce_cache_limit() {
     while (_globally_cached_content.length >= _max_cached_content_entries) {
       // Remove the oldest entry (first key in insertion order)
       final oldest_key = _globally_cached_content.keys.first;
-      _globally_cached_content.remove(oldest_key);
+      final oldest_cache = _globally_cached_content.remove(oldest_key);
       _globally_initialized_paths.remove(oldest_key);
+
+      // CRITICAL: Evict images from Flutter's internal cache to free GPU memory
+      // Without this, decoded image bitmaps remain in memory even after removal
+      if (oldest_cache != null) {
+        for (final url in oldest_cache.loaded_images_cache.keys) {
+          _evict_image_from_flutter_cache(url);
+        }
+      }
+
       debugPrint('Slideshow: Evicted oldest cache entry: $oldest_key');
+    }
+  }
+
+  /// Evict an image from Flutter's internal image cache.
+  /// This is critical for iOS Safari memory management.
+  static void _evict_image_from_flutter_cache(String url) {
+    try {
+      final NetworkImage provider = NetworkImage(url);
+      PaintingBinding.instance.imageCache.evict(provider);
+    } catch (e) {
+      debugPrint('Slideshow: Error evicting image from cache: $e');
     }
   }
 
@@ -177,6 +199,13 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   /// (e.g., when navigating away from the page containing the slideshow).
   /// This is important for iOS Safari memory management.
   static void clear_all_static_caches() {
+    // CRITICAL: Evict all images from Flutter's cache before clearing
+    for (final cached in _globally_cached_content.values) {
+      for (final url in cached.loaded_images_cache.keys) {
+        _evict_image_from_flutter_cache(url);
+      }
+    }
+
     _globally_loading_paths.clear();
     _globally_initialized_paths.clear();
     _globally_cached_content.clear();
@@ -184,6 +213,7 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
   }
 
   /// Restore content data from the global cache.
+  /// IMPORTANT: Clears existing data before restoring to prevent memory duplication.
   void _restore_from_cache(String content_key) {
     final cached = _globally_cached_content[content_key];
     if (cached == null) {
@@ -191,6 +221,21 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
       return;
     }
 
+    // CRITICAL: Clear existing data BEFORE restoring to prevent memory duplication
+    // Without this, repeated navigation would accumulate duplicate image references
+    image_urls.clear();
+    video_urls.clear();
+    portrait_image_urls.clear();
+    landscape_image_urls.clear();
+    all_image_urls.clear();
+    portrait_video_urls.clear();
+    landscape_video_urls.clear();
+    loaded_images_cache.clear();
+    all_images.clear();
+    portrait_images.clear();
+    landscape_images.clear();
+
+    // Now restore from cache
     image_urls = List.from(cached.image_urls);
     video_urls = List.from(cached.video_urls);
     portrait_image_urls = List.from(cached.portrait_image_urls);

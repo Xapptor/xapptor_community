@@ -89,11 +89,15 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget>
     });
   }
 
-  /// Cancel all animation timers.
+  /// Cancel all animation timers and null them to prevent reuse.
+  /// CRITICAL: Setting to null prevents memory leaks from lingering references.
   void cancel_all_animation_timers() {
     shake_timer?.cancel();
+    shake_timer = null;
     voting_card_hide_timer?.cancel();
+    voting_card_hide_timer = null;
     voting_card_show_timer?.cancel();
+    voting_card_show_timer = null;
   }
 
   /// Dispose all animation resources.

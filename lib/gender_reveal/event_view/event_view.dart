@@ -7,7 +7,6 @@ import 'package:xapptor_community/gender_reveal/event_view/event_view_state.dart
 import 'package:xapptor_community/gender_reveal/event_view/event_view_translation.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_voting.dart';
 import 'package:xapptor_community/gender_reveal/event_view/event_view_widgets.dart';
-import 'package:xapptor_community/gender_reveal/event_view/reaction_recorder.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
 import 'package:xapptor_ui/values/ui.dart';
@@ -73,8 +72,13 @@ class EventView extends StatefulWidget {
 }
 
 class _EventViewState extends State<EventView>
-    with TickerProviderStateMixin, EventViewAnimationsMixin, EventViewVotingMixin,
-         EventViewTranslationMixin, EventViewStateMixin, EventViewWidgetsMixin {
+    with
+        TickerProviderStateMixin,
+        EventViewAnimationsMixin,
+        EventViewVotingMixin,
+        EventViewTranslationMixin,
+        EventViewStateMixin,
+        EventViewWidgetsMixin {
   @override
   String get mother_name => widget.mother_name;
   @override
@@ -119,7 +123,16 @@ class _EventViewState extends State<EventView>
           ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade200)))
           : SafeArea(
               child: Stack(children: [
-                _build_main_content(size.width, size.height, portrait, has_votes, boy_color, girl_color, card_overlay, small_countdown),
+                _build_main_content(
+                  size.width,
+                  size.height,
+                  portrait,
+                  has_votes,
+                  boy_color,
+                  girl_color,
+                  card_overlay,
+                  small_countdown,
+                ),
                 if (widget.has_language_picker && translation_stream_list.isNotEmpty)
                   _build_language_picker(lang_bg, lang_text),
               ]),
@@ -129,13 +142,21 @@ class _EventViewState extends State<EventView>
     );
   }
 
-  Widget _build_main_content(double w, double h, bool portrait, bool has_votes, Color boy, Color girl, Color overlay, bool small) {
+  Widget _build_main_content(
+    double w,
+    double h,
+    bool portrait,
+    bool has_votes,
+    Color boy,
+    Color girl,
+    Color overlay,
+    bool small,
+  ) {
     return Positioned.fill(
       child: Stack(children: [
         Positioned.fill(child: _build_slideshow()),
         if (event != null && enable_voting_card && !small)
           _build_voting_card(w, h, portrait, has_votes, boy, girl, overlay),
-        if (small) Positioned(bottom: 0, right: 0, child: SizedBox(height: h / 4, width: w / 4, child: const ReactionRecorder())),
       ]),
     );
   }
@@ -192,23 +213,42 @@ class _EventViewState extends State<EventView>
     return LayoutBuilder(builder: (context, constraints) {
       final stacked = portrait || constraints.maxWidth < 760;
       final intro = build_intro_section(
-        context: context, stacked: stacked, constraints: constraints,
-        boy_color: boy, girl_color: girl, on_celebration_pressed: on_celebration_pressed,
+        context: context,
+        stacked: stacked,
+        constraints: constraints,
+        boy_color: boy,
+        girl_color: girl,
+        on_celebration_pressed: on_celebration_pressed,
         on_vote_selected: (vote) => on_vote_selected(vote, context),
-        wishlist_button_builder: widget.wishlist_button_builder, source_language_index: source_language_index,
-        event_text_list: widget.event_text_list, title_style: widget.title_style, subtitle_style: widget.subtitle_style,
+        wishlist_button_builder: widget.wishlist_button_builder,
+        source_language_index: source_language_index,
+        event_text_list: widget.event_text_list,
+        title_style: widget.title_style,
+        subtitle_style: widget.subtitle_style,
       );
       final charts = build_charts_wrapper(
-        context: context, stacked: stacked, constraints: constraints, portrait: portrait,
-        has_votes: has_votes, boy_color: boy, girl_color: girl, source_language_index: source_language_index,
-        event_text_list: widget.event_text_list, boy_gradient_start: widget.boy_gradient_start,
-        boy_gradient_end: widget.boy_gradient_end, girl_gradient_start: widget.girl_gradient_start,
+        context: context,
+        stacked: stacked,
+        constraints: constraints,
+        portrait: portrait,
+        has_votes: has_votes,
+        boy_color: boy,
+        girl_color: girl,
+        source_language_index: source_language_index,
+        event_text_list: widget.event_text_list,
+        boy_gradient_start: widget.boy_gradient_start,
+        boy_gradient_end: widget.boy_gradient_end,
+        girl_gradient_start: widget.girl_gradient_start,
         girl_gradient_end: widget.girl_gradient_end,
       );
       final content = stacked
-          ? Column(mainAxisSize: MainAxisSize.min, children: [intro, const SizedBox(height: sized_box_space * 4), charts])
-          : Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Flexible(flex: 48, child: intro), const SizedBox(width: sized_box_space), Flexible(flex: 52, child: charts)]);
+          ? Column(
+              mainAxisSize: MainAxisSize.min, children: [intro, const SizedBox(height: sized_box_space * 4), charts])
+          : Row(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Flexible(flex: 48, child: intro),
+              const SizedBox(width: sized_box_space),
+              Flexible(flex: 52, child: charts)
+            ]);
       return SingleChildScrollView(
         padding: EdgeInsets.only(bottom: stacked ? 40 : 56),
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -222,7 +262,8 @@ class _EventViewState extends State<EventView>
 
   Widget _build_language_picker(Color bg, Color text) {
     return Positioned(
-      top: 8, right: sized_box_space,
+      top: 8,
+      right: sized_box_space,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(outline_border_radius)),

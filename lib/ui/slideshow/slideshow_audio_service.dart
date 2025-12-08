@@ -323,13 +323,33 @@ class SlideshowAudioService {
     _cache.clear();
   }
 
+  /// Reset the audio service to free memory while keeping singleton usable.
+  /// This is called when navigating away from slideshow to release audio buffers.
+  /// CRITICAL for iOS Safari memory management.
   Future<void> reset() async {
     _debounce_timer?.cancel();
     _pending_state = null;
     await _player_state_subscription?.cancel();
     await _current_index_subscription?.cancel();
-    await _audio_player.stop();
+    _player_state_subscription = null;
+    _current_index_subscription = null;
+
+    // CRITICAL: Stop and seek to release audio decoder buffers
+    // iOS Safari doesn't release memory on stop() alone
+    try {
+      await _audio_player.stop();
+      await _audio_player.seek(Duration.zero);
+      // On web, add delay to help Safari release audio decoder
+      if (kIsWeb) {
+        await Future.delayed(const Duration(milliseconds: 200));
+      }
+    } catch (e) {
+      debugPrint('SlideshowAudioService: Error during reset stop: $e');
+    }
+
     _is_initialized = _is_loading = _is_shuffle_enabled = false;
+    _is_muted = false;
+    _volume = 1.0;
     _loop_mode = LoopMode.all;
     _initialization_future = null;
     _audio_sources.clear();
@@ -340,5 +360,6 @@ class SlideshowAudioService {
     _shuffle_position = 0;
     _cache.clear();
     _emit_state();
+    debugPrint('SlideshowAudioService: Reset complete');
   }
 }

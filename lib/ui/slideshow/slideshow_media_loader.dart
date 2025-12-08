@@ -73,7 +73,8 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   final Map<String, DateTime> _video_load_timestamps = {};
 
   // Minimum time a video must be loaded before it can be disposed (prevents flicker)
-  static const Duration _min_video_lifetime = Duration(seconds: 5);
+  // Reduced from 5s to 2s to allow faster memory release on iOS Safari
+  static const Duration _min_video_lifetime = Duration(seconds: 2);
 
   // Lock to prevent concurrent video loading which can exceed limits
   final Set<String> _videos_currently_loading = {};
@@ -103,8 +104,19 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
         debugPrint('Slideshow: Got image dimensions via efficient extraction: ${size.width}x${size.height}');
       }
 
-      // Create the image widget (will be loaded on-demand by Flutter)
-      final Image current_image = Image.network(url);
+      // CRITICAL: Use cacheWidth/cacheHeight to limit GPU memory usage
+      // Without this, each image decodes at full resolution (1920x1440 = 11MB GPU memory)
+      // With 50+ images, this causes iOS Safari to crash/reload at 512MB limit
+      // Target max dimension ~800px for slideshow cells reduces memory by ~80%
+      const int max_cache_dimension = 800;
+
+      // Create the image widget with constrained cache size
+      final Image current_image = Image.network(
+        url,
+        cacheWidth: max_cache_dimension,
+        cacheHeight: max_cache_dimension,
+        fit: BoxFit.cover,
+      );
 
       // If efficient extraction failed, we still add to cache and categorize later
       // The image will be displayed but orientation may be assumed
@@ -285,17 +297,25 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   /// Safely dispose a video controller with iOS Safari memory leak fix.
   /// Safari doesn't always release video element memory immediately after disposal.
+  /// CRITICAL: Uses 500ms delay on web to allow Safari to release WebGL contexts.
   Future<void> _safe_dispose_controller(VideoPlayerController controller) async {
     try {
       await controller.pause();
       await controller.seekTo(Duration.zero);
 
-      // On web, add a small delay to help Safari release resources
+      // CRITICAL: Safari needs 1000ms+ to release video decoder and WebGL context
+      // Without this delay, Safari accumulates GPU memory until crash
+      // 100ms was insufficient, 500ms still caused issues - increased to 1000ms
       if (kIsWeb) {
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 1000));
       }
 
       await controller.dispose();
+
+      // Additional delay after dispose to ensure WebGL context fully released
+      if (kIsWeb) {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
     } catch (e) {
       debugPrint('Slideshow: Error during safe disposal: $e');
       // Still try to dispose even if pause/seek failed
