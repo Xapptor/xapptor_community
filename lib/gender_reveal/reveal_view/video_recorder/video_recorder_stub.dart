@@ -2,33 +2,33 @@
 /// This file is used when the app runs on mobile/desktop platforms.
 
 /// Find the camera video element (stub - always returns null on non-web).
-dynamic findCameraVideoElement() => null;
+dynamic find_camera_video_element() => null;
 
 /// Check if MP4 recording is supported (always false on non-web, mobile uses native MP4).
-bool isMP4RecordingSupported() => false;
+bool is_mp4_recording_supported() => false;
 
 /// Get the preferred MIME type for recording (not used on non-web).
-String getPreferredMimeType() => 'video/mp4';
+String get_preferred_mime_type() => 'video/mp4';
 
 /// Get the file extension for the preferred format.
-String getPreferredExtension() => 'mp4';
+String get_preferred_extension() => 'mp4';
 
 /// Get debug info about browser support (stub).
-String getBrowserSupportInfo() => 'Non-web platform (native MP4)';
+String get_browser_support_info() => 'Non-web platform (native MP4)';
 
 /// Web video recorder stub - does nothing on non-web platforms.
 class WebVideoRecorder {
   WebVideoRecorder({
-    required dynamic videoElement,
-    Duration? recordingDuration,
+    required dynamic video_element,
+    Duration? recording_duration,
   });
 
-  bool get isRecording => false;
-  String? get recordedVideoUrl => null;
-  String get mimeType => 'video/mp4';
-  String get fileExtension => 'mp4';
+  bool get is_recording => false;
+  String? get recorded_video_url => null;
+  String get mime_type => 'video/mp4';
+  String get file_extension => 'mp4';
 
-  Future<void> startRecording() async {}
-  Future<String?> stopRecording() async => null;
+  Future<void> start_recording() async {}
+  Future<String?> stop_recording() async => null;
   void dispose() {}
 }

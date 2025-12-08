@@ -5,7 +5,7 @@ import 'dart:async';
 import 'dart:html' as html;
 
 /// Find the first video element in the DOM that is playing (camera preview).
-html.VideoElement? findCameraVideoElement() {
+html.VideoElement? find_camera_video_element() {
   try {
     // Query all video elements in the document
     final videos = html.document.querySelectorAll('video');
@@ -31,13 +31,13 @@ html.VideoElement? findCameraVideoElement() {
 
 /// Force MP4 recording even if isTypeSupported returns false.
 /// Set to true to test MP4 on Safari/iOS.
-const bool _forceMP4 = true;
+const bool _force_mp4 = true;
 
 /// Check if MP4 recording is supported by the browser.
 /// Uses MediaRecorder.isTypeSupported() static method.
-bool isMP4RecordingSupported() {
+bool is_mp4_recording_supported() {
   // If forcing MP4, always return true to attempt MP4 recording
-  if (_forceMP4) return true;
+  if (_force_mp4) return true;
 
   try {
     // Check for MP4 with H264 codec support
@@ -55,7 +55,7 @@ bool isMP4RecordingSupported() {
 }
 
 /// Check if browser actually reports MP4 support (for logging).
-bool _browserReportsMP4Support() {
+bool _browser_reports_mp4_support() {
   try {
     if (html.MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
       return true;
@@ -71,7 +71,7 @@ bool _browserReportsMP4Support() {
 
 /// Get the preferred MIME type for recording.
 /// Returns MP4 if supported (Chrome 126+) or forced, otherwise WebM.
-String getPreferredMimeType() {
+String get_preferred_mime_type() {
   try {
     // Try MP4 with H264 codec first (best for iOS compatibility)
     if (html.MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
@@ -82,12 +82,12 @@ String getPreferredMimeType() {
       return 'video/mp4';
     }
     // If forcing MP4, try it anyway (for Safari/iOS testing)
-    if (_forceMP4) {
+    if (_force_mp4) {
       return 'video/mp4';
     }
   } catch (_) {
     // If forcing MP4, return it even on error
-    if (_forceMP4) {
+    if (_force_mp4) {
       return 'video/mp4';
     }
   }
@@ -96,23 +96,23 @@ String getPreferredMimeType() {
 }
 
 /// Get the file extension for the preferred format.
-String getPreferredExtension() {
-  return isMP4RecordingSupported() ? 'mp4' : 'webm';
+String get_preferred_extension() {
+  return is_mp4_recording_supported() ? 'mp4' : 'webm';
 }
 
 /// Get debug info about browser support.
-String getBrowserSupportInfo() {
-  final mp4H264 = _safeIsTypeSupported('video/mp4;codecs=h264');
-  final mp4Basic = _safeIsTypeSupported('video/mp4');
-  final webmVp8 = _safeIsTypeSupported('video/webm;codecs=vp8,opus');
-  final webmBasic = _safeIsTypeSupported('video/webm');
+String get_browser_support_info() {
+  final mp4_h264 = _safe_is_type_supported('video/mp4;codecs=h264');
+  final mp4_basic = _safe_is_type_supported('video/mp4');
+  final webm_vp8 = _safe_is_type_supported('video/webm;codecs=vp8,opus');
+  final webm_basic = _safe_is_type_supported('video/webm');
 
-  return 'MP4+H264: $mp4H264, MP4: $mp4Basic, WebM+VP8: $webmVp8, WebM: $webmBasic, ForceMP4: $_forceMP4';
+  return 'MP4+H264: $mp4_h264, MP4: $mp4_basic, WebM+VP8: $webm_vp8, WebM: $webm_basic, ForceMP4: $_force_mp4';
 }
 
-bool _safeIsTypeSupported(String mimeType) {
+bool _safe_is_type_supported(String mime_type) {
   try {
-    return html.MediaRecorder.isTypeSupported(mimeType);
+    return html.MediaRecorder.isTypeSupported(mime_type);
   } catch (e) {
     return false;
   }
@@ -121,124 +121,124 @@ bool _safeIsTypeSupported(String mimeType) {
 /// Web-specific video recorder using native MediaRecorder API.
 /// Supports MP4 on Chrome 126+ and falls back to WebM on other browsers.
 class WebVideoRecorder {
-  final html.VideoElement _videoElement;
-  final Duration _recordingDuration;
+  final html.VideoElement _video_element;
+  final Duration _recording_duration;
 
-  html.MediaRecorder? _mediaRecorder;
-  List<html.Blob> _recordedChunks = [];
-  String? _recordedVideoUrl;
-  bool _isRecording = false;
-  late String _mimeType;
-  late String _fileExtension;
-  Completer<String?>? _stopCompleter;
-  Timer? _durationTimer;
+  html.MediaRecorder? _media_recorder;
+  List<html.Blob> _recorded_chunks = [];
+  String? _recorded_video_url;
+  bool _is_recording = false;
+  late String _mime_type;
+  late String _file_extension;
+  Completer<String?>? _stop_completer;
+  Timer? _duration_timer;
 
   WebVideoRecorder({
-    required html.VideoElement videoElement,
-    Duration? recordingDuration,
-  })  : _videoElement = videoElement,
-        _recordingDuration = recordingDuration ?? const Duration(seconds: 10) {
-    _mimeType = getPreferredMimeType();
-    _fileExtension = getPreferredExtension();
+    required html.VideoElement video_element,
+    Duration? recording_duration,
+  })  : _video_element = video_element,
+        _recording_duration = recording_duration ?? const Duration(seconds: 10) {
+    _mime_type = get_preferred_mime_type();
+    _file_extension = get_preferred_extension();
   }
 
-  bool get isRecording => _isRecording;
-  String? get recordedVideoUrl => _recordedVideoUrl;
-  String get mimeType => _mimeType;
-  String get fileExtension => _fileExtension;
+  bool get is_recording => _is_recording;
+  String? get recorded_video_url => _recorded_video_url;
+  String get mime_type => _mime_type;
+  String get file_extension => _file_extension;
 
   /// Start recording video from the video element's stream.
-  Future<void> startRecording() async {
-    if (_isRecording) return;
+  Future<void> start_recording() async {
+    if (_is_recording) return;
 
     try {
       // Get the stream from the video element
-      final stream = _videoElement.captureStream();
+      final stream = _video_element.captureStream();
 
-      _recordedChunks = [];
-      _recordedVideoUrl = null;
+      _recorded_chunks = [];
+      _recorded_video_url = null;
 
       // Create MediaRecorder with preferred MIME type
-      _mediaRecorder = html.MediaRecorder(stream, {'mimeType': _mimeType});
+      _media_recorder = html.MediaRecorder(stream, {'mimeType': _mime_type});
 
       // Handle data available event
-      _mediaRecorder!.addEventListener('dataavailable', (event) {
-        final blobEvent = event as html.BlobEvent;
-        if (blobEvent.data != null && blobEvent.data!.size > 0) {
-          _recordedChunks.add(blobEvent.data!);
+      _media_recorder!.addEventListener('dataavailable', (event) {
+        final blob_event = event as html.BlobEvent;
+        if (blob_event.data != null && blob_event.data!.size > 0) {
+          _recorded_chunks.add(blob_event.data!);
         }
       });
 
       // Handle stop event
-      _mediaRecorder!.addEventListener('stop', (_) {
-        _finishRecording();
+      _media_recorder!.addEventListener('stop', (_) {
+        _finish_recording();
       });
 
       // Handle error event
-      _mediaRecorder!.addEventListener('error', (event) {
-        _isRecording = false;
-        _stopCompleter?.complete(null);
-        _stopCompleter = null;
+      _media_recorder!.addEventListener('error', (event) {
+        _is_recording = false;
+        _stop_completer?.complete(null);
+        _stop_completer = null;
       });
 
       // Start recording
-      _mediaRecorder!.start();
-      _isRecording = true;
+      _media_recorder!.start();
+      _is_recording = true;
 
       // Auto-stop after duration
-      _durationTimer = Timer(_recordingDuration, () {
-        stopRecording();
+      _duration_timer = Timer(_recording_duration, () {
+        stop_recording();
       });
     } catch (e) {
-      _isRecording = false;
+      _is_recording = false;
       rethrow;
     }
   }
 
   /// Stop recording and return the blob URL of the recorded video.
-  Future<String?> stopRecording() async {
-    if (!_isRecording || _mediaRecorder == null) {
-      return _recordedVideoUrl;
+  Future<String?> stop_recording() async {
+    if (!_is_recording || _media_recorder == null) {
+      return _recorded_video_url;
     }
 
-    _durationTimer?.cancel();
-    _stopCompleter = Completer<String?>();
+    _duration_timer?.cancel();
+    _stop_completer = Completer<String?>();
 
     try {
-      _mediaRecorder!.stop();
-      _isRecording = false;
+      _media_recorder!.stop();
+      _is_recording = false;
     } catch (e) {
-      _isRecording = false;
-      _stopCompleter?.complete(null);
+      _is_recording = false;
+      _stop_completer?.complete(null);
     }
 
-    return _stopCompleter?.future;
+    return _stop_completer?.future;
   }
 
-  void _finishRecording() {
-    if (_recordedChunks.isEmpty) {
-      _stopCompleter?.complete(null);
-      _stopCompleter = null;
+  void _finish_recording() {
+    if (_recorded_chunks.isEmpty) {
+      _stop_completer?.complete(null);
+      _stop_completer = null;
       return;
     }
 
     // Create blob from recorded chunks
-    final blob = html.Blob(_recordedChunks, _mimeType);
-    _recordedVideoUrl = html.Url.createObjectUrlFromBlob(blob);
-    _stopCompleter?.complete(_recordedVideoUrl);
-    _stopCompleter = null;
+    final blob = html.Blob(_recorded_chunks, _mime_type);
+    _recorded_video_url = html.Url.createObjectUrlFromBlob(blob);
+    _stop_completer?.complete(_recorded_video_url);
+    _stop_completer = null;
   }
 
   /// Dispose resources.
   void dispose() {
-    _durationTimer?.cancel();
-    if (_isRecording && _mediaRecorder != null) {
+    _duration_timer?.cancel();
+    if (_is_recording && _media_recorder != null) {
       try {
-        _mediaRecorder!.stop();
+        _media_recorder!.stop();
       } catch (_) {}
     }
-    _mediaRecorder = null;
-    _recordedChunks = [];
+    _media_recorder = null;
+    _recorded_chunks = [];
     // Note: Don't revoke URL here as it may still be needed
   }
 }

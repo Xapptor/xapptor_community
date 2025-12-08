@@ -94,13 +94,13 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
     // On web, check if MP4 recording is supported (Chrome 126+)
     // If so, we'll use native MediaRecorder for iOS-compatible videos
     if (kIsWeb) {
-      _use_native_video_recorder = video_recorder.isMP4RecordingSupported();
+      _use_native_video_recorder = video_recorder.is_mp4_recording_supported();
       debugPrint(
         'RevealReactionRecorder: MP4 support=$_use_native_video_recorder, '
-        'format=${video_recorder.getPreferredExtension()}, '
-        'mimeType=${video_recorder.getPreferredMimeType()}',
+        'format=${video_recorder.get_preferred_extension()}, '
+        'mimeType=${video_recorder.get_preferred_mime_type()}',
       );
-      debugPrint('RevealReactionRecorder: Browser support: ${video_recorder.getBrowserSupportInfo()}');
+      debugPrint('RevealReactionRecorder: Browser support: ${video_recorder.get_browser_support_info()}');
     }
     if (widget.show_preview) {
       _initialize_camera();
@@ -174,7 +174,7 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
           await _controller!.startVideoRecording();
         } else {
           // Native recording started, use its format
-          _actual_recording_format = video_recorder.getPreferredExtension();
+          _actual_recording_format = video_recorder.get_preferred_extension();
         }
       } else {
         // Camera package: WebM on web, MP4 on mobile
@@ -233,12 +233,12 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
       }
 
       _web_video_recorder = video_recorder.WebVideoRecorder(
-        videoElement: video_element,
-        recordingDuration: widget.recording_duration,
+        video_element: video_element,
+        recording_duration: widget.recording_duration,
       );
 
-      await (_web_video_recorder as video_recorder.WebVideoRecorder).startRecording();
-      debugPrint('RevealReactionRecorder: Started native web recording (${video_recorder.getPreferredExtension()})');
+      await (_web_video_recorder as video_recorder.WebVideoRecorder).start_recording();
+      debugPrint('RevealReactionRecorder: Started native web recording (${video_recorder.get_preferred_extension()})');
       return true;
     } catch (e) {
       debugPrint('RevealReactionRecorder: Native web recording failed: $e');
@@ -257,7 +257,7 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
       if (_controller?.value.previewSize == null) return null;
 
       // Use the web-specific helper to find the camera video element
-      return video_recorder.findCameraVideoElement();
+      return video_recorder.find_camera_video_element();
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error getting video element: $e');
       return null;
@@ -308,12 +308,12 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
 
     try {
       final recorder = _web_video_recorder as video_recorder.WebVideoRecorder;
-      final video_url = await recorder.stopRecording();
+      final video_url = await recorder.stop_recording();
 
       if (video_url != null) {
         debugPrint(
           'RevealReactionRecorder: Native web recording complete '
-          '(${recorder.fileExtension}): $video_url',
+          '(${recorder.file_extension}): $video_url',
         );
       }
 
@@ -339,7 +339,7 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
     if (_is_recording && _controller != null) {
       try {
         if (kIsWeb && _web_video_recorder != null) {
-          await (_web_video_recorder as video_recorder.WebVideoRecorder).stopRecording();
+          await (_web_video_recorder as video_recorder.WebVideoRecorder).stop_recording();
         } else {
           await _controller!.stopVideoRecording();
         }
