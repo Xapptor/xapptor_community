@@ -18,23 +18,12 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget> on State<T>, TickerProv
   Timer? voting_card_hide_timer;
   Timer? voting_card_show_timer;
 
-  // Tooltip state
-  final GlobalKey<TooltipState> celebration_tooltip_key = GlobalKey<TooltipState>();
-  bool tooltip_shown = false;
-
   // Voting card visibility state
   bool show_voting_card = false;
   bool enable_voting_card = false;
 
   /// Initialize all animations.
   void initialize_animations() {
-    // Show tooltip once after first build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || tooltip_shown) return;
-      celebration_tooltip_key.currentState?.ensureTooltipVisible();
-      tooltip_shown = true;
-    });
-
     // Initialize glow animation for vote buttons
     glow_controller = AnimationController(
       vsync: this,
@@ -65,12 +54,9 @@ mixin EventViewAnimationsMixin<T extends StatefulWidget> on State<T>, TickerProv
   void on_shake_status_changed(AnimationStatus status) {
     if (!mounted) return;
 
-    if (status == AnimationStatus.forward) {
-      celebration_tooltip_key.currentState?.ensureTooltipVisible();
-    } else if (status == AnimationStatus.completed) {
+    if (status == AnimationStatus.completed) {
       shake_controller.reset();
       schedule_next_shake(is_first_shake: false);
-      tooltip_shown = true;
     }
   }
 

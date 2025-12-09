@@ -222,10 +222,15 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: is_highlighted ? Colors.green.withAlpha(50) : Colors.white.withAlpha(20),
+            // Dark semi-transparent background for better visibility on light backgrounds
+            color: is_highlighted
+                ? Colors.green.withAlpha((255 * 0.3).round())
+                : Colors.brown.withAlpha((255 * 0.6).round()),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: is_highlighted ? Colors.green.withAlpha(100) : Colors.white.withAlpha(30),
+              color: is_highlighted
+                  ? Colors.green.withAlpha((255 * 0.5).round())
+                  : Colors.brown.withAlpha((255 * 0.3).round()),
             ),
           ),
           child: Column(
@@ -240,8 +245,9 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
               Text(
                 label,
                 style: TextStyle(
-                  color: is_highlighted ? Colors.green : Colors.white.withAlpha(200),
+                  color: is_highlighted ? Colors.green : Colors.white,
                   fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],

@@ -93,6 +93,7 @@ class _EventViewState extends State<EventView>
   List<String>? get dialog_text_list => widget.event_text_list?.get(source_language_index);
 
   final GlobalKey<ExpandableFabState> _fab_key = GlobalKey<ExpandableFabState>();
+  final ScrollController _voting_scroll_controller = ScrollController();
 
   @override
   void initState() {
@@ -104,6 +105,7 @@ class _EventViewState extends State<EventView>
 
   @override
   void dispose() {
+    _voting_scroll_controller.dispose();
     dispose_state();
     super.dispose();
   }
@@ -201,13 +203,19 @@ class _EventViewState extends State<EventView>
         child: Container(
           height: h * (portrait ? 0.75 : 0.8),
           width: w * (portrait ? 0.85 : 0.7),
-          padding: const EdgeInsets.all(16),
+          // Only vertical padding here - horizontal padding moved to content
+          // so scrollbar can be at the card edge
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(color: overlay, borderRadius: BorderRadius.circular(outline_border_radius)),
           child: Column(mainAxisSize: MainAxisSize.max, children: [
-            CountdownView(
-              milliseconds_sice_epoch: countdown_target_milliseconds,
-              labels: CountdownLabels.fromTextList(widget.event_text_list?.get(source_language_index)),
-              on_countdown_complete: on_countdown_complete,
+            // Countdown has its own horizontal padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: CountdownView(
+                milliseconds_sice_epoch: countdown_target_milliseconds,
+                labels: CountdownLabels.fromTextList(widget.event_text_list?.get(source_language_index)),
+                on_countdown_complete: on_countdown_complete,
+              ),
             ),
             Expanded(child: _build_voting_content(portrait, has_votes, boy, girl)),
           ]),
@@ -273,9 +281,17 @@ class _EventViewState extends State<EventView>
               ],
             );
       return Scrollbar(
+        controller: _voting_scroll_controller,
         thumbVisibility: portrait ? true : false,
         child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: stacked ? 40 : 56),
+          controller: _voting_scroll_controller,
+          // Add horizontal padding here so scrollbar stays at edge
+          // but content has proper margins
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: stacked ? 40 : 56,
+          ),
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           child: ConstrainedBox(
             constraints: BoxConstraints(

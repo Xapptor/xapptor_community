@@ -15,7 +15,6 @@ mixin EventViewWidgetsMixin {
   double get boy_votes;
   double get girl_votes;
   String? get selected_vote;
-  GlobalKey<TooltipState> get celebration_tooltip_key;
   Animation<double> get shake_animation;
   Animation<double> get glow_animation;
 
@@ -42,12 +41,11 @@ mixin EventViewWidgetsMixin {
     TextStyle? subtitle_style,
   }) {
     // Get translated text or fallback to defaults
-    // Index: 0 = Click me, 1 = Celebrate the Moment!,
+    // Index: 1 = Celebrate the Moment!,
     //        2 = Welcome message template (with {mother} and {father} placeholders),
-    //        3 = Boy, 4 = Girl, 5 = You voted for a, 6 = No votes yet,
+    //        3 = Boy, 4 = Girl, 5 = You voted for a,
     //        27 = Wishlist available after reveal (tooltip)
     final text = event_text_list?.get(source_language_index);
-    final click_me_text = text?[0] ?? 'Enjoy the moment';
     final celebrate_text = text?[1] ?? 'Celebrate the Moment!';
     final welcome_template = text?[2] ?? 'Welcome to the {mother} & {father} gender reveal celebration!';
     final boy_text = text?[3] ?? 'Boy';
@@ -76,6 +74,9 @@ mixin EventViewWidgetsMixin {
               child: Column(
                 children: [
                   // Celebration icon with shake animation
+                  // Note: No Tooltip here to avoid "mutated during performLayout" errors
+                  // when orientation changes. Tooltips use Overlay which conflicts with
+                  // LayoutBuilder during relayout.
                   AnimatedBuilder(
                     animation: shake_animation,
                     builder: (context, child) {
@@ -91,18 +92,12 @@ mixin EventViewWidgetsMixin {
                         ),
                       );
                     },
-                    child: Tooltip(
-                      key: celebration_tooltip_key,
-                      message: click_me_text,
-                      child: IconButton(
-                        iconSize: k_celebration_icon_size,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        onPressed: on_celebration_pressed,
-                        icon: const Text(
-                          "🎉",
-                          style: TextStyle(
-                            fontSize: k_celebration_icon_size,
-                          ),
+                    child: GestureDetector(
+                      onTap: on_celebration_pressed,
+                      child: const Text(
+                        "🎉",
+                        style: TextStyle(
+                          fontSize: k_celebration_icon_size,
                         ),
                       ),
                     ),

@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/glowing_reveal_button.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_animations.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
@@ -72,6 +73,13 @@ class RevealView extends StatefulWidget {
   /// Index of the background image to use from the storage folder.
   final int background_image_index;
 
+  /// Firebase Storage path for sound effects folder.
+  /// Example: "gs://genderrevealbaby-210b7.firebasestorage.app/app/example_sound_effects/"
+  final String? sound_effects_storage_path;
+
+  /// Index of the sound effect to use from the storage folder.
+  final int sound_effect_index;
+
   const RevealView({
     super.key,
     required this.mother_name,
@@ -89,6 +97,8 @@ class RevealView extends StatefulWidget {
     this.language_picker_icon_color,
     this.background_images_storage_path,
     this.background_image_index = 0,
+    this.sound_effects_storage_path,
+    this.sound_effect_index = 0,
   });
 
   @override
@@ -110,6 +120,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   String? _background_image_url;
   bool _background_image_loading = false;
 
+  // Sound effect state
+  AudioPlayer? _audio_player;
+  String? _sound_effect_url;
+  bool _sound_effect_loading = false;
+  bool _sound_effect_ready = false;
+
   @override
   void initState() {
     super.initState();
@@ -121,6 +137,8 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     _request_camera_permission_early();
     // Load background image from Firebase Storage
     _load_background_image();
+    // Load and prepare sound effect from Firebase Storage
+    _load_sound_effect();
   }
 
   /// Load background image URL from Firebase Storage.
@@ -169,6 +187,73 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     }
   }
 
+  /// Load sound effect URL from Firebase Storage and prepare the audio player.
+  Future<void> _load_sound_effect() async {
+    if (widget.sound_effects_storage_path == null) return;
+    if (_sound_effect_loading) return;
+
+    setState(() {
+      _sound_effect_loading = true;
+    });
+
+    try {
+      // Get the storage reference from the gs:// path
+      final storage_ref = FirebaseStorage.instance.refFromURL(widget.sound_effects_storage_path!);
+
+      // List all items in the folder
+      final list_result = await storage_ref.listAll();
+
+      if (list_result.items.isEmpty) {
+        debugPrint('RevealView: No sound effects found in storage path');
+        return;
+      }
+
+      // Get the sound effect at the specified index (or first if index is out of bounds)
+      final sfx_index = widget.sound_effect_index.clamp(0, list_result.items.length - 1);
+      final sfx_ref = list_result.items[sfx_index];
+
+      // Get the download URL
+      final download_url = await sfx_ref.getDownloadURL();
+
+      if (!mounted) return;
+
+      // Initialize and prepare the audio player
+      _audio_player = AudioPlayer();
+      await _audio_player!.setUrl(download_url);
+
+      if (!mounted) return;
+
+      setState(() {
+        _sound_effect_url = download_url;
+        _sound_effect_loading = false;
+        _sound_effect_ready = true;
+      });
+
+      debugPrint('RevealView: Sound effect loaded and ready: $download_url');
+    } catch (e) {
+      debugPrint('RevealView: Error loading sound effect: $e');
+      if (mounted) {
+        setState(() {
+          _sound_effect_loading = false;
+        });
+      }
+    }
+  }
+
+  /// Play the reveal sound effect.
+  Future<void> _play_reveal_sound_effect() async {
+    if (!_sound_effect_ready || _audio_player == null) return;
+
+    try {
+      // Seek to start in case it was played before (for replay)
+      await _audio_player!.seek(Duration.zero);
+      await _audio_player!.play();
+      debugPrint('RevealView: Playing reveal sound effect');
+    } catch (e) {
+      debugPrint('RevealView: Error playing sound effect: $e');
+    }
+  }
+
   /// Request camera permission early, before the user presses "Reveal Now!".
   /// This reduces friction during the reveal moment by avoiding permission
   /// dialogs interrupting the animation flow.
@@ -197,6 +282,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
   @override
   void dispose() {
+    _audio_player?.dispose();
     dispose_reveal_state();
     super.dispose();
   }
@@ -251,9 +337,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   }
 
   void _handle_reveal_button_pressed() {
-    // TODO: Add sound effect here
-    // This is where you can trigger a VFX/reveal sound.
-    // Example: audio_player.play('reveal_sound.mp3');
+    // Play reveal sound effect
+    _play_reveal_sound_effect();
+
     setState(() {
       _reveal_triggered = true;
     });
@@ -318,9 +404,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               if (!show_share_options && !reaction_recording_complete)
                 _build_camera_preview(portrait, camera_size),
 
-              // Show "Reaction Recorded" indicator when recording is complete and video was captured
-              if (reaction_recording_complete && reaction_video_path != null)
-                _build_reaction_recorded_indicator(portrait),
+              // Show "Reaction Recorded" indicator when recording is complete
+              // Shows regardless of whether video was successfully saved
+              if (reaction_recording_complete) _build_reaction_recorded_indicator(portrait),
             ],
 
             // Share options overlay (after animation completes)

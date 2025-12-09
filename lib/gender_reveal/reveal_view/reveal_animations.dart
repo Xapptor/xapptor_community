@@ -417,7 +417,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         // Center content
         Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 100),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -438,110 +438,114 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                   ),
 
                 // Gender reveal text with dramatic glow, scale and shimmer effects
+                // Using UnconstrainedBox to allow glow shadows to extend beyond parent bounds
                 if (_show_gender_text)
-                  AnimatedBuilder(
-                    animation: Listenable.merge([
-                      _text_scale_animation,
-                      _bounce_animation,
-                      _glow_animation,
-                      _shimmer_animation,
-                    ]),
-                    builder: (context, child) {
-                      // Combine initial scale with continuous bounce
-                      final scale = _text_scale_animation.value *
-                          (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
+                  UnconstrainedBox(
+                    clipBehavior: Clip.none,
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _text_scale_animation,
+                        _bounce_animation,
+                        _glow_animation,
+                        _shimmer_animation,
+                      ]),
+                      builder: (context, child) {
+                        // Combine initial scale with continuous bounce
+                        final scale = _text_scale_animation.value *
+                            (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
 
-                      // Dynamic glow intensity based on animation
-                      final glow_intensity = _glow_animation.value;
-                      final base_glow_radius = 30.0 + (glow_intensity * 50.0);
+                        // Dynamic glow intensity based on animation
+                        final glow_intensity = _glow_animation.value;
+                        final base_glow_radius = 30.0 + (glow_intensity * 50.0);
 
-                      // Shimmer offset for sparkle sweep effect
-                      final shimmer_offset = _shimmer_animation.value;
+                        // Shimmer offset for sparkle sweep effect
+                        final shimmer_offset = _shimmer_animation.value;
 
-                      return Transform.scale(
-                        scale: scale,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          clipBehavior: Clip.none,
-                          children: [
-                            // Outer glow layer (burst effect)
-                            if (glow_intensity > 0.1)
-                              Text(
-                                _reveal_text,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: text_size,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.transparent,
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: base_glow_radius * 2,
-                                      color: _reveal_color.withAlpha((150 * glow_intensity).round()),
-                                      offset: const Offset(0, 0),
-                                    ),
-                                    Shadow(
-                                      blurRadius: base_glow_radius * 3,
-                                      color: Colors.white.withAlpha((100 * glow_intensity).round()),
-                                      offset: const Offset(0, 0),
-                                    ),
-                                  ],
+                        return Transform.scale(
+                          scale: scale,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            clipBehavior: Clip.none,
+                            children: [
+                              // Outer glow layer (burst effect)
+                              if (glow_intensity > 0.1)
+                                Text(
+                                  _reveal_text,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: text_size,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.transparent,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: base_glow_radius * 2,
+                                        color: _reveal_color.withAlpha((150 * glow_intensity).round()),
+                                        offset: const Offset(0, 0),
+                                      ),
+                                      Shadow(
+                                        blurRadius: base_glow_radius * 3,
+                                        color: Colors.white.withAlpha((100 * glow_intensity).round()),
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Main text with shimmer gradient
+                              ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    colors: [
+                                      Colors.white,
+                                      Colors.white.withAlpha(200),
+                                      Colors.white,
+                                      Colors.white.withAlpha(220),
+                                      Colors.white,
+                                    ],
+                                    stops: [
+                                      (shimmer_offset - 0.3).clamp(0.0, 1.0),
+                                      (shimmer_offset - 0.1).clamp(0.0, 1.0),
+                                      shimmer_offset.clamp(0.0, 1.0),
+                                      (shimmer_offset + 0.1).clamp(0.0, 1.0),
+                                      (shimmer_offset + 0.3).clamp(0.0, 1.0),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ).createShader(bounds);
+                                },
+                                blendMode: BlendMode.srcIn,
+                                child: Text(
+                                  _reveal_text,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: text_size,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 2.0,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: base_glow_radius,
+                                        color: _reveal_color.withAlpha(200),
+                                        offset: const Offset(0, 0),
+                                      ),
+                                      Shadow(
+                                        blurRadius: base_glow_radius / 2,
+                                        color: Colors.white.withAlpha(150),
+                                        offset: const Offset(0, 0),
+                                      ),
+                                      const Shadow(
+                                        blurRadius: 40,
+                                        color: Colors.black38,
+                                        offset: Offset(3, 3),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            // Main text with shimmer gradient
-                            ShaderMask(
-                              shaderCallback: (bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    Colors.white,
-                                    Colors.white.withAlpha(200),
-                                    Colors.white,
-                                    Colors.white.withAlpha(220),
-                                    Colors.white,
-                                  ],
-                                  stops: [
-                                    (shimmer_offset - 0.3).clamp(0.0, 1.0),
-                                    (shimmer_offset - 0.1).clamp(0.0, 1.0),
-                                    shimmer_offset.clamp(0.0, 1.0),
-                                    (shimmer_offset + 0.1).clamp(0.0, 1.0),
-                                    (shimmer_offset + 0.3).clamp(0.0, 1.0),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ).createShader(bounds);
-                              },
-                              blendMode: BlendMode.srcIn,
-                              child: Text(
-                                _reveal_text,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: text_size,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 2.0,
-                                  shadows: [
-                                    Shadow(
-                                      blurRadius: base_glow_radius,
-                                      color: _reveal_color.withAlpha(200),
-                                      offset: const Offset(0, 0),
-                                    ),
-                                    Shadow(
-                                      blurRadius: base_glow_radius / 2,
-                                      color: Colors.white.withAlpha(150),
-                                      offset: const Offset(0, 0),
-                                    ),
-                                    const Shadow(
-                                      blurRadius: 40,
-                                      color: Colors.black38,
-                                      offset: Offset(3, 3),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
 
                 const SizedBox(height: 24),
@@ -603,6 +607,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         ),
 
         // Confetti - Center (top explosion) - continuous celebration
+        // Initial: 70% of base count, Reduced: 40% of base count
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
@@ -613,8 +618,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.06 : 0.03,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.5).round()
-                : k_confetti_particle_count,
+                ? (k_confetti_particle_count * 0.4).round()
+                : (k_confetti_particle_count * 0.7).round(),
             gravity: 0.15,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -623,6 +628,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         ),
 
         // Confetti - Left side - continuous celebration
+        // Initial: 35% of base count, Reduced: 20% of base count
         Align(
           alignment: Alignment.centerLeft,
           child: ConfettiWidget(
@@ -633,8 +639,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.25).round()
-                : (k_confetti_particle_count * 0.5).round(),
+                ? (k_confetti_particle_count * 0.2).round()
+                : (k_confetti_particle_count * 0.35).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -643,6 +649,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         ),
 
         // Confetti - Right side - continuous celebration
+        // Initial: 35% of base count, Reduced: 20% of base count
         Align(
           alignment: Alignment.centerRight,
           child: ConfettiWidget(
@@ -653,8 +660,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.25).round()
-                : (k_confetti_particle_count * 0.5).round(),
+                ? (k_confetti_particle_count * 0.2).round()
+                : (k_confetti_particle_count * 0.35).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),
