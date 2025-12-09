@@ -16,7 +16,13 @@ import 'package:xapptor_translation/model/text_list.dart';
 class EventView extends StatefulWidget {
   final String mother_name;
   final String father_name;
-  final Widget Function(int source_language_index) wishlist_button_builder;
+
+  /// Builder for the Amazon wishlist button.
+  /// The registry_link parameter comes from the event's Firestore document.
+  final Widget Function(
+    int source_language_index,
+    String? registry_link,
+  ) wishlist_button_builder;
   final String share_url;
   final TranslationTextListArray? event_text_list;
   final TranslationTextListArray? wishlist_text_list;
@@ -227,6 +233,7 @@ class _EventViewState extends State<EventView>
         on_celebration_pressed: on_celebration_pressed,
         on_vote_selected: (vote) => on_vote_selected(vote, context),
         wishlist_button_builder: widget.wishlist_button_builder,
+        registry_link: event?.registry_link,
         source_language_index: source_language_index,
         event_text_list: widget.event_text_list,
         title_style: widget.title_style,

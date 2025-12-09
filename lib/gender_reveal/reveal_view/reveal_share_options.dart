@@ -27,7 +27,14 @@ class RevealShareOptions extends StatefulWidget {
   final String reaction_video_format;
 
   /// Builder for the Amazon wishlist button.
-  final Widget Function(int source_language_index) wishlist_button_builder;
+  /// The registry_link parameter comes from the event's Firestore document.
+  final Widget Function(
+    int source_language_index,
+    String? registry_link,
+  ) wishlist_button_builder;
+
+  /// The Amazon registry link from Firestore (optional).
+  final String? registry_link;
 
   /// Current language index for translations.
   final int source_language_index;
@@ -57,6 +64,7 @@ class RevealShareOptions extends StatefulWidget {
     this.reaction_video_path,
     this.reaction_video_format = 'mp4',
     required this.wishlist_button_builder,
+    this.registry_link,
     this.source_language_index = 0,
     required this.boy_color,
     required this.girl_color,
@@ -217,7 +225,10 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
             const SizedBox(height: 16),
 
             // Amazon wishlist button
-            widget.wishlist_button_builder(widget.source_language_index),
+            widget.wishlist_button_builder(
+              widget.source_language_index,
+              widget.registry_link,
+            ),
 
             // Reaction video preview (if available)
             if (widget.reaction_video_path != null) ...[

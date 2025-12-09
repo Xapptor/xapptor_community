@@ -39,6 +39,7 @@ class EventModel {
   final String subtitle;
   final String title;
   final Timestamp? baby_delivery_date;
+  final String? registry_link;
 
   EventModel({
     required this.id,
@@ -54,6 +55,7 @@ class EventModel {
     required this.subtitle,
     required this.title,
     this.baby_delivery_date,
+    this.registry_link,
   });
 
   factory EventModel.fromDoc(DocumentSnapshot doc) {
@@ -75,6 +77,7 @@ class EventModel {
       subtitle: data['subtitle'] ?? '',
       title: data['title'] ?? '',
       baby_delivery_date: data['baby_delivery_date'] as Timestamp?,
+      registry_link: data['registry_link'] as String?,
     );
   }
 
@@ -92,6 +95,7 @@ class EventModel {
       'subtitle': subtitle,
       'title': title,
       if (baby_delivery_date != null) 'baby_delivery_date': baby_delivery_date,
+      if (registry_link != null) 'registry_link': registry_link,
     };
   }
 }

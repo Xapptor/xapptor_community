@@ -31,7 +31,11 @@ mixin EventViewWidgetsMixin {
     required Color girl_color,
     required VoidCallback on_celebration_pressed,
     required void Function(String vote) on_vote_selected,
-    required Widget Function(int source_language_index) wishlist_button_builder,
+    required Widget Function(
+      int source_language_index,
+      String? registry_link,
+    ) wishlist_button_builder,
+    String? registry_link,
     int source_language_index = 0,
     TranslationTextListArray? event_text_list,
     TextStyle? title_style,
@@ -40,7 +44,8 @@ mixin EventViewWidgetsMixin {
     // Get translated text or fallback to defaults
     // Index: 0 = Click me, 1 = Celebrate the Moment!,
     //        2 = Welcome message template (with {mother} and {father} placeholders),
-    //        3 = Boy, 4 = Girl, 5 = You voted for a, 6 = No votes yet
+    //        3 = Boy, 4 = Girl, 5 = You voted for a, 6 = No votes yet,
+    //        27 = Wishlist available after reveal (tooltip)
     final text = event_text_list?.get(source_language_index);
     final click_me_text = text?[0] ?? 'Enjoy the moment';
     final celebrate_text = text?[1] ?? 'Celebrate the Moment!';
@@ -48,6 +53,7 @@ mixin EventViewWidgetsMixin {
     final boy_text = text?[3] ?? 'Boy';
     final girl_text = text?[4] ?? 'Girl';
     final voted_for_text = text?[5] ?? 'You voted for a ';
+    final wishlist_tooltip_text = text != null && text.length > 27 ? text[27] : 'Available after the gender reveal';
 
     return Align(
       alignment: Alignment.topCenter,
@@ -138,13 +144,27 @@ mixin EventViewWidgetsMixin {
                   const SizedBox(height: sized_box_space),
 
                   // Wishlist button - disabled until countdown complete or fake countdown
+                  // Shows tooltip when disabled (tap on mobile, hover on desktop)
                   AnimatedOpacity(
                     opacity: wishlist_enabled ? 1.0 : 0.5,
                     duration: const Duration(milliseconds: 300),
-                    child: IgnorePointer(
-                      ignoring: !wishlist_enabled,
-                      child: wishlist_button_builder(source_language_index),
-                    ),
+                    child: wishlist_enabled
+                        ? wishlist_button_builder(
+                            source_language_index,
+                            registry_link,
+                          )
+                        : Tooltip(
+                            message: wishlist_tooltip_text,
+                            triggerMode: TooltipTriggerMode.tap,
+                            showDuration: const Duration(seconds: 3),
+                            child: IgnorePointer(
+                              ignoring: true,
+                              child: wishlist_button_builder(
+                                source_language_index,
+                                registry_link,
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               ),

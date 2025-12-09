@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/glowing_reveal_button.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_animations.dart';
@@ -27,7 +28,8 @@ class RevealView extends StatefulWidget {
   final String father_name;
 
   /// Builder for the Amazon wishlist button.
-  final Widget Function(int source_language_index) wishlist_button_builder;
+  /// The registry_link parameter comes from the event's Firestore document.
+  final Widget Function(int source_language_index, String? registry_link) wishlist_button_builder;
 
   /// Base URL for event sharing.
   final String share_url;
@@ -71,10 +73,42 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   // Whether the reveal has been triggered (button pressed)
   bool _reveal_triggered = false;
 
+  // Camera permission state for early permission request
+  bool _camera_permission_requested = false;
+  bool _camera_permission_granted = false;
+
   @override
   void initState() {
     super.initState();
     initialize_reveal_state();
+    // Request camera permission early to reduce friction during reveal
+    _request_camera_permission_early();
+  }
+
+  /// Request camera permission early, before the user presses "Reveal Now!".
+  /// This reduces friction during the reveal moment by avoiding permission
+  /// dialogs interrupting the animation flow.
+  Future<void> _request_camera_permission_early() async {
+    if (_camera_permission_requested) return;
+    _camera_permission_requested = true;
+
+    try {
+      // Simply calling availableCameras triggers the permission request
+      final cameras = await availableCameras();
+      if (!mounted) return;
+
+      setState(() {
+        _camera_permission_granted = cameras.isNotEmpty;
+      });
+
+      if (cameras.isNotEmpty) {
+        debugPrint('RevealView: Camera permission granted early');
+      }
+    } catch (e) {
+      debugPrint('RevealView: Camera permission request failed: $e');
+      // Permission denied or error - camera won't be available during reveal
+      // This is acceptable, the reveal will still work without recording
+    }
   }
 
   @override
@@ -115,6 +149,13 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   String get _baby_on_the_way_text {
     final text = widget.reveal_text_list?.get(widget.source_language_index);
     return text != null && text.length > 17 ? text[17] : '{name} is on the way!';
+  }
+
+  String get _camera_permission_message {
+    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    return text != null && text.length > 18
+        ? text[18]
+        : 'Allow camera access to record your reaction';
   }
 
   void _handle_replay() {
@@ -237,14 +278,44 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
                 on_pressed: _handle_reveal_button_pressed,
               ),
               const SizedBox(height: 32),
-              // Hint text
-              Text(
-                '✨',
-                style: TextStyle(
-                  fontSize: 32,
-                  color: Colors.white.withAlpha((255 * 0.6).round()),
+              // Camera permission message - shows while permission is being requested
+              // This informs users why we need camera access (to record their reaction)
+              if (!_camera_permission_granted && _camera_permission_requested)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.videocam_outlined,
+                        size: 18,
+                        color: Colors.white.withAlpha((255 * 0.5).round()),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _camera_permission_message,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withAlpha((255 * 0.5).round()),
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                // Hint sparkle emoji when permission is granted or not needed
+                Text(
+                  '✨',
+                  style: TextStyle(
+                    fontSize: 32,
+                    color: Colors.white.withAlpha((255 * 0.6).round()),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -361,6 +432,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
               reaction_video_path: reaction_uploaded ? reaction_video_path : null,
               reaction_video_format: reaction_video_format,
               wishlist_button_builder: widget.wishlist_button_builder,
+              registry_link: event?.registry_link,
               source_language_index: widget.source_language_index,
               boy_color: widget.boy_color,
               girl_color: widget.girl_color,
