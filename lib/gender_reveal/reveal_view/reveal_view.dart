@@ -245,11 +245,15 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
                   baby_on_the_way_text: _baby_on_the_way_text,
                   locale: current_locale,
                   on_animation_complete: on_animation_complete,
+                  reduce_confetti: show_share_options,
                 ),
               ),
 
               // Camera preview (only show during reveal, hide after recording completes)
-              if (!reaction_recording_complete) _build_camera_preview(portrait, camera_size),
+              if (!reaction_recording_complete)
+                _build_camera_preview(portrait, camera_size)
+              else if (reaction_video_path != null)
+                _build_reaction_recorded_indicator(portrait),
             ],
 
             // Share options overlay (after animation completes)
@@ -417,6 +421,65 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
         ),
       );
     }
+  }
+
+  Widget _build_reaction_recorded_indicator(bool portrait) {
+    if (portrait) {
+      return Positioned(
+        top: 16,
+        left: 0,
+        right: 0,
+        child: Center(
+          child: _build_reaction_recorded_badge(),
+        ),
+      );
+    } else {
+      return Positioned(
+        top: 16,
+        right: 16,
+        child: _build_reaction_recorded_badge(),
+      );
+    }
+  }
+
+  Widget _build_reaction_recorded_badge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withAlpha((255 * 0.6).round()),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.green.withAlpha((255 * 0.5).round()),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.green.withAlpha((255 * 0.2).round()),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check,
+              color: Colors.green,
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'Reaction Recorded',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _build_share_overlay(bool portrait) {

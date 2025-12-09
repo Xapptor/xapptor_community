@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
 import 'package:xapptor_ui/values/ui.dart';
@@ -41,6 +42,9 @@ class RevealAnimations extends StatefulWidget {
   /// Locale code for date formatting (e.g., "en", "es").
   final String locale;
 
+  /// Whether to reduce confetti intensity (e.g., after share options are shown).
+  final bool reduce_confetti;
+
   const RevealAnimations({
     super.key,
     required this.gender,
@@ -53,6 +57,7 @@ class RevealAnimations extends StatefulWidget {
     this.girl_text = "It's a Girl!",
     this.baby_on_the_way_text = "{name} is on the way!",
     this.locale = 'en',
+    this.reduce_confetti = false,
   });
 
   @override
@@ -94,10 +99,14 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
 
   /// Formats the delivery date as "Month Year" (e.g., "January 2026" / "Enero 2026").
   /// Uses the locale passed from the parent widget for proper translation.
+  /// Capitalizes the first character for proper display.
   String? get _formatted_delivery_date {
     if (widget.baby_delivery_date == null) return null;
     final date = widget.baby_delivery_date!.toDate();
-    return DateFormat.yMMMM(widget.locale).format(date);
+    final formatted = DateFormat.yMMMM(widget.locale).format(date);
+    // Capitalize first character
+    if (formatted.isEmpty) return formatted;
+    return formatted[0].toUpperCase() + formatted.substring(1);
   }
 
   /// Gets the "on the way" text with the baby name replaced.
@@ -109,6 +118,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   @override
   void initState() {
     super.initState();
+    // Initialize locale data for date formatting
+    initializeDateFormatting(widget.locale);
     _initialize_controllers();
     _start_animation_sequence();
   }
@@ -599,8 +610,10 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.03,
-            numberOfParticles: k_confetti_particle_count,
+            emissionFrequency: widget.reduce_confetti ? 0.05 : 0.03,
+            numberOfParticles: widget.reduce_confetti
+                ? (k_confetti_particle_count * 0.7).round()
+                : k_confetti_particle_count,
             gravity: 0.15,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -617,8 +630,10 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.05,
-            numberOfParticles: (k_confetti_particle_count * 0.5).round(),
+            emissionFrequency: widget.reduce_confetti ? 0.08 : 0.05,
+            numberOfParticles: widget.reduce_confetti
+                ? (k_confetti_particle_count * 0.35).round()
+                : (k_confetti_particle_count * 0.5).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -635,8 +650,10 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.05,
-            numberOfParticles: (k_confetti_particle_count * 0.5).round(),
+            emissionFrequency: widget.reduce_confetti ? 0.08 : 0.05,
+            numberOfParticles: widget.reduce_confetti
+                ? (k_confetti_particle_count * 0.35).round()
+                : (k_confetti_particle_count * 0.5).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),

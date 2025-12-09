@@ -191,18 +191,6 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
 
             const SizedBox(height: 24),
 
-            // Wishlist section
-            Text(
-              "${widget.texts.help_parents_prepare} 🍼🧸",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withAlpha(180),
-                fontSize: 13,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const SizedBox(height: 16),
-
             // Amazon wishlist button
             widget.wishlist_button_builder(
               widget.source_language_index,
