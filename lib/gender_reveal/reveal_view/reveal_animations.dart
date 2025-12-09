@@ -462,6 +462,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                         scale: scale,
                         child: Stack(
                           alignment: Alignment.center,
+                          clipBehavior: Clip.none,
                           children: [
                             // Outer glow layer (burst effect)
                             if (glow_intensity > 0.1)
@@ -610,9 +611,9 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.05 : 0.03,
+            emissionFrequency: widget.reduce_confetti ? 0.06 : 0.03,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.7).round()
+                ? (k_confetti_particle_count * 0.5).round()
                 : k_confetti_particle_count,
             gravity: 0.15,
             shouldLoop: true,
@@ -630,9 +631,9 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.08 : 0.05,
+            emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.35).round()
+                ? (k_confetti_particle_count * 0.25).round()
                 : (k_confetti_particle_count * 0.5).round(),
             gravity: 0.12,
             shouldLoop: true,
@@ -650,9 +651,9 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.08 : 0.05,
+            emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
             numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.35).round()
+                ? (k_confetti_particle_count * 0.25).round()
                 : (k_confetti_particle_count * 0.5).round(),
             gravity: 0.12,
             shouldLoop: true,

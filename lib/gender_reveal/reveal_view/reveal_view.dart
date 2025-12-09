@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/glowing_reveal_button.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_animations.dart';
@@ -64,6 +65,13 @@ class RevealView extends StatefulWidget {
   /// Icon color for the language picker.
   final Color? language_picker_icon_color;
 
+  /// Firebase Storage path for background images folder.
+  /// Example: "gs://genderrevealbaby-210b7.firebasestorage.app/app/example_backgrounds/"
+  final String? background_images_storage_path;
+
+  /// Index of the background image to use from the storage folder.
+  final int background_image_index;
+
   const RevealView({
     super.key,
     required this.mother_name,
@@ -79,6 +87,8 @@ class RevealView extends StatefulWidget {
     this.language_picker_text_color,
     this.language_picker_show_icon = false,
     this.language_picker_icon_color,
+    this.background_images_storage_path,
+    this.background_image_index = 0,
   });
 
   @override
@@ -96,6 +106,10 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   bool _camera_permission_requested = false;
   bool _camera_permission_granted = false;
 
+  // Background image state
+  String? _background_image_url;
+  bool _background_image_loading = false;
+
   @override
   void initState() {
     super.initState();
@@ -105,6 +119,54 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     load_saved_language();
     // Request camera permission early to reduce friction during reveal
     _request_camera_permission_early();
+    // Load background image from Firebase Storage
+    _load_background_image();
+  }
+
+  /// Load background image URL from Firebase Storage.
+  Future<void> _load_background_image() async {
+    if (widget.background_images_storage_path == null) return;
+    if (_background_image_loading) return;
+
+    setState(() {
+      _background_image_loading = true;
+    });
+
+    try {
+      // Get the storage reference from the gs:// path
+      final storage_ref = FirebaseStorage.instance.refFromURL(widget.background_images_storage_path!);
+
+      // List all items in the folder
+      final list_result = await storage_ref.listAll();
+
+      if (list_result.items.isEmpty) {
+        debugPrint('RevealView: No background images found in storage path');
+        return;
+      }
+
+      // Get the image at the specified index (or first if index is out of bounds)
+      final image_index = widget.background_image_index.clamp(0, list_result.items.length - 1);
+      final image_ref = list_result.items[image_index];
+
+      // Get the download URL
+      final download_url = await image_ref.getDownloadURL();
+
+      if (!mounted) return;
+
+      setState(() {
+        _background_image_url = download_url;
+        _background_image_loading = false;
+      });
+
+      debugPrint('RevealView: Background image loaded: $download_url');
+    } catch (e) {
+      debugPrint('RevealView: Error loading background image: $e');
+      if (mounted) {
+        setState(() {
+          _background_image_loading = false;
+        });
+      }
+    }
   }
 
   /// Request camera permission early, before the user presses "Reveal Now!".
@@ -227,6 +289,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
       body: SafeArea(
         child: Stack(
           children: [
+            // Background image (if available)
+            if (_background_image_url != null) _build_background_image(),
+
             // Show reveal button or animation based on state
             if (!_reveal_triggered)
               _build_reveal_button_view()
@@ -249,10 +314,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
                 ),
               ),
 
-              // Camera preview (only show during reveal, hide after recording completes)
-              if (!reaction_recording_complete)
-                _build_camera_preview(portrait, camera_size)
-              else if (reaction_video_path != null)
+              // Camera preview (only show during reveal, hide when share options appear or recording completes)
+              if (!show_share_options && !reaction_recording_complete)
+                _build_camera_preview(portrait, camera_size),
+
+              // Show "Reaction Recorded" indicator when recording is complete and video was captured
+              if (reaction_recording_complete && reaction_video_path != null)
                 _build_reaction_recorded_indicator(portrait),
             ],
 
@@ -268,18 +335,39 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     );
   }
 
+  Widget _build_background_image() {
+    return Positioned.fill(
+      child: Image.network(
+        _background_image_url!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('RevealView: Error displaying background image: $error');
+          return const SizedBox.shrink();
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+
   Widget _build_reveal_button_view() {
     return Positioned.fill(
       child: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Colors.grey.shade900,
-              Colors.black,
-            ],
-            radius: 1.2,
-          ),
-        ),
+        decoration: _background_image_url != null
+            ? BoxDecoration(
+                color: Colors.black.withAlpha((255 * 0.5).round()),
+              )
+            : BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.grey.shade900,
+                    Colors.black,
+                  ],
+                  radius: 1.2,
+                ),
+              ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
