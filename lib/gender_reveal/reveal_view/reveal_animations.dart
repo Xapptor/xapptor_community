@@ -5,6 +5,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
+import 'package:xapptor_ui/values/ui.dart';
 
 /// Widget that displays the gender reveal celebration animations.
 /// Includes confetti explosion and animated text reveal.
@@ -37,6 +38,9 @@ class RevealAnimations extends StatefulWidget {
   /// Use {name} as placeholder for the baby's name.
   final String baby_on_the_way_text;
 
+  /// Locale code for date formatting (e.g., "en", "es").
+  final String locale;
+
   const RevealAnimations({
     super.key,
     required this.gender,
@@ -48,6 +52,7 @@ class RevealAnimations extends StatefulWidget {
     this.boy_text = "It's a Boy!",
     this.girl_text = "It's a Girl!",
     this.baby_on_the_way_text = "{name} is on the way!",
+    this.locale = 'en',
   });
 
   @override
@@ -65,30 +70,34 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   late AnimationController _text_scale_controller;
   late AnimationController _bounce_controller;
   late AnimationController _name_fade_controller;
+  late AnimationController _glow_controller;
+  late AnimationController _shimmer_controller;
 
   // Animations
   late Animation<double> _pulse_animation;
   late Animation<double> _text_scale_animation;
   late Animation<double> _bounce_animation;
   late Animation<double> _name_fade_animation;
+  late Animation<double> _glow_animation;
+  late Animation<double> _shimmer_animation;
 
   // State
   bool _show_gender_text = false;
   bool _show_baby_name = false;
   Timer? _gender_reveal_timer;
   Timer? _name_reveal_timer;
-  Timer? _confetti_stop_timer;
   Timer? _animation_complete_timer;
 
   bool get _is_boy => widget.gender.toLowerCase() == 'boy';
   Color get _reveal_color => _is_boy ? widget.boy_color : widget.girl_color;
   String get _reveal_text => _is_boy ? widget.boy_text : widget.girl_text;
 
-  /// Formats the delivery date as "Month Year" (e.g., "January 2026").
+  /// Formats the delivery date as "Month Year" (e.g., "January 2026" / "Enero 2026").
+  /// Uses the locale passed from the parent widget for proper translation.
   String? get _formatted_delivery_date {
     if (widget.baby_delivery_date == null) return null;
     final date = widget.baby_delivery_date!.toDate();
-    return DateFormat.yMMMM().format(date);
+    return DateFormat.yMMMM(widget.locale).format(date);
   }
 
   /// Gets the "on the way" text with the baby name replaced.
@@ -125,34 +134,90 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       CurvedAnimation(parent: _pulse_controller, curve: Curves.easeInOut),
     );
 
-    // Text scale animation for dramatic reveal (bounce forward effect)
+    // Text scale animation for dramatic reveal (explosive entrance)
     _text_scale_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: k_text_scale_animation_duration_ms),
+      duration: const Duration(milliseconds: 1200),
     );
-    _text_scale_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _text_scale_controller, curve: Curves.elasticOut),
-    );
+    _text_scale_animation = TweenSequence<double>([
+      // Start from tiny
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 1.3).chain(
+          CurveTween(curve: Curves.easeOutBack),
+        ),
+        weight: 60,
+      ),
+      // Overshoot and settle
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.3, end: 1.0).chain(
+          CurveTween(curve: Curves.elasticOut),
+        ),
+        weight: 40,
+      ),
+    ]).animate(_text_scale_controller);
 
-    // Bounce animation for continuous subtle bounce effect after reveal
+    // Bounce animation for continuous "heartbeat" effect after reveal
     _bounce_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
     );
     _bounce_animation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.08).chain(
+        tween: Tween<double>(begin: 1.0, end: 1.05).chain(
           CurveTween(curve: Curves.easeOut),
         ),
-        weight: 50,
+        weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.08, end: 1.0).chain(
-          CurveTween(curve: Curves.bounceOut),
+        tween: Tween<double>(begin: 1.05, end: 0.98).chain(
+          CurveTween(curve: Curves.easeInOut),
         ),
-        weight: 50,
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.98, end: 1.03).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 25,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.03, end: 1.0).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 25,
       ),
     ]).animate(_bounce_controller);
+
+    // Glow animation for burst effect on reveal
+    _glow_controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _glow_animation = TweenSequence<double>([
+      // Initial burst
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 1.0).chain(
+          CurveTween(curve: Curves.easeOut),
+        ),
+        weight: 30,
+      ),
+      // Fade down
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.3).chain(
+          CurveTween(curve: Curves.easeInOut),
+        ),
+        weight: 70,
+      ),
+    ]).animate(_glow_controller);
+
+    // Shimmer animation for sparkle effect
+    _shimmer_controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    );
+    _shimmer_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmer_controller, curve: Curves.linear),
+    );
 
     // Name fade animation
     _name_fade_controller = AnimationController(
@@ -186,12 +251,18 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       _show_gender_text = true;
     });
 
-    // Start text scale animation with bounce
+    // Start all reveal animations
     _text_scale_controller.forward().then((_) {
       if (!mounted) return;
       // Start continuous bounce after initial reveal
       _bounce_controller.repeat();
     });
+
+    // Start glow burst
+    _glow_controller.forward();
+
+    // Start shimmer effect (repeating)
+    _shimmer_controller.repeat();
 
     // Start confetti from multiple directions
     _center_confetti_controller.play();
@@ -214,16 +285,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       );
     }
 
-    // Schedule confetti stop
-    _confetti_stop_timer = Timer(
-      const Duration(seconds: k_confetti_emission_duration_seconds),
-      () {
-        if (!mounted) return;
-        _center_confetti_controller.stop();
-        _left_confetti_controller.stop();
-        _right_confetti_controller.stop();
-      },
-    );
+    // Confetti now runs continuously (shouldLoop: true), no stop timer needed
 
     // Schedule animation complete callback
     _animation_complete_timer = Timer(
@@ -240,7 +302,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     // Cancel all timers
     _gender_reveal_timer?.cancel();
     _name_reveal_timer?.cancel();
-    _confetti_stop_timer?.cancel();
     _animation_complete_timer?.cancel();
 
     // Dispose confetti controllers
@@ -253,6 +314,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     _text_scale_controller.dispose();
     _bounce_controller.dispose();
     _name_fade_controller.dispose();
+    _glow_controller.dispose();
+    _shimmer_controller.dispose();
 
     super.dispose();
   }
@@ -363,36 +426,107 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                     },
                   ),
 
-                // Gender reveal text with bounce effect
+                // Gender reveal text with dramatic glow, scale and shimmer effects
                 if (_show_gender_text)
                   AnimatedBuilder(
-                    animation: Listenable.merge([_text_scale_animation, _bounce_animation]),
+                    animation: Listenable.merge([
+                      _text_scale_animation,
+                      _bounce_animation,
+                      _glow_animation,
+                      _shimmer_animation,
+                    ]),
                     builder: (context, child) {
                       // Combine initial scale with continuous bounce
                       final scale = _text_scale_animation.value *
                           (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
+
+                      // Dynamic glow intensity based on animation
+                      final glow_intensity = _glow_animation.value;
+                      final base_glow_radius = 30.0 + (glow_intensity * 50.0);
+
+                      // Shimmer offset for sparkle sweep effect
+                      final shimmer_offset = _shimmer_animation.value;
+
                       return Transform.scale(
                         scale: scale,
-                        child: Text(
-                          _reveal_text,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: text_size,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 20,
-                                color: _reveal_color.withAlpha(180),
-                                offset: const Offset(0, 0),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Outer glow layer (burst effect)
+                            if (glow_intensity > 0.1)
+                              Text(
+                                _reveal_text,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: text_size,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.transparent,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: base_glow_radius * 2,
+                                      color: _reveal_color.withAlpha((150 * glow_intensity).round()),
+                                      offset: const Offset(0, 0),
+                                    ),
+                                    Shadow(
+                                      blurRadius: base_glow_radius * 3,
+                                      color: Colors.white.withAlpha((100 * glow_intensity).round()),
+                                      offset: const Offset(0, 0),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const Shadow(
-                                blurRadius: 40,
-                                color: Colors.black26,
-                                offset: Offset(2, 2),
+                            // Main text with shimmer gradient
+                            ShaderMask(
+                              shaderCallback: (bounds) {
+                                return LinearGradient(
+                                  colors: [
+                                    Colors.white,
+                                    Colors.white.withAlpha(200),
+                                    Colors.white,
+                                    Colors.white.withAlpha(220),
+                                    Colors.white,
+                                  ],
+                                  stops: [
+                                    (shimmer_offset - 0.3).clamp(0.0, 1.0),
+                                    (shimmer_offset - 0.1).clamp(0.0, 1.0),
+                                    shimmer_offset.clamp(0.0, 1.0),
+                                    (shimmer_offset + 0.1).clamp(0.0, 1.0),
+                                    (shimmer_offset + 0.3).clamp(0.0, 1.0),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds);
+                              },
+                              blendMode: BlendMode.srcIn,
+                              child: Text(
+                                _reveal_text,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: text_size,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 2.0,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: base_glow_radius,
+                                      color: _reveal_color.withAlpha(200),
+                                      offset: const Offset(0, 0),
+                                    ),
+                                    Shadow(
+                                      blurRadius: base_glow_radius / 2,
+                                      color: Colors.white.withAlpha(150),
+                                      offset: const Offset(0, 0),
+                                    ),
+                                    const Shadow(
+                                      blurRadius: 40,
+                                      color: Colors.black38,
+                                      offset: Offset(3, 3),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -450,12 +584,13 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                       ],
                     ),
                   ),
+                SizedBox(height: sized_box_space * (portrait ? 6 : 4)),
               ],
             ),
           ),
         ),
 
-        // Confetti - Center (top explosion)
+        // Confetti - Center (top explosion) - continuous celebration
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
@@ -464,16 +599,16 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.05,
+            emissionFrequency: 0.03,
             numberOfParticles: k_confetti_particle_count,
-            gravity: 0.2,
-            shouldLoop: false,
+            gravity: 0.15,
+            shouldLoop: true,
             colors: _get_confetti_colors(),
             createParticlePath: _draw_confetti_shape,
           ),
         ),
 
-        // Confetti - Left side
+        // Confetti - Left side - continuous celebration
         Align(
           alignment: Alignment.centerLeft,
           child: ConfettiWidget(
@@ -482,16 +617,16 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.08,
-            numberOfParticles: (k_confetti_particle_count * 0.6).round(),
-            gravity: 0.15,
-            shouldLoop: false,
+            emissionFrequency: 0.05,
+            numberOfParticles: (k_confetti_particle_count * 0.5).round(),
+            gravity: 0.12,
+            shouldLoop: true,
             colors: _get_confetti_colors(),
             createParticlePath: _draw_confetti_shape,
           ),
         ),
 
-        // Confetti - Right side
+        // Confetti - Right side - continuous celebration
         Align(
           alignment: Alignment.centerRight,
           child: ConfettiWidget(
@@ -500,10 +635,10 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: 0.08,
-            numberOfParticles: (k_confetti_particle_count * 0.6).round(),
-            gravity: 0.15,
-            shouldLoop: false,
+            emissionFrequency: 0.05,
+            numberOfParticles: (k_confetti_particle_count * 0.5).round(),
+            gravity: 0.12,
+            shouldLoop: true,
             colors: _get_confetti_colors(),
             createParticlePath: _draw_confetti_shape,
           ),

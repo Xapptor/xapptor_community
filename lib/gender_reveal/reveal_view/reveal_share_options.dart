@@ -157,18 +157,6 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Section header
-            Text(
-              widget.texts.share_the_joy,
-              style: TextStyle(
-                color: Colors.white.withAlpha(200),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 20),
-
             // Share buttons row
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -203,18 +191,9 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
 
             const SizedBox(height: 24),
 
-            // Divider
-            Container(
-              width: 100,
-              height: 1,
-              color: Colors.white.withAlpha(50),
-            ),
-
-            const SizedBox(height: 24),
-
             // Wishlist section
             Text(
-              widget.texts.help_parents_prepare,
+              "${widget.texts.help_parents_prepare} 🍼🧸",
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withAlpha(180),

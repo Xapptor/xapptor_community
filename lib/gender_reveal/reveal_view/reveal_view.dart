@@ -6,9 +6,12 @@ import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dar
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_reaction_recorder.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_share_options.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_view_state.dart';
+import 'package:xapptor_community/gender_reveal/reveal_view/reveal_view_translation.dart';
 import 'package:xapptor_router/V2/app_screens_v2.dart';
+import 'package:xapptor_translation/language_picker.dart';
 import 'package:xapptor_translation/model/text_list.dart';
 import 'package:xapptor_ui/utils/is_portrait.dart';
+import 'package:xapptor_ui/values/ui.dart';
 
 /// The gender reveal animation screen.
 /// Displays a beautiful reveal animation with confetti and optional reaction recording.
@@ -46,8 +49,20 @@ class RevealView extends StatefulWidget {
   /// Background color for overlays.
   final Color? overlay_color;
 
-  /// Current language index.
-  final int source_language_index;
+  /// Whether to show the language picker.
+  final bool has_language_picker;
+
+  /// Background color for the language picker container.
+  final Color? language_picker_background_color;
+
+  /// Text color for the language picker.
+  final Color? language_picker_text_color;
+
+  /// Whether to show the icon in the language picker.
+  final bool language_picker_show_icon;
+
+  /// Icon color for the language picker.
+  final Color? language_picker_icon_color;
 
   const RevealView({
     super.key,
@@ -59,14 +74,18 @@ class RevealView extends StatefulWidget {
     this.boy_color = const Color(0xFF5DADE2),
     this.girl_color = const Color(0xFFAF7AC5),
     this.overlay_color,
-    this.source_language_index = 0,
+    this.has_language_picker = false,
+    this.language_picker_background_color,
+    this.language_picker_text_color,
+    this.language_picker_show_icon = false,
+    this.language_picker_icon_color,
   });
 
   @override
   State<RevealView> createState() => _RevealViewState();
 }
 
-class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
+class _RevealViewState extends State<RevealView> with RevealViewStateMixin, RevealViewTranslationMixin {
   // Key for forcing animation rebuild on replay
   Key _animation_key = UniqueKey();
 
@@ -81,6 +100,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   void initState() {
     super.initState();
     initialize_reveal_state();
+    // Initialize translation and load saved language preference
+    init_translation_streams();
+    load_saved_language();
     // Request camera permission early to reduce friction during reveal
     _request_camera_permission_early();
   }
@@ -118,8 +140,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   }
 
   /// Get translated texts or fallbacks.
+  /// Uses source_language_index from RevealViewTranslationMixin.
   RevealShareTexts get _share_texts {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     if (text != null && text.length >= 13) {
       return RevealShareTexts.fromTextList(text);
     }
@@ -127,35 +150,33 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
   }
 
   String get _its_a_boy_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     return text != null && text.length > 13 ? text[13] : "It's a Boy!";
   }
 
   String get _its_a_girl_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     return text != null && text.length > 14 ? text[14] : "It's a Girl!";
   }
 
   String get _login_prompt_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     return text != null && text.length > 15 ? text[15] : 'Login to save your reaction';
   }
 
   String get _reveal_now_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     return text != null && text.length > 16 ? text[16] : 'Reveal Now!';
   }
 
   String get _baby_on_the_way_text {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
+    final text = widget.reveal_text_list?.get(source_language_index);
     return text != null && text.length > 17 ? text[17] : '{name} is on the way!';
   }
 
   String get _camera_permission_message {
-    final text = widget.reveal_text_list?.get(widget.source_language_index);
-    return text != null && text.length > 18
-        ? text[18]
-        : 'Allow camera access to record your reaction';
+    final text = widget.reveal_text_list?.get(source_language_index);
+    return text != null && text.length > 18 ? text[18] : 'Allow camera access to record your reaction';
   }
 
   void _handle_replay() {
@@ -198,9 +219,8 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
 
     final portrait = is_portrait(context);
     final size = MediaQuery.of(context).size;
-    final camera_size = portrait
-        ? size.width * k_camera_preview_size_portrait
-        : size.width * k_camera_preview_size_landscape;
+    final camera_size =
+        portrait ? size.width * k_camera_preview_size_portrait : size.width * k_camera_preview_size_landscape;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -223,16 +243,21 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
                   boy_text: _its_a_boy_text,
                   girl_text: _its_a_girl_text,
                   baby_on_the_way_text: _baby_on_the_way_text,
+                  locale: current_locale,
                   on_animation_complete: on_animation_complete,
                 ),
               ),
 
-              // Camera preview (only show during/after reveal)
-              _build_camera_preview(portrait, camera_size),
+              // Camera preview (only show during reveal, hide after recording completes)
+              if (!reaction_recording_complete) _build_camera_preview(portrait, camera_size),
             ],
 
             // Share options overlay (after animation completes)
             if (show_share_options) _build_share_overlay(portrait),
+
+            // Language picker (only when not triggered and before reveal)
+            if (widget.has_language_picker && translation_stream_list.isNotEmpty && !_reveal_triggered)
+              _build_language_picker(),
           ],
         ),
       ),
@@ -401,21 +426,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
       bottom: 0,
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: portrait
-              ? MediaQuery.of(context).size.height * 0.5
-              : MediaQuery.of(context).size.height * 0.6,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withAlpha(200),
-              Colors.black.withAlpha(230),
-            ],
-            stops: const [0.0, 0.3, 1.0],
-          ),
+          maxHeight: portrait ? MediaQuery.of(context).size.height * 0.5 : MediaQuery.of(context).size.height * 0.6,
         ),
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
@@ -433,13 +444,41 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin {
               reaction_video_format: reaction_video_format,
               wishlist_button_builder: widget.wishlist_button_builder,
               registry_link: event?.registry_link,
-              source_language_index: widget.source_language_index,
+              source_language_index: source_language_index,
               boy_color: widget.boy_color,
               girl_color: widget.girl_color,
               texts: _share_texts,
               on_replay: _handle_replay,
               show_replay_button: true,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _build_language_picker() {
+    final bg_color = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
+    final text_color = widget.language_picker_text_color ?? Colors.white;
+
+    return Positioned(
+      top: 8,
+      right: sized_box_space,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg_color,
+          borderRadius: BorderRadius.circular(outline_border_radius),
+        ),
+        child: SizedBox(
+          width: widget.language_picker_show_icon ? 170 : 150,
+          child: LanguagePicker(
+            translation_stream_list: translation_stream_list,
+            language_picker_items_text_color: text_color,
+            update_source_language: update_source_language,
+            source_language_index: source_language_index,
+            show_icon: widget.language_picker_show_icon,
+            icon_color: widget.language_picker_icon_color ?? text_color,
           ),
         ),
       ),

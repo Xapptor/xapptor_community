@@ -30,6 +30,7 @@ mixin RevealViewStateMixin on State<RevealView> {
   bool is_uploading_reaction = false;
   bool reaction_uploaded = false;
   String? reaction_upload_error;
+  bool reaction_recording_complete = false;
 
   // User state - using Firebase Auth directly
   User? get _firebase_user => FirebaseAuth.instance.currentUser;
@@ -106,6 +107,7 @@ mixin RevealViewStateMixin on State<RevealView> {
     setState(() {
       reaction_video_path = video_path;
       reaction_video_format = format;
+      reaction_recording_complete = true;
     });
 
     debugPrint('RevealViewState: Recording complete - path: $video_path, format: $format');
@@ -176,6 +178,7 @@ mixin RevealViewStateMixin on State<RevealView> {
     setState(() {
       animation_complete = false;
       show_share_options = false;
+      reaction_recording_complete = false;
     });
   }
 

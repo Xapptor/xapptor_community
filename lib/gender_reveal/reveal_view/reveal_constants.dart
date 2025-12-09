@@ -91,13 +91,13 @@ const double k_reveal_content_padding = 24.0;
 const double k_gender_text_size_portrait = 56.0;
 
 /// Font size for the main gender reveal text (landscape).
-const double k_gender_text_size_landscape = 72.0;
+const double k_gender_text_size_landscape = 120.0;
 
 /// Font size for the baby name text (portrait).
 const double k_baby_name_text_size_portrait = 28.0;
 
 /// Font size for the baby name text (landscape).
-const double k_baby_name_text_size_landscape = 36.0;
+const double k_baby_name_text_size_landscape = 40.0;
 
 /// Font size for the delivery date text (portrait).
 const double k_delivery_date_text_size_portrait = 20.0;
