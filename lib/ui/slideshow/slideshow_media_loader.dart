@@ -21,10 +21,16 @@ import 'package:xapptor_community/ui/slideshow/video_metadata_extractor.dart';
 mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // ========== IMAGE DECODE SIZE LIMITS ==========
   // On iOS Safari, each decoded pixel uses 4 bytes (RGBA).
-  // A 1920x1440 image = ~10.5 MB in RAM. A 1200x900 image = ~4.1 MB in RAM.
-  // These limits ensure images are decoded at reasonable sizes for mobile.
-  // We only set ONE dimension to preserve aspect ratio and avoid distortion.
-  static const int _max_image_decode_dimension = 1200;
+  // Memory per image at different sizes:
+  // - 1920x1440 = ~10.5 MB
+  // - 1200x900  = ~4.1 MB
+  // - 800x600   = ~1.9 MB
+  // - 600x450   = ~1.0 MB
+  //
+  // AGGRESSIVE OPTIMIZATION: Reduced to 600px to save ~70% memory per image.
+  // With 8 visible slots, this saves ~25 MB vs 1200px setting.
+  // Quality is still acceptable on mobile screens (most slots are <300px wide).
+  static const int _max_image_decode_dimension = 600;
   // ========== PRIMARY DATA STRUCTURES (URL-based) ==========
 
   /// Image URLs organized by orientation (lazy loaded - only URLs stored initially)
@@ -71,7 +77,12 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // Preloading isn't implemented, so extra controllers provide no UX benefit.
   // Reduced from 4 to 2 to save ~20-40 MB on iOS Safari.
   static const int max_active_videos_web = 2;
-  static const int max_cached_images_per_orientation = 3;
+
+  // Maximum cached images per orientation (portrait, landscape, square_or_similar)
+  // Total max cache = 2 × 3 = 6 images
+  // At 600px decode size, each image is ~1 MB = ~6 MB total image cache
+  // Reduced from 3 to 2 to save additional memory
+  static const int max_cached_images_per_orientation = 2;
 
   // Initial load counts
   static const int max_initial_images = 2;

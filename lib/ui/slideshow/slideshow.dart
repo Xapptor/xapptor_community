@@ -239,6 +239,12 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
 
     if (_last_orientation != mq.orientation) {
       _last_orientation = mq.orientation;
+
+      // MEMORY OPTIMIZATION: Clear image cache on orientation change
+      // This forces fresh images to be loaded at the new decode size
+      // and prevents accumulation of images from previous orientation
+      cleanup_image_cache();
+
       _slideshow_matrix = get_slideshow_matrix(
         screen_height: mq.size.height,
         screen_width: mq.size.width,
