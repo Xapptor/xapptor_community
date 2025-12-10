@@ -471,21 +471,32 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  /// Dispose all media resources.
-  /// Uses safe disposal pattern for iOS Safari memory leak prevention.
-  Future<void> dispose_media_resources() async {
-    // Clear loading lock
+  /// Dispose all media resources synchronously for iOS Safari compatibility.
+  /// Critical: This must be synchronous to ensure cleanup completes before
+  /// the widget is destroyed, preventing memory leaks on iOS Safari.
+  void dispose_media_resources() {
+    // Clear loading locks immediately
     _videos_currently_loading.clear();
     _video_load_timestamps.clear();
 
-    // Dispose all active video controllers with safe disposal
-    for (var controller in active_video_controllers.values) {
-      await _safe_dispose_controller(controller);
-    }
+    // Capture controllers before clearing maps
+    final controllers_to_dispose = active_video_controllers.values.toList();
+
+    // Clear all maps synchronously first to prevent access during disposal
     active_video_controllers.clear();
     portrait_video_player_controllers.clear();
     landscape_video_player_controllers.clear();
     video_orientation_cache.clear();
+
+    // Dispose video controllers synchronously (dispose() is sync even if it does async work internally)
+    for (var controller in controllers_to_dispose) {
+      try {
+        controller.pause();
+        controller.dispose();
+      } catch (e) {
+        debugPrint('Slideshow: Error disposing video controller: $e');
+      }
+    }
 
     // Evict all images from Flutter's internal cache before clearing our cache
     // This is CRITICAL for iOS Safari memory management
