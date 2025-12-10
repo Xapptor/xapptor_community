@@ -4,6 +4,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
+/// Unified border radius for all share options elements
+const double _k_share_border_radius = 16.0;
+
 /// Widget displaying share options after the gender reveal animation.
 /// Includes social sharing, event link copy, and wishlist button.
 class RevealShareOptions extends StatefulWidget {
@@ -156,40 +159,46 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
         padding: const EdgeInsets.all(k_reveal_content_padding),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Share buttons row
+            // Share buttons row - uses same width as other elements
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Share to social
-                _build_share_button(
-                  icon: Icons.share,
-                  label: widget.texts.share,
-                  on_pressed: _share_to_social,
+                Expanded(
+                  child: _build_share_button(
+                    icon: Icons.share,
+                    label: widget.texts.share,
+                    on_pressed: _share_to_social,
+                  ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
 
                 // Copy link
-                _build_share_button(
-                  icon: _link_copied ? Icons.check : Icons.link,
-                  label: _link_copied ? widget.texts.copied : widget.texts.copy_link,
-                  on_pressed: _copy_event_link,
-                  is_highlighted: _link_copied,
+                Expanded(
+                  child: _build_share_button(
+                    icon: _link_copied ? Icons.check : Icons.link,
+                    label: _link_copied ? widget.texts.copied : widget.texts.copy_link,
+                    on_pressed: _copy_event_link,
+                    is_highlighted: _link_copied,
+                  ),
                 ),
 
                 // Replay button
                 if (widget.show_replay_button && widget.on_replay != null) ...[
-                  const SizedBox(width: 16),
-                  _build_share_button(
-                    icon: Icons.replay,
-                    label: widget.texts.replay,
-                    on_pressed: widget.on_replay!,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _build_share_button(
+                      icon: Icons.replay,
+                      label: widget.texts.replay,
+                      on_pressed: widget.on_replay!,
+                    ),
                   ),
                 ],
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Amazon wishlist button
             widget.wishlist_button_builder(
@@ -199,7 +208,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
 
             // Reaction video preview (if available)
             if (widget.reaction_video_path != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               _build_reaction_preview(),
             ],
           ],
@@ -218,7 +227,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
       color: Colors.transparent,
       child: InkWell(
         onTap: on_pressed,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(_k_share_border_radius),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -226,7 +235,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
             color: is_highlighted
                 ? Colors.green.withAlpha((255 * 0.3).round())
                 : Colors.brown.withAlpha((255 * 0.6).round()),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(_k_share_border_radius),
             border: Border.all(
               color: is_highlighted
                   ? Colors.green.withAlpha((255 * 0.5).round())
@@ -242,12 +251,17 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
                 size: 24,
               ),
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: is_highlighted ? Colors.green : Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: is_highlighted ? Colors.green : Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -262,9 +276,9 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.brown.withAlpha((255 * 0.6).round()),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(_k_share_border_radius),
         border: Border.all(
-          color: Colors.grey.withAlpha((255 * 0.3).round()),
+          color: Colors.brown.withAlpha((255 * 0.3).round()),
         ),
         boxShadow: [
           BoxShadow(
@@ -282,7 +296,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
             height: 50,
             decoration: BoxDecoration(
               color: Colors.white.withAlpha((255 * 0.15).round()),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(_k_share_border_radius / 2),
               border: Border.all(
                 color: Colors.white.withAlpha((255 * 0.3).round()),
               ),
@@ -324,7 +338,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
           Container(
             decoration: BoxDecoration(
               color: Colors.white.withAlpha((255 * 0.15).round()),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(_k_share_border_radius / 2),
             ),
             child: IconButton(
               onPressed: () {
