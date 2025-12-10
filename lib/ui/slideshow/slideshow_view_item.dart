@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
-import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_fade_slot.dart';
 import 'package:xapptor_ui/widgets/fade_in_video.dart';
 
 /// Builds a single carousel item for the slideshow view.
 /// This can be either a video or an image, depending on the slot configuration.
 Widget build_carousel_item({
+  Key? key,
   required int index,
   required SlideshowViewOrientation orientation,
   required double ratio_difference,
@@ -39,7 +40,7 @@ Widget build_carousel_item({
 
   // Handle video slots
   if (possible_video_position_for_portrait || possible_video_position_for_landscape) {
-    return _build_video_item(
+    final widget = _build_video_item(
       index: index,
       column_index: column_index,
       view_index: view_index,
@@ -51,10 +52,12 @@ Widget build_carousel_item({
       test_mode_text: test_mode_text,
       get_video_controller_by_index: get_video_controller_by_index,
     );
+    // Apply key if provided (for AnimatedSwitcher support)
+    return key != null ? KeyedSubtree(key: key, child: widget) : widget;
   }
 
   // Handle image slots
-  return _build_image_item(
+  final widget = _build_image_item(
     index: index,
     column_index: column_index,
     view_index: view_index,
@@ -71,6 +74,8 @@ Widget build_carousel_item({
     get_image_by_index: get_image_by_index,
     device_pixel_ratio: device_pixel_ratio,
   );
+  // Apply key if provided (for AnimatedSwitcher support)
+  return key != null ? KeyedSubtree(key: key, child: widget) : widget;
 }
 
 String _build_test_mode_text({

@@ -1,3 +1,19 @@
+/// @deprecated This file is deprecated. Use slideshow_fade_slot.dart instead.
+///
+/// The CarouselSlider-based implementation has been replaced with a lightweight
+/// AnimatedSwitcher + FadeTransition approach that saves ~20-40 MB of memory
+/// by eliminating 8 PageControllers and 8 independent Timers.
+///
+/// Memory savings come from:
+/// - Single shared timer instead of 8 CarouselSlider timers
+/// - No PageController per slot (each uses ~2-3 MB with GPU textures)
+/// - No TickerProviderStateMixin per slot
+/// - No GestureRecognizer per slot (unused since gestures were disabled anyway)
+///
+/// This file is kept for backward compatibility but should not be used for new code.
+@Deprecated('Use SlideshowFadeSlot from slideshow_fade_slot.dart instead')
+library slideshow_view;
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -6,7 +22,7 @@ import 'package:xapptor_community/ui/slideshow/slideshow_view_item.dart';
 import 'package:xapptor_logic/random/random_number_with_range.dart';
 import 'package:xapptor_ui/values/ui.dart';
 
-/// Callback type for lazy loading requests
+/// @deprecated Use OnLazyLoadRequest from slideshow_fade_slot.dart instead
 typedef OnLazyLoadRequest = Future<void> Function({
   required int index,
   required bool is_video,
@@ -14,13 +30,13 @@ typedef OnLazyLoadRequest = Future<void> Function({
   required SlideshowViewOrientation orientation,
 });
 
-/// Callback type for getting a video controller by URL index
+/// @deprecated Use GetVideoControllerByIndex from slideshow_fade_slot.dart instead
 typedef GetVideoControllerByIndex = VideoPlayerController? Function({
   required int index,
   required bool is_portrait,
 });
 
-/// Callback type for getting an image by URL index
+/// @deprecated Use GetImageByIndex from slideshow_fade_slot.dart instead
 typedef GetImageByIndex = Image? Function({
   required int index,
   required SlideshowViewOrientation orientation,

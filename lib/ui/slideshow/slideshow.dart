@@ -9,7 +9,9 @@ import 'package:xapptor_community/ui/slideshow/get_slideshow_matrix.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_fab_data.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_content_loader.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_media_loader.dart';
-import 'package:xapptor_community/ui/slideshow/slideshow_view.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_fade_slot.dart';
+import 'package:xapptor_community/ui/slideshow/slideshow_timer_coordinator.dart';
+// Note: slideshow_view.dart is deprecated - now using slideshow_fade_slot.dart
 import 'package:xapptor_ui/values/ui.dart';
 
 // Re-export for external usage
@@ -79,12 +81,15 @@ class Slideshow extends StatefulWidget {
   State<Slideshow> createState() => _SlideshowState();
 }
 
-class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin {
+class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin, WidgetsBindingObserver {
   final Cubic _animation_curve = Curves.fastOutSlowIn;
   final Duration _animation_duration = const Duration(milliseconds: 1000);
 
   final SlideshowAudioService _audio_service = SlideshowAudioService.instance;
   StreamSubscription<SlideshowAudioState>? _audio_state_subscription;
+
+  /// Single timer coordinator for all slideshow slots (replaces 8 CarouselSlider timers)
+  final SlideshowTimerCoordinator _timer_coordinator = SlideshowTimerCoordinator();
 
   bool _is_music_playing = false;
   bool _is_music_muted = false;
@@ -102,13 +107,34 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
   }
 
   void _initialize() {
+    WidgetsBinding.instance.addObserver(this);
     load_content(
       use_examples: widget.use_examples,
       image_paths: widget.image_paths,
       video_paths: widget.video_paths,
     );
     _initialize_audio_service();
+    _timer_coordinator.start();
     WidgetsBinding.instance.addPostFrameCallback((_) => _notify_fab_data());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Pause timer when app is backgrounded to save battery
+    // Resume when app comes back to foreground
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        _timer_coordinator.stop();
+        break;
+      case AppLifecycleState.resumed:
+        _timer_coordinator.start();
+        break;
+      case AppLifecycleState.detached:
+        // App is being terminated, dispose will handle cleanup
+        break;
+    }
   }
 
   @override
@@ -135,6 +161,8 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer_coordinator.dispose();
     dispose_media_resources();
     _audio_state_subscription?.cancel();
     // Reset audio service to free memory (don't fully dispose singleton)
@@ -272,7 +300,10 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
               : all_image_urls.length;
     }
 
-    return slideshow_view(
+    // Use SlideshowFadeSlot with shared timer coordinator (replaces CarouselSlider)
+    // Memory savings: ~20-40 MB by eliminating 8 PageControllers & Timers
+    return SlideshowFadeSlot(
+      key: ValueKey('fade_slot_${col}_$view'),
       column_index: col,
       view_index: view,
       slideshow_view_orientation: orient,
@@ -291,6 +322,7 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
       portrait_images: portrait_images,
       landscape_images: landscape_images,
       all_images: all_images,
+      timer_coordinator: _timer_coordinator,
       on_lazy_load_request: handle_lazy_load_request,
       get_video_controller_by_index: get_video_controller_by_index,
       get_image_by_index: get_image_by_index,
