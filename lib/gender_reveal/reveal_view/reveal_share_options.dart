@@ -56,6 +56,9 @@ class RevealShareOptions extends StatefulWidget {
   /// Whether to show the replay button.
   final bool show_replay_button;
 
+  /// Name connector ("&" in English, "y" in Spanish).
+  final String name_connector;
+
   const RevealShareOptions({
     super.key,
     required this.gender,
@@ -73,6 +76,7 @@ class RevealShareOptions extends StatefulWidget {
     this.texts = const RevealShareTexts(),
     this.on_replay,
     this.show_replay_button = true,
+    this.name_connector = '&',
   });
 
   @override
@@ -119,7 +123,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
     final gender_text = _is_boy ? widget.texts.boy : widget.texts.girl;
     final name_part = widget.baby_name != null && widget.baby_name!.isNotEmpty ? ' ${widget.baby_name}' : '';
     return "${widget.texts.share_message_prefix} $gender_text!$name_part\n\n"
-        "${widget.texts.celebrate_with} ${widget.mother_name} & ${widget.father_name}!\n\n"
+        "${widget.texts.celebrate_with} ${widget.mother_name} ${widget.name_connector} ${widget.father_name}!\n\n"
         "${widget.event_url}";
   }
 

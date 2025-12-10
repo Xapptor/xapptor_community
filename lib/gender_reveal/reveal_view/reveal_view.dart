@@ -327,6 +327,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     return text != null && text.length > 18 ? text[18] : 'Allow camera access to record your reaction';
   }
 
+  /// Name connector ("&" in English, "y" in Spanish).
+  String get _name_connector {
+    final text = widget.reveal_text_list?.get(source_language_index);
+    return text != null && text.length > 20 ? text[20] : '&';
+  }
+
   void _handle_replay() {
     setState(() {
       _reveal_triggered = false;
@@ -463,7 +469,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-                  '${widget.mother_name} & ${widget.father_name}',
+                  '${widget.mother_name} $_name_connector ${widget.father_name}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withAlpha((255 * 0.9).round()),
@@ -697,6 +703,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               texts: _share_texts,
               on_replay: _handle_replay,
               show_replay_button: true,
+              name_connector: _name_connector,
             ),
           ),
         ),
