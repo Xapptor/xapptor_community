@@ -17,7 +17,14 @@ import 'package:xapptor_community/ui/slideshow/video_metadata_extractor.dart';
 /// - Batched Firebase URL fetching to prevent network congestion
 /// - Safari-safe video disposal to prevent memory leaks
 /// - Dynamic image resizing based on device pixel ratio
+/// - Images decoded at max 1200px to reduce memory (iOS Safari optimization)
 mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
+  // ========== IMAGE DECODE SIZE LIMITS ==========
+  // On iOS Safari, each decoded pixel uses 4 bytes (RGBA).
+  // A 1920x1440 image = ~10.5 MB in RAM. A 1200x900 image = ~4.1 MB in RAM.
+  // These limits ensure images are decoded at reasonable sizes for mobile.
+  // We only set ONE dimension to preserve aspect ratio and avoid distortion.
+  static const int _max_image_decode_dimension = 1200;
   // ========== PRIMARY DATA STRUCTURES (URL-based) ==========
 
   /// Image URLs organized by orientation (lazy loaded - only URLs stored initially)
@@ -91,6 +98,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   ///
   /// Uses efficient header-only extraction to determine dimensions,
   /// reducing bandwidth by 99%+ compared to full image download.
+  ///
+  /// MEMORY OPTIMIZATION: Images are decoded at max [_max_image_decode_dimension] pixels
+  /// on their largest dimension. This reduces memory by ~50-75% on iOS Safari.
+  /// Only ONE dimension (width OR height) is constrained to preserve aspect ratio.
   Future<bool> load_single_image({
     required String url,
   }) async {
@@ -107,9 +118,40 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
         debugPrint('Slideshow: Got image dimensions via efficient extraction: ${size.width}x${size.height}');
       }
 
+      // Calculate decode dimensions to limit memory usage.
+      // We only set ONE dimension to preserve aspect ratio and avoid distortion.
+      // Setting both can cause aspect ratio issues (Flutter issue #52802).
+      int? cacheWidth;
+      int? cacheHeight;
+
+      if (size != null) {
+        final int originalWidth = size.width.toInt();
+        final int originalHeight = size.height.toInt();
+
+        if (originalWidth >= originalHeight) {
+          // Landscape or square: limit by width
+          if (originalWidth > _max_image_decode_dimension) {
+            cacheWidth = _max_image_decode_dimension;
+            debugPrint('Slideshow: Limiting landscape image decode width to $cacheWidth (was $originalWidth)');
+          }
+        } else {
+          // Portrait: limit by height
+          if (originalHeight > _max_image_decode_dimension) {
+            cacheHeight = _max_image_decode_dimension;
+            debugPrint('Slideshow: Limiting portrait image decode height to $cacheHeight (was $originalHeight)');
+          }
+        }
+      } else {
+        // Fallback: if we couldn't get dimensions, limit width as a safe default
+        cacheWidth = _max_image_decode_dimension;
+        debugPrint('Slideshow: Using fallback decode width limit of $cacheWidth');
+      }
+
       final Image current_image = Image.network(
         url,
         fit: BoxFit.cover,
+        cacheWidth: cacheWidth,
+        cacheHeight: cacheHeight,
       );
 
       // If efficient extraction failed, we still add to cache and categorize later

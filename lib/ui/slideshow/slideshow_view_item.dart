@@ -174,6 +174,7 @@ Widget _build_image_item({
   required List<Image> landscape_images,
   required List<Image> all_images,
   GetImageByIndex? get_image_by_index,
+  // ignore: unused_element_parameter - kept for API compatibility, may be used in future
   double device_pixel_ratio = 1.0,
 }) {
   // Use URL-based lookup if available (preferred method for lazy loading)
@@ -213,9 +214,10 @@ Widget _build_image_item({
     );
   }
 
-  // Calculate optimal resize width based on screen size and device pixel ratio
-  // This ensures sharp images on high-DPI displays without loading unnecessarily large images
-  final int optimal_width = ((screen_width / number_of_columns) * device_pixel_ratio).toInt().clamp(500, 2000);
+  // NOTE: We no longer use ResizeImage here because cacheWidth/cacheHeight
+  // is now applied at image load time in load_single_image().
+  // This avoids double-resizing which can cause quality loss and aspect ratio issues.
+  // The image.image provider already has the decode size constraints applied.
 
   // Removed redundant ClipRRect - parent already clips
   return Stack(
@@ -226,10 +228,7 @@ Widget _build_image_item({
         placeholder: const AssetImage(
           'assets/images/placeholder_gradient_64.jpg',
         ),
-        image: ResizeImage(
-          image.image,
-          width: optimal_width,
-        ),
+        image: image.image,
         fit: BoxFit.cover,
         width: screen_width / number_of_columns,
       ),
