@@ -400,12 +400,15 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               ),
             ),
 
-            // Camera preview (only show during reveal, hide when share options appear or recording completes)
-            if (!show_share_options && !reaction_recording_complete) _build_camera_preview(portrait, camera_size),
+            // Camera preview (only show during reveal if user should record)
+            // - Hide when share options appear or recording completes
+            // - Don't show if user already has a reaction for this event
+            if (should_show_camera && !show_share_options && !reaction_recording_complete)
+              _build_camera_preview(portrait, camera_size),
 
-            // Show "Reaction Recorded" indicator when recording is complete
-            // Shows regardless of whether video was successfully saved
-            if (reaction_recording_complete) _build_reaction_recorded_indicator(portrait),
+            // Show "Reaction Recorded" indicator when recording is complete or user has existing reaction
+            if (reaction_recording_complete || user_has_existing_reaction)
+              _build_reaction_recorded_indicator(portrait),
           ],
 
           // Share options overlay (after animation completes)

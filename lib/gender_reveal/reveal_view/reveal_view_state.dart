@@ -32,10 +32,17 @@ mixin RevealViewStateMixin on State<RevealView> {
   String? reaction_upload_error;
   bool reaction_recording_complete = false;
 
+  // Existing reaction state - tracks if user already has a reaction for this event
+  bool user_has_existing_reaction = false;
+  String? existing_reaction_url;
+
   // User state - using Firebase Auth directly
   User? get _firebase_user => FirebaseAuth.instance.currentUser;
   bool get is_user_logged_in => _firebase_user != null;
   String? get current_user_id => _firebase_user?.uid;
+
+  /// Whether camera should be shown (user logged in and no existing reaction)
+  bool get should_show_camera => is_user_logged_in && !user_has_existing_reaction;
 
   /// Initialize the reveal view state.
   void initialize_reveal_state() {
@@ -73,6 +80,9 @@ mixin RevealViewStateMixin on State<RevealView> {
         baby_gender = event_data?['baby_gender'] as String? ?? 'boy';
         _event_loaded = true;
       });
+
+      // Check if user already has a reaction for this event
+      await _check_existing_reaction();
     } catch (e) {
       debugPrint('RevealView: Error loading event: $e');
       if (mounted) {
@@ -80,6 +90,42 @@ mixin RevealViewStateMixin on State<RevealView> {
           _event_load_error = true;
         });
       }
+    }
+  }
+
+  /// Generate the reaction document ID (composite key: event_id + user_id).
+  String _get_reaction_doc_id() => '${event_id}_$current_user_id';
+
+  /// Check if the current user already has a reaction video for this event.
+  Future<void> _check_existing_reaction() async {
+    if (!is_user_logged_in || current_user_id == null || event_id.isEmpty) {
+      return;
+    }
+
+    try {
+      // Use top-level reactions collection with composite document ID
+      final reaction_doc = await XapptorDB.instance
+          .collection("reactions")
+          .doc(_get_reaction_doc_id())
+          .get();
+
+      if (!mounted) return;
+
+      if (reaction_doc.exists) {
+        final data = reaction_doc.data();
+        setState(() {
+          user_has_existing_reaction = true;
+          existing_reaction_url = data?['video_url'] as String?;
+          reaction_video_format = data?['format'] as String? ?? 'mp4';
+          // Mark as already recorded so UI shows appropriate state
+          reaction_recording_complete = true;
+          reaction_uploaded = true;
+        });
+        debugPrint('RevealView: User already has reaction for this event');
+      }
+    } catch (e) {
+      debugPrint('RevealView: Error checking existing reaction: $e');
+      // Don't fail the whole flow if this check fails
     }
   }
 
@@ -118,7 +164,7 @@ mixin RevealViewStateMixin on State<RevealView> {
     }
   }
 
-  /// Upload reaction video to Firebase Storage.
+  /// Upload reaction video to Firebase Storage and save metadata to Firestore.
   Future<void> _upload_reaction_video(String video_path) async {
     if (!is_user_logged_in || current_user_id == null) return;
 
@@ -153,11 +199,19 @@ mixin RevealViewStateMixin on State<RevealView> {
         );
       }
 
+      // Get the download URL
+      final download_url = await ref.getDownloadURL();
+
+      // Save reaction metadata to Firestore
+      await _save_reaction_metadata(download_url);
+
       if (!mounted) return;
 
       setState(() {
         is_uploading_reaction = false;
         reaction_uploaded = true;
+        user_has_existing_reaction = true;
+        existing_reaction_url = download_url;
       });
 
       debugPrint('RevealView: Reaction video uploaded successfully');
@@ -169,6 +223,33 @@ mixin RevealViewStateMixin on State<RevealView> {
           reaction_upload_error = e.toString();
         });
       }
+    }
+  }
+
+  /// Save reaction metadata to Firestore for future reference.
+  /// Uses top-level 'reactions' collection with composite document ID.
+  Future<void> _save_reaction_metadata(String video_url) async {
+    if (!is_user_logged_in || current_user_id == null || event_id.isEmpty) {
+      return;
+    }
+
+    try {
+      // Use top-level reactions collection with composite document ID
+      await XapptorDB.instance
+          .collection("reactions")
+          .doc(_get_reaction_doc_id())
+          .set({
+        'event_id': event_id,
+        'user_id': current_user_id,
+        'video_url': video_url,
+        'format': reaction_video_format,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      debugPrint('RevealView: Reaction metadata saved to Firestore');
+    } catch (e) {
+      debugPrint('RevealView: Error saving reaction metadata: $e');
+      // Don't fail the upload if metadata save fails
     }
   }
 
