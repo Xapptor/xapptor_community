@@ -335,13 +335,18 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   Future<void> _stop_recording_if_needed() async {
     if (_is_recording && _controller != null) {
       try {
+        String? video_path;
         if (kIsWeb && _web_video_recorder != null) {
-          await (_web_video_recorder as video_recorder.WebVideoRecorder).stop_recording();
+          video_path = await (_web_video_recorder as video_recorder.WebVideoRecorder).stop_recording();
         } else {
-          await _controller!.stopVideoRecording();
+          final XFile video_file = await _controller!.stopVideoRecording();
+          video_path = video_file.path;
         }
+        // Call the callback with the video path so it's not lost on dispose
+        widget.on_recording_complete?.call(video_path, _actual_recording_format);
       } catch (e) {
-        // Ignore errors during cleanup
+        // Still call callback with null on error
+        widget.on_recording_complete?.call(null, _actual_recording_format);
       }
     }
   }

@@ -261,23 +261,36 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(10),
-        borderRadius: BorderRadius.circular(outline_border_radius),
-        border: Border.all(color: Colors.white.withAlpha(20)),
+        // Use semi-transparent white for better visibility on any background
+        color: Colors.white.withAlpha((255 * 0.85).round()),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.withAlpha((255 * 0.3).round()),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((255 * 0.1).round()),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           // Video thumbnail placeholder
           Container(
-            width: 60,
-            height: 45,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: _accent_color.withAlpha((255 * 0.15).round()),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _accent_color.withAlpha((255 * 0.3).round()),
+              ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.videocam,
-              color: Colors.white54,
+              color: _accent_color,
               size: 24,
             ),
           ),
@@ -290,16 +303,17 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
               children: [
                 Text(
                   widget.texts.your_reaction,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Colors.grey.shade800,
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   widget.texts.reaction_saved,
                   style: TextStyle(
-                    color: Colors.white.withAlpha(150),
+                    color: Colors.grey.shade600,
                     fontSize: 11,
                   ),
                 ),
@@ -308,41 +322,47 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
           ),
 
           // Share reaction button
-          IconButton(
-            onPressed: () {
-              if (widget.reaction_video_path != null) {
-                // Use the format passed from the recorder
-                final extension = widget.reaction_video_format;
-                final mime_type = extension == 'webm' ? 'video/webm' : 'video/mp4';
+          Container(
+            decoration: BoxDecoration(
+              color: _accent_color.withAlpha((255 * 0.15).round()),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              onPressed: () {
+                if (widget.reaction_video_path != null) {
+                  // Use the format passed from the recorder
+                  final extension = widget.reaction_video_format;
+                  final mime_type = extension == 'webm' ? 'video/webm' : 'video/mp4';
 
-                // Generate filename: baby_name + date + extension
-                final safe_name = widget.baby_name != null && widget.baby_name!.isNotEmpty
-                    ? widget.baby_name!.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_').toLowerCase()
-                    : 'baby';
-                final date = DateTime.now();
-                final date_str =
-                    '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
-                final file_name = '${safe_name}_reveal_$date_str.$extension';
+                  // Generate filename: baby_name + date + extension
+                  final safe_name = widget.baby_name != null && widget.baby_name!.isNotEmpty
+                      ? widget.baby_name!.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_').toLowerCase()
+                      : 'baby';
+                  final date = DateTime.now();
+                  final date_str =
+                      '${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}';
+                  final file_name = '${safe_name}_reveal_$date_str.$extension';
 
-                final reaction_file = XFile(
-                  widget.reaction_video_path!,
-                  mimeType: mime_type,
-                  name: file_name,
-                );
+                  final reaction_file = XFile(
+                    widget.reaction_video_path!,
+                    mimeType: mime_type,
+                    name: file_name,
+                  );
 
-                SharePlus.instance.share(
-                  ShareParams(
-                    files: [reaction_file],
-                    subject: widget.texts.share_subject,
-                    text: _share_message,
-                  ),
-                );
-              }
-            },
-            icon: Icon(
-              Icons.share,
-              color: _accent_color,
-              size: 20,
+                  SharePlus.instance.share(
+                    ShareParams(
+                      files: [reaction_file],
+                      subject: widget.texts.share_subject,
+                      text: _share_message,
+                    ),
+                  );
+                }
+              },
+              icon: Icon(
+                Icons.share,
+                color: _accent_color,
+                size: 20,
+              ),
             ),
           ),
         ],
@@ -366,6 +386,7 @@ class RevealShareTexts {
   final String share_subject;
   final String boy;
   final String girl;
+  final String reaction_recorded;
 
   const RevealShareTexts({
     this.share_the_joy = 'Share the Joy',
@@ -381,6 +402,7 @@ class RevealShareTexts {
     this.share_subject = 'Gender Reveal Celebration!',
     this.boy = 'Boy',
     this.girl = 'Girl',
+    this.reaction_recorded = 'Reaction Recorded',
   });
 
   factory RevealShareTexts.fromTextList(List<String>? text) {
@@ -401,6 +423,10 @@ class RevealShareTexts {
       share_subject: text[10],
       boy: text[11],
       girl: text[12],
+      // Index 13: boy_text, 14: girl_text, 15: login_prompt_text
+      // Index 16: reveal_now_text, 17: baby_on_the_way_text, 18: camera_permission_message
+      // Index 19: reaction_recorded
+      reaction_recorded: text.length > 19 ? text[19] : 'Reaction Recorded',
     );
   }
 }

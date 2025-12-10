@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   late AnimationController _bounce_controller;
   late AnimationController _name_fade_controller;
   late AnimationController _glow_controller;
-  late AnimationController _shimmer_controller;
+  late AnimationController _color_cycle_controller;
+  late AnimationController _particle_controller;
 
   // Animations
   late Animation<double> _pulse_animation;
@@ -84,7 +86,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   late Animation<double> _bounce_animation;
   late Animation<double> _name_fade_animation;
   late Animation<double> _glow_animation;
-  late Animation<double> _shimmer_animation;
+  late Animation<double> _color_cycle_animation;
+  late Animation<double> _particle_animation;
 
   // State
   bool _show_gender_text = false;
@@ -98,13 +101,10 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   String get _reveal_text => _is_boy ? widget.boy_text : widget.girl_text;
 
   /// Formats the delivery date as "Month Year" (e.g., "January 2026" / "Enero 2026").
-  /// Uses the locale passed from the parent widget for proper translation.
-  /// Capitalizes the first character for proper display.
   String? get _formatted_delivery_date {
     if (widget.baby_delivery_date == null) return null;
     final date = widget.baby_delivery_date!.toDate();
     final formatted = DateFormat.yMMMM(widget.locale).format(date);
-    // Capitalize first character
     if (formatted.isEmpty) return formatted;
     return formatted[0].toUpperCase() + formatted.substring(1);
   }
@@ -118,14 +118,13 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   @override
   void initState() {
     super.initState();
-    // Initialize locale data for date formatting
     initializeDateFormatting(widget.locale);
     _initialize_controllers();
     _start_animation_sequence();
   }
 
   void _initialize_controllers() {
-    // Confetti controllers with duration for memory management
+    // Confetti controllers
     _center_confetti_controller = ConfettiController(
       duration: const Duration(seconds: k_confetti_emission_duration_seconds),
     );
@@ -136,7 +135,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       duration: const Duration(seconds: k_confetti_emission_duration_seconds),
     );
 
-    // Pulse animation for suspense building
+    // Pulse animation for suspense
     _pulse_controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: k_pulse_animation_duration_ms),
@@ -145,92 +144,85 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       CurvedAnimation(parent: _pulse_controller, curve: Curves.easeInOut),
     );
 
-    // Text scale animation for dramatic reveal (explosive entrance)
+    // Text scale - explosive entrance
     _text_scale_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1400),
     );
     _text_scale_animation = TweenSequence<double>([
-      // Start from tiny
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.3).chain(
+        tween: Tween<double>(begin: 0.0, end: 1.4).chain(
           CurveTween(curve: Curves.easeOutBack),
         ),
-        weight: 60,
+        weight: 50,
       ),
-      // Overshoot and settle
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.3, end: 1.0).chain(
+        tween: Tween<double>(begin: 1.4, end: 1.0).chain(
           CurveTween(curve: Curves.elasticOut),
         ),
-        weight: 40,
+        weight: 50,
       ),
     ]).animate(_text_scale_controller);
 
-    // Bounce animation for continuous "heartbeat" effect after reveal
+    // Bounce - heartbeat effect
     _bounce_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1800),
     );
     _bounce_animation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.05).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
+        tween: Tween<double>(begin: 1.0, end: 1.06).chain(CurveTween(curve: Curves.easeOut)),
         weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.05, end: 0.98).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
+        tween: Tween<double>(begin: 1.06, end: 0.97).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.98, end: 1.03).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
+        tween: Tween<double>(begin: 0.97, end: 1.04).chain(CurveTween(curve: Curves.easeOut)),
         weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.03, end: 1.0).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
+        tween: Tween<double>(begin: 1.04, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 25,
       ),
     ]).animate(_bounce_controller);
 
-    // Glow animation for burst effect on reveal
+    // Glow burst animation
     _glow_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
     );
     _glow_animation = TweenSequence<double>([
-      // Initial burst
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0).chain(
-          CurveTween(curve: Curves.easeOut),
-        ),
-        weight: 30,
+        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 20,
       ),
-      // Fade down
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.3).chain(
-          CurveTween(curve: Curves.easeInOut),
-        ),
-        weight: 70,
+        tween: Tween<double>(begin: 1.0, end: 0.6).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 80,
       ),
     ]).animate(_glow_controller);
 
-    // Shimmer animation for sparkle effect
-    _shimmer_controller = AnimationController(
+    // Color cycling for rainbow effect
+    _color_cycle_controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 3000),
     );
-    _shimmer_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _shimmer_controller, curve: Curves.linear),
+    _color_cycle_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _color_cycle_controller, curve: Curves.linear),
     );
 
-    // Name fade animation
+    // Particle animation for sparkles
+    _particle_controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _particle_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _particle_controller, curve: Curves.linear),
+    );
+
+    // Name fade
     _name_fade_controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: k_fade_in_duration_ms),
@@ -241,10 +233,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   }
 
   void _start_animation_sequence() {
-    // Start pulse animation immediately
     _pulse_controller.repeat(reverse: true);
 
-    // Schedule gender text reveal
     _gender_reveal_timer = Timer(
       const Duration(milliseconds: k_gender_text_reveal_delay_ms),
       () {
@@ -255,7 +245,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   }
 
   void _reveal_gender() {
-    // Stop pulse, start confetti and text animation
     _pulse_controller.stop();
 
     setState(() {
@@ -265,27 +254,22 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     // Start all reveal animations
     _text_scale_controller.forward().then((_) {
       if (!mounted) return;
-      // Start continuous bounce after initial reveal
       _bounce_controller.repeat();
     });
 
-    // Start glow burst
     _glow_controller.forward();
+    _color_cycle_controller.repeat();
+    _particle_controller.repeat();
 
-    // Start shimmer effect (repeating)
-    _shimmer_controller.repeat();
-
-    // Start confetti from multiple directions
+    // Start confetti
     _center_confetti_controller.play();
     _left_confetti_controller.play();
     _right_confetti_controller.play();
 
-    // Schedule baby name reveal if provided
+    // Schedule baby name reveal
     if (widget.baby_name != null && widget.baby_name!.isNotEmpty) {
       _name_reveal_timer = Timer(
-        const Duration(
-          milliseconds: k_baby_name_reveal_delay_ms - k_gender_text_reveal_delay_ms,
-        ),
+        const Duration(milliseconds: k_baby_name_reveal_delay_ms - k_gender_text_reveal_delay_ms),
         () {
           if (!mounted) return;
           setState(() {
@@ -295,8 +279,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         },
       );
     }
-
-    // Confetti now runs continuously (shouldLoop: true), no stop timer needed
 
     // Schedule animation complete callback
     _animation_complete_timer = Timer(
@@ -310,28 +292,25 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
 
   @override
   void dispose() {
-    // Cancel all timers
     _gender_reveal_timer?.cancel();
     _name_reveal_timer?.cancel();
     _animation_complete_timer?.cancel();
 
-    // Dispose confetti controllers
     _center_confetti_controller.dispose();
     _left_confetti_controller.dispose();
     _right_confetti_controller.dispose();
 
-    // Dispose animation controllers
     _pulse_controller.dispose();
     _text_scale_controller.dispose();
     _bounce_controller.dispose();
     _name_fade_controller.dispose();
     _glow_controller.dispose();
-    _shimmer_controller.dispose();
+    _color_cycle_controller.dispose();
+    _particle_controller.dispose();
 
     super.dispose();
   }
 
-  /// Creates confetti colors based on gender.
   List<Color> _get_confetti_colors() {
     if (_is_boy) {
       return [
@@ -352,24 +331,20 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     }
   }
 
-  /// Creates varied confetti shapes for visual interest.
   Path _draw_confetti_shape(Size size) {
     final random = math.Random();
     final shape_type = random.nextInt(3);
 
     switch (shape_type) {
       case 0:
-        // Circle
         return Path()
           ..addOval(Rect.fromCircle(
             center: Offset(size.width / 2, size.height / 2),
             radius: size.width / 2,
           ));
       case 1:
-        // Square
         return Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
       default:
-        // Star
         return _create_star_path(size);
     }
   }
@@ -415,9 +390,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         _build_animated_background(),
 
         // Center content
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 100),
+        Positioned.fill(
+          child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -437,116 +411,9 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                     },
                   ),
 
-                // Gender reveal text with dramatic glow, scale and shimmer effects
-                // Using UnconstrainedBox to allow glow shadows to extend beyond parent bounds
+                // Main gender reveal title with glow effect
                 if (_show_gender_text)
-                  UnconstrainedBox(
-                    clipBehavior: Clip.none,
-                    child: AnimatedBuilder(
-                      animation: Listenable.merge([
-                        _text_scale_animation,
-                        _bounce_animation,
-                        _glow_animation,
-                        _shimmer_animation,
-                      ]),
-                      builder: (context, child) {
-                        // Combine initial scale with continuous bounce
-                        final scale = _text_scale_animation.value *
-                            (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
-
-                        // Dynamic glow intensity based on animation
-                        final glow_intensity = _glow_animation.value;
-                        final base_glow_radius = 30.0 + (glow_intensity * 50.0);
-
-                        // Shimmer offset for sparkle sweep effect
-                        final shimmer_offset = _shimmer_animation.value;
-
-                        return Transform.scale(
-                          scale: scale,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            clipBehavior: Clip.none,
-                            children: [
-                              // Outer glow layer (burst effect)
-                              if (glow_intensity > 0.1)
-                                Text(
-                                  _reveal_text,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: text_size,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.transparent,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: base_glow_radius * 2,
-                                        color: _reveal_color.withAlpha((150 * glow_intensity).round()),
-                                        offset: const Offset(0, 0),
-                                      ),
-                                      Shadow(
-                                        blurRadius: base_glow_radius * 3,
-                                        color: Colors.white.withAlpha((100 * glow_intensity).round()),
-                                        offset: const Offset(0, 0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              // Main text with shimmer gradient
-                              ShaderMask(
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                    colors: [
-                                      Colors.white,
-                                      Colors.white.withAlpha(200),
-                                      Colors.white,
-                                      Colors.white.withAlpha(220),
-                                      Colors.white,
-                                    ],
-                                    stops: [
-                                      (shimmer_offset - 0.3).clamp(0.0, 1.0),
-                                      (shimmer_offset - 0.1).clamp(0.0, 1.0),
-                                      shimmer_offset.clamp(0.0, 1.0),
-                                      (shimmer_offset + 0.1).clamp(0.0, 1.0),
-                                      (shimmer_offset + 0.3).clamp(0.0, 1.0),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
-                                },
-                                blendMode: BlendMode.srcIn,
-                                child: Text(
-                                  _reveal_text,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: text_size,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 2.0,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: base_glow_radius,
-                                        color: _reveal_color.withAlpha(200),
-                                        offset: const Offset(0, 0),
-                                      ),
-                                      Shadow(
-                                        blurRadius: base_glow_radius / 2,
-                                        color: Colors.white.withAlpha(150),
-                                        offset: const Offset(0, 0),
-                                      ),
-                                      const Shadow(
-                                        blurRadius: 40,
-                                        color: Colors.black38,
-                                        offset: Offset(3, 3),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  _buildGlowingTitle(text_size, portrait),
 
                 const SizedBox(height: 24),
 
@@ -557,7 +424,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // "{name} is on the way!" text
                         Text(
                           _on_the_way_text,
                           textAlign: TextAlign.center,
@@ -568,14 +434,18 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                             letterSpacing: 1.5,
                             shadows: [
                               Shadow(
-                                blurRadius: 15,
-                                color: _reveal_color.withAlpha(150),
+                                blurRadius: 20,
+                                color: _reveal_color,
                                 offset: const Offset(0, 0),
+                              ),
+                              const Shadow(
+                                blurRadius: 10,
+                                color: Colors.white54,
+                                offset: Offset(0, 0),
                               ),
                             ],
                           ),
                         ),
-                        // Delivery date if available
                         if (_formatted_delivery_date != null) ...[
                           const SizedBox(height: 12),
                           Text(
@@ -589,8 +459,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                               letterSpacing: 2,
                               shadows: [
                                 Shadow(
-                                  blurRadius: 10,
-                                  color: _reveal_color.withAlpha(100),
+                                  blurRadius: 15,
+                                  color: _reveal_color.withAlpha(150),
                                   offset: const Offset(0, 0),
                                 ),
                               ],
@@ -606,13 +476,12 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
           ),
         ),
 
-        // Confetti - Center (top explosion) - continuous celebration
-        // Initial: 70% of base count, Reduced: 40% of base count
+        // Confetti - Center
         Align(
           alignment: Alignment.topCenter,
           child: ConfettiWidget(
             confettiController: _center_confetti_controller,
-            blastDirection: math.pi / 2, // Down
+            blastDirection: math.pi / 2,
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force,
             minBlastForce: k_confetti_min_blast_force,
@@ -627,13 +496,12 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
           ),
         ),
 
-        // Confetti - Left side - continuous celebration
-        // Initial: 35% of base count, Reduced: 20% of base count
+        // Confetti - Left
         Align(
           alignment: Alignment.centerLeft,
           child: ConfettiWidget(
             confettiController: _left_confetti_controller,
-            blastDirection: -math.pi / 4, // Diagonal right-down
+            blastDirection: -math.pi / 4,
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
@@ -648,13 +516,12 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
           ),
         ),
 
-        // Confetti - Right side - continuous celebration
-        // Initial: 35% of base count, Reduced: 20% of base count
+        // Confetti - Right
         Align(
           alignment: Alignment.centerRight,
           child: ConfettiWidget(
             confettiController: _right_confetti_controller,
-            blastDirection: -3 * math.pi / 4, // Diagonal left-down
+            blastDirection: -3 * math.pi / 4,
             blastDirectionality: BlastDirectionality.explosive,
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
@@ -669,6 +536,155 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
           ),
         ),
       ],
+    );
+  }
+
+  /// Builds the glowing title with ImageFiltered for proper glow effect
+  Widget _buildGlowingTitle(double text_size, bool portrait) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _text_scale_animation,
+        _bounce_animation,
+        _glow_animation,
+        _color_cycle_animation,
+      ]),
+      builder: (context, child) {
+        final scale = _text_scale_animation.value *
+            (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
+
+        final glow_intensity = _glow_animation.value;
+        final color_shift = _color_cycle_animation.value;
+
+        // Create animated color that shifts slightly
+        final animated_color = HSLColor.fromColor(_reveal_color)
+            .withHue((HSLColor.fromColor(_reveal_color).hue + (color_shift * 30) - 15) % 360)
+            .withSaturation((HSLColor.fromColor(_reveal_color).saturation * (0.8 + glow_intensity * 0.2)).clamp(0.0, 1.0))
+            .toColor();
+
+        return Transform.scale(
+          scale: scale,
+          child: SizedBox(
+            width: portrait ? null : MediaQuery.of(context).size.width * 0.8,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Layer 1: Outer blur glow (using ImageFiltered)
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(
+                    sigmaX: 25 * glow_intensity,
+                    sigmaY: 25 * glow_intensity,
+                  ),
+                  child: Text(
+                    _reveal_text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: text_size,
+                      fontWeight: FontWeight.w900,
+                      color: animated_color.withAlpha((200 * glow_intensity).round()),
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
+
+                // Layer 2: Inner glow
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(
+                    sigmaX: 10 * glow_intensity,
+                    sigmaY: 10 * glow_intensity,
+                  ),
+                  child: Text(
+                    _reveal_text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: text_size,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white.withAlpha((180 * glow_intensity).round()),
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
+
+                // Layer 3: Main text with gradient
+                ShaderMask(
+                  shaderCallback: (bounds) {
+                    return LinearGradient(
+                      colors: [
+                        Colors.white,
+                        animated_color.withAlpha(230),
+                        Colors.white,
+                        animated_color.withAlpha(230),
+                        Colors.white,
+                      ],
+                      stops: [
+                        0.0,
+                        0.25 + (color_shift * 0.1),
+                        0.5,
+                        0.75 - (color_shift * 0.1),
+                        1.0,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.srcATop,
+                  child: Text(
+                    _reveal_text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: text_size,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 2.0,
+                      shadows: [
+                        // Subtle drop shadow for depth
+                        Shadow(
+                          blurRadius: 8,
+                          color: Colors.black.withAlpha(100),
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Layer 4: Highlight/shine effect
+                Opacity(
+                  opacity: 0.3 + (glow_intensity * 0.3),
+                  child: ShaderMask(
+                    shaderCallback: (bounds) {
+                      return LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withAlpha(150),
+                          Colors.transparent,
+                        ],
+                        stops: [
+                          (color_shift - 0.3).clamp(0.0, 1.0),
+                          color_shift.clamp(0.0, 1.0),
+                          (color_shift + 0.3).clamp(0.0, 1.0),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.srcATop,
+                    child: Text(
+                      _reveal_text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: text_size,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

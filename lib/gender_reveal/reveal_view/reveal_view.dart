@@ -372,51 +372,50 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background image (if available)
-            if (_background_image_url != null) _build_background_image(),
+      body: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Background image (if available)
+          if (_background_image_url != null) _build_background_image(),
 
-            // Show reveal button or animation based on state
-            if (!_reveal_triggered)
-              _build_reveal_button_view()
-            else ...[
-              // Main reveal animation
-              Positioned.fill(
-                child: RevealAnimations(
-                  key: _animation_key,
-                  gender: baby_gender ?? 'boy',
-                  baby_name: event?.baby_name,
-                  baby_delivery_date: event?.baby_delivery_date,
-                  boy_color: widget.boy_color,
-                  girl_color: widget.girl_color,
-                  boy_text: _its_a_boy_text,
-                  girl_text: _its_a_girl_text,
-                  baby_on_the_way_text: _baby_on_the_way_text,
-                  locale: current_locale,
-                  on_animation_complete: on_animation_complete,
-                  reduce_confetti: show_share_options,
-                ),
+          // Show reveal button or animation based on state
+          if (!_reveal_triggered)
+            _build_reveal_button_view()
+          else ...[
+            // Main reveal animation - no SafeArea to allow glow effects to extend to edges
+            Positioned.fill(
+              child: RevealAnimations(
+                key: _animation_key,
+                gender: baby_gender ?? 'boy',
+                baby_name: event?.baby_name,
+                baby_delivery_date: event?.baby_delivery_date,
+                boy_color: widget.boy_color,
+                girl_color: widget.girl_color,
+                boy_text: _its_a_boy_text,
+                girl_text: _its_a_girl_text,
+                baby_on_the_way_text: _baby_on_the_way_text,
+                locale: current_locale,
+                on_animation_complete: on_animation_complete,
+                reduce_confetti: show_share_options,
               ),
+            ),
 
-              // Camera preview (only show during reveal, hide when share options appear or recording completes)
-              if (!show_share_options && !reaction_recording_complete)
-                _build_camera_preview(portrait, camera_size),
+            // Camera preview (only show during reveal, hide when share options appear or recording completes)
+            if (!show_share_options && !reaction_recording_complete)
+              _build_camera_preview(portrait, camera_size),
 
-              // Show "Reaction Recorded" indicator when recording is complete
-              // Shows regardless of whether video was successfully saved
-              if (reaction_recording_complete) _build_reaction_recorded_indicator(portrait),
-            ],
-
-            // Share options overlay (after animation completes)
-            if (show_share_options) _build_share_overlay(portrait),
-
-            // Language picker (only when not triggered and before reveal)
-            if (widget.has_language_picker && translation_stream_list.isNotEmpty && !_reveal_triggered)
-              _build_language_picker(),
+            // Show "Reaction Recorded" indicator when recording is complete
+            // Shows regardless of whether video was successfully saved
+            if (reaction_recording_complete) _build_reaction_recorded_indicator(portrait),
           ],
-        ),
+
+          // Share options overlay (after animation completes)
+          if (show_share_options) _build_share_overlay(portrait),
+
+          // Language picker (only when not triggered and before reveal)
+          if (widget.has_language_picker && translation_stream_list.isNotEmpty && !_reveal_triggered)
+            _build_language_picker(),
+        ],
       ),
     );
   }
@@ -556,11 +555,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   }
 
   Widget _build_camera_preview(bool portrait, double size) {
+    final safe_top = MediaQuery.of(context).padding.top;
     // Position differently for portrait vs landscape
     if (portrait) {
       // Portrait: Top center
       return Positioned(
-        top: 16,
+        top: safe_top + 16,
         left: 0,
         right: 0,
         child: Center(
@@ -580,7 +580,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     } else {
       // Landscape: Top right corner
       return Positioned(
-        top: 16,
+        top: safe_top + 16,
         right: 16,
         child: SizedBox(
           width: size,
@@ -598,9 +598,10 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   }
 
   Widget _build_reaction_recorded_indicator(bool portrait) {
+    final safe_top = MediaQuery.of(context).padding.top;
     if (portrait) {
       return Positioned(
-        top: 16,
+        top: safe_top + 16,
         left: 0,
         right: 0,
         child: Center(
@@ -609,7 +610,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
       );
     } else {
       return Positioned(
-        top: 16,
+        top: safe_top + 16,
         right: 16,
         child: _build_reaction_recorded_badge(),
       );
@@ -620,12 +621,20 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withAlpha((255 * 0.6).round()),
+        // Use white/light color scheme for better visibility on any background
+        color: Colors.white.withAlpha((255 * 0.9).round()),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.green.withAlpha((255 * 0.5).round()),
+          color: Colors.grey.withAlpha((255 * 0.3).round()),
           width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((255 * 0.1).round()),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -643,12 +652,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
             ),
           ),
           const SizedBox(width: 10),
-          const Text(
-            'Reaction Recorded',
+          Text(
+            _share_texts.reaction_recorded,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.grey.shade800,
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -677,7 +686,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               mother_name: widget.mother_name,
               father_name: widget.father_name,
               event_url: '${widget.share_url}$event_id',
-              reaction_video_path: reaction_uploaded ? reaction_video_path : null,
+              reaction_video_path: reaction_video_path,
               reaction_video_format: reaction_video_format,
               wishlist_button_builder: widget.wishlist_button_builder,
               registry_link: event?.registry_link,
@@ -697,9 +706,10 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   Widget _build_language_picker() {
     final bg_color = widget.language_picker_background_color ?? Colors.black.withAlpha((255 * 0.5).round());
     final text_color = widget.language_picker_text_color ?? Colors.white;
+    final safe_top = MediaQuery.of(context).padding.top;
 
     return Positioned(
-      top: 8,
+      top: safe_top + 8,
       right: sized_box_space,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
