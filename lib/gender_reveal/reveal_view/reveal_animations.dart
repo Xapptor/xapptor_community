@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
@@ -76,18 +75,12 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   late AnimationController _text_scale_controller;
   late AnimationController _bounce_controller;
   late AnimationController _name_fade_controller;
-  late AnimationController _glow_controller;
-  late AnimationController _color_cycle_controller;
-  late AnimationController _particle_controller;
 
   // Animations
   late Animation<double> _pulse_animation;
   late Animation<double> _text_scale_animation;
   late Animation<double> _bounce_animation;
   late Animation<double> _name_fade_animation;
-  late Animation<double> _glow_animation;
-  late Animation<double> _color_cycle_animation;
-  late Animation<double> _particle_animation;
 
   // State
   bool _show_gender_text = false;
@@ -188,40 +181,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       ),
     ]).animate(_bounce_controller);
 
-    // Glow burst animation
-    _glow_controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _glow_animation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)),
-        weight: 20,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.6).chain(CurveTween(curve: Curves.easeInOut)),
-        weight: 80,
-      ),
-    ]).animate(_glow_controller);
-
-    // Color cycling for rainbow effect
-    _color_cycle_controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3000),
-    );
-    _color_cycle_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _color_cycle_controller, curve: Curves.linear),
-    );
-
-    // Particle animation for sparkles
-    _particle_controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _particle_animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _particle_controller, curve: Curves.linear),
-    );
-
     // Name fade
     _name_fade_controller = AnimationController(
       vsync: this,
@@ -256,10 +215,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
       if (!mounted) return;
       _bounce_controller.repeat();
     });
-
-    _glow_controller.forward();
-    _color_cycle_controller.repeat();
-    _particle_controller.repeat();
 
     // Start confetti
     _center_confetti_controller.play();
@@ -304,9 +259,6 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     _text_scale_controller.dispose();
     _bounce_controller.dispose();
     _name_fade_controller.dispose();
-    _glow_controller.dispose();
-    _color_cycle_controller.dispose();
-    _particle_controller.dispose();
 
     super.dispose();
   }
@@ -539,148 +491,44 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     );
   }
 
-  /// Builds the glowing title with ImageFiltered for proper glow effect
+  /// Builds the title with scale and bounce animations, solid white color
   Widget _buildGlowingTitle(double text_size, bool portrait) {
     return AnimatedBuilder(
       animation: Listenable.merge([
         _text_scale_animation,
         _bounce_animation,
-        _glow_animation,
-        _color_cycle_animation,
       ]),
       builder: (context, child) {
         final scale = _text_scale_animation.value *
             (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
 
-        final glow_intensity = _glow_animation.value;
-        final color_shift = _color_cycle_animation.value;
-
-        // Create animated color that shifts slightly
-        final animated_color = HSLColor.fromColor(_reveal_color)
-            .withHue((HSLColor.fromColor(_reveal_color).hue + (color_shift * 30) - 15) % 360)
-            .withSaturation((HSLColor.fromColor(_reveal_color).saturation * (0.8 + glow_intensity * 0.2)).clamp(0.0, 1.0))
-            .toColor();
-
         return Transform.scale(
           scale: scale,
           child: SizedBox(
             width: portrait ? null : MediaQuery.of(context).size.width * 0.8,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Layer 1: Outer blur glow (using ImageFiltered)
-                ImageFiltered(
-                  imageFilter: ImageFilter.blur(
-                    sigmaX: 25 * glow_intensity,
-                    sigmaY: 25 * glow_intensity,
+            child: Text(
+              _reveal_text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: text_size,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 2.0,
+                shadows: [
+                  // Dark shadow for readability on any background
+                  Shadow(
+                    blurRadius: 15,
+                    color: Colors.black.withAlpha(180),
+                    offset: const Offset(0, 3),
                   ),
-                  child: Text(
-                    _reveal_text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: text_size,
-                      fontWeight: FontWeight.w900,
-                      color: animated_color.withAlpha((200 * glow_intensity).round()),
-                      letterSpacing: 2.0,
-                    ),
+                  // Subtle glow in reveal color
+                  Shadow(
+                    blurRadius: 30,
+                    color: _reveal_color.withAlpha(150),
+                    offset: const Offset(0, 0),
                   ),
-                ),
-
-                // Layer 2: Inner glow
-                ImageFiltered(
-                  imageFilter: ImageFilter.blur(
-                    sigmaX: 10 * glow_intensity,
-                    sigmaY: 10 * glow_intensity,
-                  ),
-                  child: Text(
-                    _reveal_text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: text_size,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white.withAlpha((180 * glow_intensity).round()),
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                ),
-
-                // Layer 3: Main text with gradient
-                ShaderMask(
-                  shaderCallback: (bounds) {
-                    return LinearGradient(
-                      colors: [
-                        Colors.white,
-                        animated_color.withAlpha(230),
-                        Colors.white,
-                        animated_color.withAlpha(230),
-                        Colors.white,
-                      ],
-                      stops: [
-                        0.0,
-                        0.25 + (color_shift * 0.1),
-                        0.5,
-                        0.75 - (color_shift * 0.1),
-                        1.0,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.srcATop,
-                  child: Text(
-                    _reveal_text,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: text_size,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      letterSpacing: 2.0,
-                      shadows: [
-                        // Subtle drop shadow for depth
-                        Shadow(
-                          blurRadius: 8,
-                          color: Colors.black.withAlpha(100),
-                          offset: const Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Layer 4: Highlight/shine effect
-                Opacity(
-                  opacity: 0.3 + (glow_intensity * 0.3),
-                  child: ShaderMask(
-                    shaderCallback: (bounds) {
-                      return LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Colors.white.withAlpha(150),
-                          Colors.transparent,
-                        ],
-                        stops: [
-                          (color_shift - 0.3).clamp(0.0, 1.0),
-                          color_shift.clamp(0.0, 1.0),
-                          (color_shift + 0.3).clamp(0.0, 1.0),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ).createShader(bounds);
-                    },
-                    blendMode: BlendMode.srcATop,
-                    child: Text(
-                      _reveal_text,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: text_size,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

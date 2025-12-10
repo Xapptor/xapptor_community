@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
-import 'package:xapptor_ui/values/ui.dart';
 
 /// Unified border radius for all share options elements
 const double _k_share_border_radius = 16.0;
@@ -86,7 +85,6 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
   bool _link_copied = false;
 
   bool get _is_boy => widget.gender.toLowerCase() == 'boy';
-  Color get _accent_color => _is_boy ? widget.boy_color : widget.girl_color;
 
   @override
   void initState() {
