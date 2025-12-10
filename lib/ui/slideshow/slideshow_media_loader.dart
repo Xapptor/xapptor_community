@@ -67,9 +67,10 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   List<VideoPlayerController> landscape_video_player_controllers = [];
 
   // Maximum active videos on web to prevent memory issues
-  // Need at least 2 per orientation (portrait + landscape slots can both be visible)
-  // Safari supports ~4-6 simultaneous video elements before performance degrades
-  static const int max_active_videos_web = 4;
+  // Only 2 video slots exist (1 portrait, 1 landscape), so 2 controllers is sufficient.
+  // Preloading isn't implemented, so extra controllers provide no UX benefit.
+  // Reduced from 4 to 2 to save ~20-40 MB on iOS Safari.
+  static const int max_active_videos_web = 2;
   static const int max_cached_images_per_orientation = 3;
 
   // Initial load counts
