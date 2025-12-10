@@ -261,8 +261,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        // Use semi-transparent white for better visibility on any background
-        color: Colors.white.withAlpha((255 * 0.85).round()),
+        color: Colors.brown.withAlpha((255 * 0.6).round()),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Colors.grey.withAlpha((255 * 0.3).round()),
@@ -282,15 +281,15 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: _accent_color.withAlpha((255 * 0.15).round()),
+              color: Colors.white.withAlpha((255 * 0.15).round()),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: _accent_color.withAlpha((255 * 0.3).round()),
+                color: Colors.white.withAlpha((255 * 0.3).round()),
               ),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.videocam,
-              color: _accent_color,
+              color: Colors.white,
               size: 24,
             ),
           ),
@@ -303,8 +302,8 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
               children: [
                 Text(
                   widget.texts.your_reaction,
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -312,8 +311,8 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
                 const SizedBox(height: 2),
                 Text(
                   widget.texts.reaction_saved,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 11,
                   ),
                 ),
@@ -324,7 +323,7 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
           // Share reaction button
           Container(
             decoration: BoxDecoration(
-              color: _accent_color.withAlpha((255 * 0.15).round()),
+              color: Colors.white.withAlpha((255 * 0.15).round()),
               borderRadius: BorderRadius.circular(8),
             ),
             child: IconButton(
@@ -358,9 +357,9 @@ class _RevealShareOptionsState extends State<RevealShareOptions> with SingleTick
                   );
                 }
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.share,
-                color: _accent_color,
+                color: Colors.white,
                 size: 20,
               ),
             ),
