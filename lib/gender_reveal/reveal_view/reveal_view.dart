@@ -401,8 +401,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
             ),
 
             // Camera preview (only show during reveal, hide when share options appear or recording completes)
-            if (!show_share_options && !reaction_recording_complete)
-              _build_camera_preview(portrait, camera_size),
+            if (!show_share_options && !reaction_recording_complete) _build_camera_preview(portrait, camera_size),
 
             // Show "Reaction Recorded" indicator when recording is complete
             // Shows regardless of whether video was successfully saved
@@ -621,8 +620,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        // Use white/light color scheme for better visibility on any background
-        color: Colors.white.withAlpha((255 * 0.9).round()),
+        color: Colors.brown.withAlpha((255 * 0.6).round()),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.grey.withAlpha((255 * 0.3).round()),
@@ -647,15 +645,15 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
             ),
             child: const Icon(
               Icons.check,
-              color: Colors.green,
+              color: Colors.white,
               size: 16,
             ),
           ),
           const SizedBox(width: 10),
           Text(
             _share_texts.reaction_recorded,
-            style: TextStyle(
-              color: Colors.grey.shade800,
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
