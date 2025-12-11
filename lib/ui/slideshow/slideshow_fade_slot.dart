@@ -256,6 +256,10 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
   ///
   /// For image slots using random selection, the index is already the actual image index
   /// (no view_offset needed - parent handles duplicate prevention).
+  ///
+  /// CRITICAL: This method must ensure the image is fully DECODED into GPU memory
+  /// before returning. Otherwise, the AnimatedSwitcher will start fading to an
+  /// image that's still loading, causing cut-off animations.
   Future<void> _preload_image_for_index(int index) async {
     // Videos don't need preloading here (handled separately)
     if (!_is_image_slot) return;
@@ -284,6 +288,25 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
         is_portrait: false,
         orientation: widget.slideshow_view_orientation,
       );
+
+      // Re-fetch the image after loading
+      if (widget.get_image_by_index != null) {
+        current_image = widget.get_image_by_index!(
+          index: index,
+          orientation: widget.slideshow_view_orientation,
+        );
+      }
+    }
+
+    // CRITICAL: Precache the image to ensure it's fully decoded into GPU memory.
+    // Without this, the image may still be decoding when AnimatedSwitcher starts,
+    // causing the frameBuilder to show placeholder mid-transition (cut-off effect).
+    if (current_image != null && mounted) {
+      try {
+        await precacheImage(current_image.image, context);
+      } catch (e) {
+        // Ignore precache errors - image will load during transition (fallback)
+      }
     }
   }
 

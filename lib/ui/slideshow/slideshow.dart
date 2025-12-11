@@ -83,8 +83,11 @@ class Slideshow extends StatefulWidget {
 }
 
 class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin, WidgetsBindingObserver {
-  final Cubic _animation_curve = Curves.fastOutSlowIn;
-  final Duration _animation_duration = const Duration(milliseconds: 1000);
+  // Use easeInOut for smoother fade transitions (symmetric ease in and out)
+  // fastOutSlowIn can feel abrupt at the start of the fade
+  final Cubic _animation_curve = Curves.easeInOut;
+  // 1.5 seconds gives a more elegant, cinematic crossfade effect
+  final Duration _animation_duration = const Duration(milliseconds: 1500);
 
   final SlideshowAudioService _audio_service = SlideshowAudioService.instance;
   StreamSubscription<SlideshowAudioState>? _audio_state_subscription;

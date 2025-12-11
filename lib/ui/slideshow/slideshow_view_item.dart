@@ -241,6 +241,11 @@ Widget _build_image_item({
   // Using FadeInImage here causes a conflict: when the image is cached,
   // FadeInImage shows it instantly while AnimatedSwitcher expects to animate,
   // resulting in abrupt/cut-off transitions.
+  //
+  // IMPORTANT: No frameBuilder here! The image should be precached (decoded)
+  // BEFORE AnimatedSwitcher starts the transition. If we use frameBuilder
+  // to show a placeholder during decode, it can cause visual jumps mid-animation.
+  // The precacheImage() call in _preload_image_for_index ensures decode completes first.
   return Stack(
     alignment: Alignment.center,
     fit: StackFit.expand,
@@ -249,19 +254,8 @@ Widget _build_image_item({
         image: image.image,
         fit: BoxFit.cover,
         width: screen_width / number_of_columns,
-        // Prevent flickering by not showing error/loading frames
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded || frame != null) {
-            return child;
-          }
-          // Show placeholder while loading
-          return Image.asset(
-            'assets/images/placeholder_gradient_64.jpg',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          );
-        },
+        // gaplessPlayback prevents flickering when image provider changes
+        gaplessPlayback: true,
       ),
       if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
     ],
