@@ -313,8 +313,14 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     image_urls.clear();
     video_urls.clear();
 
-    final ListResult image_list = await image_storage_ref.listAll();
-    final ListResult video_list = await video_storage_ref.listAll();
+    // OPTIMIZATION: Fetch both lists in parallel instead of sequentially.
+    // This saves ~200-400ms (one Firebase round-trip).
+    final results = await Future.wait([
+      image_storage_ref.listAll(),
+      video_storage_ref.listAll(),
+    ]);
+    final ListResult image_list = results[0];
+    final ListResult video_list = results[1];
 
     debugPrint('Slideshow: Found ${image_list.items.length} images and '
         '${video_list.items.length} videos to fetch');
