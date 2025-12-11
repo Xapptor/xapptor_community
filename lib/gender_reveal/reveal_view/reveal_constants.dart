@@ -23,9 +23,6 @@ const int k_gender_text_reveal_delay_ms = 2000;
 /// Appears after the gender reveal text has settled.
 const int k_baby_name_reveal_delay_ms = 4000;
 
-/// Duration of the text scale animation (in milliseconds).
-const int k_text_scale_animation_duration_ms = 800;
-
 /// Duration of the fade in animation (in milliseconds).
 const int k_fade_in_duration_ms = 500;
 
@@ -53,12 +50,6 @@ const int k_recording_start_delay_ms = 500;
 /// Number of confetti particles to emit per burst.
 /// Kept low for memory efficiency on iOS Safari.
 const int k_confetti_particle_count = 50;
-
-/// Number of confetti emission bursts.
-const int k_confetti_burst_count = 4;
-
-/// Interval between confetti bursts (in milliseconds).
-const int k_confetti_burst_interval_ms = 2000;
 
 /// Minimum confetti blast force.
 const double k_confetti_min_blast_force = 10;
