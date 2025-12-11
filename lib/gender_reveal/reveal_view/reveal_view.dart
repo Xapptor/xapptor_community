@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/glowing_reveal_button.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_animations.dart';
 import 'package:xapptor_community/gender_reveal/reveal_view/reveal_constants.dart';
@@ -113,9 +114,10 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
   // Whether the reveal has been triggered (button pressed)
   bool _reveal_triggered = false;
 
-  // Camera permission state for early permission request
-  bool _camera_permission_requested = false;
+  // Camera and microphone permission state for early permission request
+  bool _permissions_requested = false;
   bool _camera_permission_granted = false;
+  bool _microphone_permission_granted = false;
 
   // Background image state
   String? _background_image_url;
@@ -259,29 +261,87 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     }
   }
 
-  /// Request camera permission early, before the user presses "Reveal Now!".
+  /// Request camera and microphone permissions early, before the user presses "Reveal Now!".
   /// This reduces friction during the reveal moment by avoiding permission
   /// dialogs interrupting the animation flow.
+  ///
+  /// Uses permission_handler for explicit control over both permissions,
+  /// ensuring the user grants both camera AND microphone access for
+  /// reaction video recording with audio.
   Future<void> _request_camera_permission_early() async {
-    if (_camera_permission_requested) return;
-    _camera_permission_requested = true;
+    if (_permissions_requested) return;
+    _permissions_requested = true;
 
     try {
-      // Simply calling availableCameras triggers the permission request
-      final cameras = await availableCameras();
+      // On web, permission_handler may not work the same way
+      // Fall back to checking via camera package
+      if (kIsWeb) {
+        await _request_permissions_web();
+        return;
+      }
+
+      // Request both camera and microphone permissions together
+      // This shows both permission dialogs at once (or combined on some platforms)
+      final statuses = await [
+        Permission.camera,
+        Permission.microphone,
+      ].request();
+
+      if (!mounted) return;
+
+      final camera_status = statuses[Permission.camera];
+      final microphone_status = statuses[Permission.microphone];
+
+      setState(() {
+        _camera_permission_granted = camera_status?.isGranted ?? false;
+        _microphone_permission_granted = microphone_status?.isGranted ?? false;
+      });
+
+      debugPrint(
+        'RevealView: Permissions - '
+        'Camera: ${camera_status?.name}, '
+        'Microphone: ${microphone_status?.name}',
+      );
+
+      // Log if either permission was denied
+      if (camera_status?.isDenied ?? true) {
+        debugPrint('RevealView: Camera permission denied - recording will not work');
+      }
+      if (microphone_status?.isDenied ?? true) {
+        debugPrint('RevealView: Microphone permission denied - recording will have no audio');
+      }
+    } catch (e) {
+      debugPrint('RevealView: Permission request failed: $e');
+      // Permission denied or error - camera won't be available during reveal
+      // This is acceptable, the reveal will still work without recording
+    }
+  }
+
+  /// Request permissions on web platform.
+  /// Web uses the browser's built-in permission API through getUserMedia.
+  Future<void> _request_permissions_web() async {
+    try {
+      // On web, we can use permission_handler's web implementation
+      // or let the camera package handle it when CameraController initializes
+      final camera_status = await Permission.camera.request();
+      final microphone_status = await Permission.microphone.request();
+
       if (!mounted) return;
 
       setState(() {
-        _camera_permission_granted = cameras.isNotEmpty;
+        _camera_permission_granted = camera_status.isGranted;
+        _microphone_permission_granted = microphone_status.isGranted;
       });
 
-      if (cameras.isNotEmpty) {
-        debugPrint('RevealView: Camera permission granted early');
-      }
+      debugPrint(
+        'RevealView (Web): Permissions - '
+        'Camera: ${camera_status.name}, '
+        'Microphone: ${microphone_status.name}',
+      );
     } catch (e) {
-      debugPrint('RevealView: Camera permission request failed: $e');
-      // Permission denied or error - camera won't be available during reveal
-      // This is acceptable, the reveal will still work without recording
+      debugPrint('RevealView (Web): Permission request failed: $e');
+      // On web, if permission_handler fails, the camera package will
+      // handle permissions when CameraController.initialize() is called
     }
   }
 
@@ -492,9 +552,9 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
                 on_pressed: _handle_reveal_button_pressed,
               ),
               const SizedBox(height: 32),
-              // Camera permission message - shows while permission is being requested
-              // This informs users why we need camera access (to record their reaction)
-              if (!_camera_permission_granted && _camera_permission_requested)
+              // Camera/microphone permission message - shows while permission is being requested
+              // This informs users why we need camera and microphone access (to record their reaction)
+              if ((!_camera_permission_granted || !_microphone_permission_granted) && _permissions_requested)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 48),
                   child: Row(
