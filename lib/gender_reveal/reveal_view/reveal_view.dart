@@ -123,7 +123,6 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
   // Sound effect state
   AudioPlayer? _audio_player;
-  String? _sound_effect_url;
   bool _sound_effect_loading = false;
   bool _sound_effect_ready = false;
 
@@ -232,7 +231,6 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
       // Single setState with all state updates batched
       setState(() {
-        _sound_effect_url = download_url;
         _sound_effect_loading = false;
         _sound_effect_ready = true;
       });

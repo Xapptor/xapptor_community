@@ -82,7 +82,8 @@ class Slideshow extends StatefulWidget {
   State<Slideshow> createState() => _SlideshowState();
 }
 
-class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin, WidgetsBindingObserver {
+class _SlideshowState extends State<Slideshow>
+    with SlideshowMediaLoaderMixin, SlideshowContentLoaderMixin, WidgetsBindingObserver {
   // Use easeInOut for smoother fade transitions (symmetric ease in and out)
   // fastOutSlowIn can feel abrupt at the start of the fade
   final Cubic _animation_curve = Curves.easeInOut;
@@ -158,14 +159,6 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
       return _slot_current_image[slot_id]!;
     }
     return _get_random_available_image_index(slot_id);
-  }
-
-  /// Releases a slot's image tracking (called when slot is disposed or orientation changes).
-  void _release_slot_image(String slot_id) {
-    final int? index = _slot_current_image.remove(slot_id);
-    if (index != null) {
-      _displayed_image_indices.remove(index);
-    }
   }
 
   @override
