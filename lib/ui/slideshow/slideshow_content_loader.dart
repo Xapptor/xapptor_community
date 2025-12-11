@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_community/ui/slideshow/slideshow_media_loader.dart';
@@ -399,11 +400,19 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
     final List<String> shuffled_paths = List.from(paths)..shuffle();
     all_image_urls.addAll(shuffled_paths);
 
-    // Load initial images (now 8 to fill all visible slots)
+    // Determine initial image count based on current device orientation.
+    // Portrait: 2 columns × 2-3 views = 4-6 slots, minus 2 video slots = 2-4 image slots
+    // Landscape: 4 columns × 1-3 views = 4-12 slots, minus 2 video slots = 2-10 image slots
+    final ui.FlutterView view = ui.PlatformDispatcher.instance.implicitView!;
+    final Size screen_size = view.physicalSize / view.devicePixelRatio;
+    final bool is_portrait = screen_size.height > screen_size.width;
+
+    final int max_initial = is_portrait
+        ? SlideshowMediaLoaderMixin.max_initial_images_portrait
+        : SlideshowMediaLoaderMixin.max_initial_images_landscape;
+
     final int initial_count =
-        shuffled_paths.length > SlideshowMediaLoaderMixin.max_initial_images
-            ? SlideshowMediaLoaderMixin.max_initial_images
-            : shuffled_paths.length;
+        shuffled_paths.length > max_initial ? max_initial : shuffled_paths.length;
 
     for (int i = 0; i < initial_count; i++) {
       await load_single_image(url: shuffled_paths[i]);

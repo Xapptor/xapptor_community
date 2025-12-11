@@ -79,12 +79,16 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   static const int max_active_videos_web = 2;
 
   // Maximum cached images (total, not per orientation since we use all_image_urls)
-  // With 8 visible image slots, we need at least 8 images to avoid duplicates.
+  // With up to 8 visible image slots (landscape), we need at least 8 images to avoid duplicates.
   // At 600px decode size, each image is ~1 MB = ~10 MB total image cache
   static const int max_cached_images_total = 10;
 
-  // Initial load counts - load 8 images for 8 visible slots
-  static const int max_initial_images = 8;
+  // Initial load counts for images based on device orientation.
+  // Portrait: 2 columns × 2-3 views = 4-6 slots, minus 2 video slots = 2-4 image slots (use 4)
+  // Landscape: 4 columns × 1-3 views (alternating, e.g. 3+2+3+2=10), minus 2 video slots = max 8 image slots
+  static const int max_initial_images_portrait = 4;
+  static const int max_initial_images_landscape = 8;
+
   static const int max_initial_videos = 2;
 
   // Track video orientations separately from controllers (URL -> is_portrait)
