@@ -336,7 +336,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     final name_text_size = portrait ? k_baby_name_text_size_portrait : k_baby_name_text_size_landscape;
     final date_text_size = portrait ? k_delivery_date_text_size_portrait : k_delivery_date_text_size_landscape;
 
-    final int k_confetti_particle_count = portrait ? 10 : 30;
+    final int particle_count_top = portrait ? 14 : 40;
+    final int particle_count_side = portrait ? 10 : 30;
 
     return Stack(
       children: [
@@ -439,9 +440,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             maxBlastForce: k_confetti_max_blast_force,
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.06 : 0.03,
-            numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.4).round()
-                : (k_confetti_particle_count * 0.7).round(),
+            numberOfParticles:
+                widget.reduce_confetti ? (particle_count_top * 0.4).round() : (particle_count_top * 0.7).round(),
             gravity: 0.15,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -459,9 +459,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
-            numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.2).round()
-                : (k_confetti_particle_count * 0.35).round(),
+            numberOfParticles:
+                widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),
@@ -479,9 +478,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
             maxBlastForce: k_confetti_max_blast_force * 0.8,
             minBlastForce: k_confetti_min_blast_force,
             emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
-            numberOfParticles: widget.reduce_confetti
-                ? (k_confetti_particle_count * 0.2).round()
-                : (k_confetti_particle_count * 0.35).round(),
+            numberOfParticles:
+                widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
             gravity: 0.12,
             shouldLoop: true,
             colors: _get_confetti_colors(),
