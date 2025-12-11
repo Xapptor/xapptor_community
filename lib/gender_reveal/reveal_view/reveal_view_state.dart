@@ -45,8 +45,9 @@ mixin RevealViewStateMixin on State<RevealView> {
   bool get should_show_camera => is_user_logged_in && !user_has_existing_reaction;
 
   /// Initialize the reveal view state.
-  void initialize_reveal_state() {
-    _load_event_data();
+  /// Returns a Future that completes when event data is loaded.
+  Future<void> initialize_reveal_state() async {
+    await _load_event_data();
   }
 
   /// Load event data from Firestore.
