@@ -52,9 +52,28 @@ mixin EventViewStateMixin
         });
       }
     };
+
+    // Set up callback for pending vote intent
+    on_pending_vote_ready = (String vote_choice) {
+      if (mounted) {
+        show_vote_confirmation_dialog(vote_choice, context);
+      }
+    };
+
     _listen_to_event();
-    check_if_user_voted();
+    _check_user_vote_and_pending_intent();
     initialize_animations();
+  }
+
+  /// Check if user has voted, then check for pending vote intent.
+  Future<void> _check_user_vote_and_pending_intent() async {
+    await check_if_user_voted();
+
+    // After checking vote status, check for pending vote intent
+    // Only if user is authenticated and hasn't voted yet
+    if (current_user != null && !confirmed) {
+      await check_pending_vote_intent();
+    }
   }
 
   /// Listen to real-time changes on the event document.

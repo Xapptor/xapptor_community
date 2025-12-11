@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:xapptor_auth/model/xapptor_user.dart';
 import 'package:xapptor_community/gender_reveal/models/vote.dart';
+import 'package:xapptor_community/gender_reveal/services/pending_vote_intent_service.dart';
 import 'package:xapptor_db/xapptor_db.dart';
 import 'package:xapptor_router/V2/get_last_path_segment_v2.dart';
 import 'package:xapptor_router/V2/app_screens_v2.dart';
@@ -32,6 +33,10 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
 
   /// Callback to notify when voting card should be shown.
   void Function(bool show, bool enable)? on_voting_card_visibility_changed;
+
+  /// Callback to trigger vote confirmation dialog from pending intent.
+  /// The implementing class should call show_vote_confirmation_dialog when invoked.
+  void Function(String vote_choice)? on_pending_vote_ready;
 
   /// Start listening to votes collection in real-time.
   void listen_to_votes() {
@@ -227,6 +232,11 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
       );
 
       if (should_login == true) {
+        // Save pending vote intent before redirecting to login
+        await PendingVoteIntentService.save(
+          event_id: event_id,
+          vote_choice: vote,
+        );
         open_login_v2();
       }
       return;
@@ -296,6 +306,165 @@ mixin EventViewVotingMixin<T extends StatefulWidget> on State<T> {
       );
     } catch (e) {
       debugPrint('Error saving vote: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$vote_error_text: $e'),
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Check for pending vote intent and trigger vote confirmation if valid.
+  /// Should be called after user authentication is confirmed.
+  /// Returns true if a pending vote was found and processed.
+  Future<bool> check_pending_vote_intent() async {
+    if (current_user == null || event_id.isEmpty) {
+      debugPrint('PendingVote: Cannot check - user or event_id missing');
+      return false;
+    }
+
+    // User has already voted - don't process pending intent
+    if (confirmed) {
+      debugPrint('PendingVote: User already voted, clearing any pending intent');
+      await PendingVoteIntentService.clear();
+      return false;
+    }
+
+    final intent = await PendingVoteIntentService.load_for_event(event_id);
+    if (intent == null) {
+      debugPrint('PendingVote: No valid pending intent for this event');
+      return false;
+    }
+
+    // Validate the vote choice is still valid (boy or girl)
+    if (intent.vote_choice != 'boy' && intent.vote_choice != 'girl') {
+      debugPrint('PendingVote: Invalid vote choice: ${intent.vote_choice}');
+      await PendingVoteIntentService.clear();
+      return false;
+    }
+
+    debugPrint('PendingVote: Found valid intent - choice: ${intent.vote_choice}');
+
+    // Clear the intent first to prevent duplicate processing
+    await PendingVoteIntentService.clear();
+
+    // Trigger the callback to show vote confirmation dialog
+    // Small delay to ensure UI is ready
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return false;
+
+    on_pending_vote_ready?.call(intent.vote_choice);
+    return true;
+  }
+
+  /// Show vote confirmation dialog for a pending vote intent.
+  /// This is called by the implementing class when on_pending_vote_ready is triggered.
+  Future<void> show_vote_confirmation_dialog(
+    String vote,
+    BuildContext context,
+  ) async {
+    if (current_user == null) {
+      debugPrint('PendingVote: User not authenticated, cannot show dialog');
+      return;
+    }
+
+    if (confirmed) {
+      debugPrint('PendingVote: User already voted');
+      // Show message that user already voted
+      final text = dialog_text_list;
+      final already_voted_text = text?[30] ?? 'You have already voted in this event';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(already_voted_text),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    final text = dialog_text_list;
+    final cancel_text = text?[19] ?? 'Cancel';
+    final confirm_vote_title = text?[21] ?? 'Confirm your vote';
+    final vote_confirmation_template = text?[22] ?? 'Are you sure you want to vote for {choice}?';
+    final vote_is_final_text = text?[23] ?? 'Your vote is final.';
+    final confirm_text = text?[24] ?? 'Confirm';
+    final vote_success_template = text?[25] ?? 'Vote for {choice} saved successfully!';
+    final vote_error_text = text?[26] ?? 'Error saving vote';
+    final boy_text = text?[3] ?? 'Boy';
+    final girl_text = text?[4] ?? 'Girl';
+
+    final choice_text = vote == 'boy' ? boy_text : girl_text;
+    final confirmation_message = vote_confirmation_template.replaceAll('{choice}', choice_text);
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialog_context) => AlertDialog(
+        title: Text(confirm_vote_title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(confirmation_message),
+            const SizedBox(height: 8),
+            Text(
+              vote_is_final_text,
+              style: const TextStyle(
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialog_context).pop(false),
+            child: Text(cancel_text),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialog_context).pop(true),
+            child: Text(confirm_text),
+          ),
+        ],
+      ),
+    );
+
+    if (result != true || !mounted) return;
+
+    try {
+      Vote new_vote = Vote(
+        id: "",
+        choice: vote,
+        event_id: event_id,
+        user_id: current_user!.id,
+      );
+
+      await XapptorDB.instance.collection("votes").add(new_vote.toMap());
+
+      if (!mounted) return;
+
+      setState(() {
+        selected_vote = vote;
+        confirmed = true;
+      });
+
+      final success_message = vote_success_template.replaceAll('{choice}', choice_text);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success_message),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error saving vote from pending intent: $e');
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
