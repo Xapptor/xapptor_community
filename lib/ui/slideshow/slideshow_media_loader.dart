@@ -78,14 +78,13 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   // Reduced from 4 to 2 to save ~20-40 MB on iOS Safari.
   static const int max_active_videos_web = 2;
 
-  // Maximum cached images per orientation (portrait, landscape, square_or_similar)
-  // Total max cache = 2 × 3 = 6 images
-  // At 600px decode size, each image is ~1 MB = ~6 MB total image cache
-  // Reduced from 3 to 2 to save additional memory
-  static const int max_cached_images_per_orientation = 2;
+  // Maximum cached images (total, not per orientation since we use all_image_urls)
+  // With 8 visible image slots, we need at least 8 images to avoid duplicates.
+  // At 600px decode size, each image is ~1 MB = ~10 MB total image cache
+  static const int max_cached_images_total = 10;
 
-  // Initial load counts
-  static const int max_initial_images = 2;
+  // Initial load counts - load 8 images for 8 visible slots
+  static const int max_initial_images = 8;
   static const int max_initial_videos = 2;
 
   // Track video orientations separately from controllers (URL -> is_portrait)
@@ -459,26 +458,22 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   /// Request to load an image for a specific carousel position.
   /// Only calls setState if a new image was actually loaded.
+  ///
+  /// NOTE: Always uses all_image_urls for consistent random selection across
+  /// all slots, regardless of orientation.
   Future<void> request_image_load({
     required int index,
+    // ignore: unused_element_parameter - kept for API compatibility
     required SlideshowViewOrientation orientation,
   }) async {
-    List<String> urls;
-    switch (orientation) {
-      case SlideshowViewOrientation.portrait:
-        urls = portrait_image_urls;
-        break;
-      case SlideshowViewOrientation.landscape:
-        urls = landscape_image_urls;
-        break;
-      case SlideshowViewOrientation.square_or_similar:
-        urls = all_image_urls;
-        break;
-    }
+    // Always use all_image_urls for consistent random selection across all slots.
+    if (all_image_urls.isEmpty) return;
 
-    if (index < 0 || index >= urls.length) return;
+    // Wrap index using modulo to handle random indices
+    final int wrapped_index = index % all_image_urls.length;
+    if (wrapped_index < 0) return;
 
-    final String url = urls[index];
+    final String url = all_image_urls[wrapped_index];
     final bool did_load = await load_single_image(url: url);
 
     // Clean up cache if too large
@@ -490,12 +485,9 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
 
   /// Clean up image cache to prevent memory bloat
   void cleanup_image_cache() {
-    // For all orientations
-    const int max_cache_size = max_cached_images_per_orientation * 3;
-
-    if (loaded_images_cache.length > max_cache_size) {
+    if (loaded_images_cache.length > max_cached_images_total) {
       // Remove oldest entries (first added)
-      final int to_remove = loaded_images_cache.length - max_cache_size;
+      final int to_remove = loaded_images_cache.length - max_cached_images_total;
       final keys_to_remove = loaded_images_cache.keys.take(to_remove).toList();
 
       for (final key in keys_to_remove) {
@@ -608,28 +600,22 @@ mixin SlideshowMediaLoaderMixin<T extends StatefulWidget> on State<T> {
   /// This correctly maps carousel index → URL → cached Image.
   /// The index is wrapped using modulo to cycle through all images.
   /// Returns null if the image at that index hasn't been loaded yet.
+  ///
+  /// NOTE: Always uses all_image_urls for consistent random selection across
+  /// all slots, regardless of orientation. This enables the parent's random
+  /// selection to prevent duplicates across all image slots.
   Image? get_image_by_index({
     required int index,
+    // ignore: unused_element_parameter - kept for API compatibility
     required SlideshowViewOrientation orientation,
   }) {
-    List<String> urls;
-    switch (orientation) {
-      case SlideshowViewOrientation.portrait:
-        urls = portrait_image_urls;
-        break;
-      case SlideshowViewOrientation.landscape:
-        urls = landscape_image_urls;
-        break;
-      case SlideshowViewOrientation.square_or_similar:
-        urls = all_image_urls;
-        break;
-    }
-
-    if (urls.isEmpty) return null;
+    // Always use all_image_urls for consistent random selection across all slots.
+    // This allows the parent to track which indices are in use and prevent duplicates.
+    if (all_image_urls.isEmpty) return null;
 
     // Use modulo to wrap the index and cycle through all images
-    final int wrapped_index = index % urls.length;
-    final String url = urls[wrapped_index];
+    final int wrapped_index = index % all_image_urls.length;
+    final String url = all_image_urls[wrapped_index];
     return loaded_images_cache[url];
   }
 }

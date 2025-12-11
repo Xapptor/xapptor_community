@@ -27,6 +27,15 @@ typedef GetImageByIndex = Image? Function({
   required SlideshowViewOrientation orientation,
 });
 
+/// Callback type for getting the next random image index for a slot.
+/// This is called by each slot when it needs to advance to a new image.
+/// The parent tracks which indices are in use to avoid duplicates.
+typedef GetRandomImageIndex = int Function(String slot_id);
+
+/// Callback type for getting the current image index for a slot.
+/// Returns the currently assigned index, or assigns a new random one if not set.
+typedef GetCurrentImageIndex = int Function(String slot_id);
+
 /// A lightweight slideshow slot that uses AnimatedSwitcher with FadeTransition
 /// instead of CarouselSlider.
 ///
@@ -74,6 +83,12 @@ class SlideshowFadeSlot extends StatefulWidget {
   final int total_video_count;
   final int total_image_count;
 
+  /// Callback to get the next random image index (avoiding duplicates across slots)
+  final GetRandomImageIndex? get_random_image_index;
+
+  /// Callback to get the current image index for this slot
+  final GetCurrentImageIndex? get_current_image_index;
+
   const SlideshowFadeSlot({
     required this.column_index,
     required this.view_index,
@@ -99,6 +114,8 @@ class SlideshowFadeSlot extends StatefulWidget {
     this.get_image_by_index,
     this.total_video_count = 0,
     this.total_image_count = 0,
+    this.get_random_image_index,
+    this.get_current_image_index,
     super.key,
   });
 
@@ -108,6 +125,9 @@ class SlideshowFadeSlot extends StatefulWidget {
 
 class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
   late String _slot_id;
+
+  /// For video slots: sequential index (0, 1, 2...)
+  /// For image slots: actual image index from random selection
   int _current_index = 0;
 
   /// Unique key for AnimatedSwitcher to detect changes
@@ -116,10 +136,21 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
   /// Random instance for video start position (reused to avoid allocation)
   static final Random _random = Random();
 
+  /// Whether this is an image slot (uses random selection)
+  bool get _is_image_slot =>
+      !widget.possible_video_position_for_portrait &&
+      !widget.possible_video_position_for_landscape;
+
   @override
   void initState() {
     super.initState();
     _slot_id = 'slot_${widget.column_index}_${widget.view_index}';
+
+    // For image slots, get initial random index from parent
+    if (_is_image_slot && widget.get_current_image_index != null) {
+      _current_index = widget.get_current_image_index!(_slot_id);
+    }
+
     _register_with_coordinator();
 
     // Trigger initial lazy load
@@ -181,9 +212,16 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     if (_is_transitioning) return;
     _is_transitioning = true;
 
+    // For image slots, use random selection from parent instead of sequential index.
+    // This ensures no two slots display the same image simultaneously.
+    int actual_index = new_index;
+    if (_is_image_slot && widget.get_random_image_index != null) {
+      actual_index = widget.get_random_image_index!(_slot_id);
+    }
+
     // Pre-load the image BEFORE updating state to avoid animation interruption.
     // This ensures the image is ready when AnimatedSwitcher begins the transition.
-    _preload_image_for_index(new_index).then((_) {
+    _preload_image_for_index(actual_index).then((_) {
       if (!mounted) {
         _is_transitioning = false;
         return;
@@ -198,12 +236,12 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
         }
 
         setState(() {
-          _current_index = new_index;
+          _current_index = actual_index;
           _switch_key++; // Force AnimatedSwitcher to animate
         });
 
         // Handle video changes after state update (videos need playback control)
-        _on_index_changed_post_update(new_index);
+        _on_index_changed_post_update(actual_index);
 
         // Reset transition flag after animation duration to allow next transition
         Future.delayed(widget.animation_duration, () {
@@ -216,34 +254,24 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
   /// Pre-loads the image for the given index before the transition starts.
   /// This ensures smooth fade animations without interruption from lazy loading.
   ///
-  /// IMPORTANT: The view_offset is applied at image retrieval time in _build_image_item,
-  /// NOT here. This method receives raw indices from the coordinator (0, 1, 2...).
-  /// We must apply the same view_offset here for preloading to match what will be displayed.
+  /// For image slots using random selection, the index is already the actual image index
+  /// (no view_offset needed - parent handles duplicate prevention).
   Future<void> _preload_image_for_index(int index) async {
-    final bool is_video_slot = widget.possible_video_position_for_portrait ||
-        widget.possible_video_position_for_landscape;
-
     // Videos don't need preloading here (handled separately)
-    if (is_video_slot) return;
+    if (!_is_image_slot) return;
 
     if (widget.on_lazy_load_request == null || widget.total_image_count <= 0) {
       return;
     }
 
-    // Calculate the view offset - must match _build_image_item calculation
-    final int views_per_column =
-        widget.slideshow_matrix[widget.column_index].length;
-    final int view_offset =
-        widget.column_index * views_per_column + widget.view_index;
+    // The index is already the actual image index (from random selection or initial assignment)
+    // No need for view_offset - the parent's random selection handles uniqueness
 
-    // Apply view_offset to get the actual image index that will be displayed
-    final int effective_index = index + view_offset;
-
-    // Check if current image is loaded using the same effective_index
+    // Check if current image is loaded
     Image? current_image;
     if (widget.get_image_by_index != null) {
       current_image = widget.get_image_by_index!(
-        index: effective_index,
+        index: index,
         orientation: widget.slideshow_view_orientation,
       );
     }
@@ -251,21 +279,12 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     // Load current image if not yet loaded
     if (current_image == null) {
       await widget.on_lazy_load_request!(
-        index: effective_index % widget.total_image_count,
+        index: index % widget.total_image_count,
         is_video: false,
         is_portrait: false,
         orientation: widget.slideshow_view_orientation,
       );
     }
-
-    // Also preload the NEXT image (fire-and-forget)
-    final int next_effective_index = effective_index + 1;
-    widget.on_lazy_load_request!(
-      index: next_effective_index % widget.total_image_count,
-      is_video: false,
-      is_portrait: false,
-      orientation: widget.slideshow_view_orientation,
-    );
   }
 
   /// Called after state update for video playback control
@@ -418,6 +437,11 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     required double ratio_difference,
     required int view_height,
   }) {
+    // For image slots using random selection, the index is already the direct image index.
+    // No offset calculation needed - pass use_direct_index=true.
+    final bool use_direct_index =
+        _is_image_slot && widget.get_random_image_index != null;
+
     return build_carousel_item(
       key: key,
       index: _current_index,
@@ -445,6 +469,7 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
       get_video_controller_by_index: widget.get_video_controller_by_index,
       get_image_by_index: widget.get_image_by_index,
       device_pixel_ratio: MediaQuery.of(context).devicePixelRatio,
+      use_direct_index: use_direct_index,
     );
   }
 }

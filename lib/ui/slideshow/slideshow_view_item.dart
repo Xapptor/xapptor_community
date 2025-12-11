@@ -29,6 +29,9 @@ Widget build_carousel_item({
   GetVideoControllerByIndex? get_video_controller_by_index,
   GetImageByIndex? get_image_by_index,
   double device_pixel_ratio = 1.0,
+  /// When true, the index is already the direct image index (from random selection).
+  /// No view_offset calculation is needed. Parent handles duplicate prevention.
+  bool use_direct_index = false,
 }) {
   final String test_mode_text = _build_test_mode_text(
     orientation: orientation,
@@ -73,6 +76,7 @@ Widget build_carousel_item({
     all_images: all_images,
     get_image_by_index: get_image_by_index,
     device_pixel_ratio: device_pixel_ratio,
+    use_direct_index: use_direct_index,
   );
   // Apply key if provided (for AnimatedSwitcher support)
   return key != null ? KeyedSubtree(key: key, child: widget) : widget;
@@ -181,14 +185,22 @@ Widget _build_image_item({
   GetImageByIndex? get_image_by_index,
   // ignore: unused_element_parameter - kept for API compatibility, may be used in future
   double device_pixel_ratio = 1.0,
+  bool use_direct_index = false,
 }) {
   // Use URL-based lookup if available (preferred method for lazy loading)
   // This correctly maps carousel index to image URL, then gets the cached image
   Image? image;
   if (get_image_by_index != null) {
-    // Calculate the effective index with view offset for uniqueness across views
-    final int view_offset = column_index * views_per_column + view_index;
-    final int effective_index = index + view_offset;
+    // When use_direct_index is true, the index is already the actual image index
+    // (from parent's random selection). No offset calculation needed.
+    // Otherwise, calculate offset for uniqueness across views (legacy behavior).
+    final int effective_index;
+    if (use_direct_index) {
+      effective_index = index;
+    } else {
+      final int view_offset = column_index * views_per_column + view_index;
+      effective_index = index + view_offset;
+    }
     image = get_image_by_index(
       index: effective_index,
       orientation: orientation,

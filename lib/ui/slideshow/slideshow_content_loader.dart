@@ -394,15 +394,19 @@ mixin SlideshowContentLoaderMixin<T extends StatefulWidget>
 
     if (paths.isEmpty) return;
 
-    all_image_urls.addAll(paths);
+    // Shuffle URLs before adding to all_image_urls for randomized display order.
+    // This ensures different images appear each time the slideshow starts.
+    final List<String> shuffled_paths = List.from(paths)..shuffle();
+    all_image_urls.addAll(shuffled_paths);
 
+    // Load initial images (now 8 to fill all visible slots)
     final int initial_count =
-        paths.length > SlideshowMediaLoaderMixin.max_initial_images
+        shuffled_paths.length > SlideshowMediaLoaderMixin.max_initial_images
             ? SlideshowMediaLoaderMixin.max_initial_images
-            : paths.length;
+            : shuffled_paths.length;
 
     for (int i = 0; i < initial_count; i++) {
-      await load_single_image(url: paths[i]);
+      await load_single_image(url: shuffled_paths[i]);
     }
 
     for (final url in paths) {

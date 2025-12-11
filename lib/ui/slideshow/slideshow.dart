@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -99,6 +100,70 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
 
   List<List<Map<String, dynamic>>>? _slideshow_matrix;
   Orientation? _last_orientation;
+
+  /// Random instance for image selection
+  final Random _random = Random();
+
+  /// Tracks which image index each slot is currently displaying.
+  /// Key: slot_id (e.g., "0_1"), Value: index in all_image_urls
+  final Map<String, int> _slot_current_image = {};
+
+  /// Set of image indices currently being displayed by any slot.
+  /// Used to avoid showing the same image in multiple slots simultaneously.
+  final Set<int> _displayed_image_indices = {};
+
+  /// Gets a random image index that is NOT currently displayed by any other slot.
+  /// If all images are in use (more slots than images), allows reuse.
+  int _get_random_available_image_index(String slot_id) {
+    if (all_image_urls.isEmpty) return 0;
+
+    final int total_images = all_image_urls.length;
+
+    // Release the current image from this slot (if any) so it can be picked by others
+    final int? current_index = _slot_current_image[slot_id];
+    if (current_index != null) {
+      _displayed_image_indices.remove(current_index);
+    }
+
+    // Build list of available indices (not currently displayed)
+    final List<int> available = [];
+    for (int i = 0; i < total_images; i++) {
+      if (!_displayed_image_indices.contains(i)) {
+        available.add(i);
+      }
+    }
+
+    // Pick a random available index, or any random if all are in use
+    int selected_index;
+    if (available.isNotEmpty) {
+      selected_index = available[_random.nextInt(available.length)];
+    } else {
+      // All images in use - pick any random (unavoidable duplication)
+      selected_index = _random.nextInt(total_images);
+    }
+
+    // Track this slot's new image
+    _slot_current_image[slot_id] = selected_index;
+    _displayed_image_indices.add(selected_index);
+
+    return selected_index;
+  }
+
+  /// Gets the current image index for a slot, or assigns a random one if not set.
+  int _get_or_assign_image_index(String slot_id) {
+    if (_slot_current_image.containsKey(slot_id)) {
+      return _slot_current_image[slot_id]!;
+    }
+    return _get_random_available_image_index(slot_id);
+  }
+
+  /// Releases a slot's image tracking (called when slot is disposed or orientation changes).
+  void _release_slot_image(String slot_id) {
+    final int? index = _slot_current_image.remove(slot_id);
+    if (index != null) {
+      _displayed_image_indices.remove(index);
+    }
+  }
 
   @override
   void initState() {
@@ -251,6 +316,12 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
         portrait: portrait,
         number_of_columns: number_of_columns,
       );
+
+      // Clear random image tracking on orientation change
+      // Slots will get new random images assigned
+      _slot_current_image.clear();
+      _displayed_image_indices.clear();
+
       portrait_images.shuffle();
       landscape_images.shuffle();
       all_images.shuffle();
@@ -306,6 +377,9 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
               : all_image_urls.length;
     }
 
+    // For image slots (not video), use random selection to avoid duplicates
+    final bool is_image_slot = !video_p && !video_l;
+
     // Use SlideshowFadeSlot with shared timer coordinator (replaces CarouselSlider)
     // Memory savings: ~20-40 MB by eliminating 8 PageControllers & Timers
     return SlideshowFadeSlot(
@@ -333,11 +407,10 @@ class _SlideshowState extends State<Slideshow> with SlideshowMediaLoaderMixin, S
       get_video_controller_by_index: get_video_controller_by_index,
       get_image_by_index: get_image_by_index,
       total_video_count: video_p ? portrait_video_urls.length : landscape_video_urls.length,
-      total_image_count: orient == SlideshowViewOrientation.portrait
-          ? portrait_image_urls.length
-          : orient == SlideshowViewOrientation.landscape
-              ? landscape_image_urls.length
-              : all_image_urls.length,
+      total_image_count: all_image_urls.length,
+      // Pass random selection callbacks only for image slots
+      get_random_image_index: is_image_slot ? _get_random_available_image_index : null,
+      get_current_image_index: is_image_slot ? _get_or_assign_image_index : null,
     );
   }
 
