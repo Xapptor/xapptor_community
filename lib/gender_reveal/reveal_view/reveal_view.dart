@@ -413,8 +413,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
               _build_camera_preview(portrait, camera_size),
 
             // Show "Reaction Recorded" indicator when recording is complete or user has existing reaction
-            if (reaction_recording_complete || user_has_existing_reaction)
-              _build_reaction_recorded_indicator(portrait),
+            if (reaction_recording_complete || user_has_existing_reaction) _build_reaction_recorded_indicator(portrait),
           ],
 
           // Share options overlay (after animation completes)

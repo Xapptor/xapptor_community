@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 // Constants for the gender reveal animation screen.
 // These values are tuned for optimal UX and memory performance on iOS Safari.
 
@@ -10,8 +12,8 @@
 const int k_reveal_animation_duration_seconds = 10;
 
 /// Duration of the fake countdown for late arrivals (in seconds).
-/// 2 minutes provides enough time to build anticipation without losing engagement.
-const int k_fake_countdown_duration_seconds = 120;
+/// 2 minutes in release mode, 20 seconds in debug mode for faster testing.
+const int k_fake_countdown_duration_seconds = kDebugMode ? 20 : 120;
 
 /// Delay before the gender text appears (in milliseconds).
 /// Allows suspense to build with pulse animation first.
