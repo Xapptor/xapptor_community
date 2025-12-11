@@ -246,6 +246,11 @@ Widget _build_image_item({
   // BEFORE AnimatedSwitcher starts the transition. If we use frameBuilder
   // to show a placeholder during decode, it can cause visual jumps mid-animation.
   // The precacheImage() call in _preload_image_for_index ensures decode completes first.
+  //
+  // NOTE: gaplessPlayback is intentionally NOT used here because it conflicts
+  // with AnimatedSwitcher. gaplessPlayback keeps the old image visible until
+  // the new one is ready, but AnimatedSwitcher needs full control over the
+  // crossfade animation. Using both together causes abrupt transitions.
   return Stack(
     alignment: Alignment.center,
     fit: StackFit.expand,
@@ -254,8 +259,6 @@ Widget _build_image_item({
         image: image.image,
         fit: BoxFit.cover,
         width: screen_width / number_of_columns,
-        // gaplessPlayback prevents flickering when image provider changes
-        gaplessPlayback: true,
       ),
       if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
     ],

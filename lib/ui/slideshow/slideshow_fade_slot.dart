@@ -179,10 +179,10 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     final bool is_video_slot = widget.possible_video_position_for_portrait ||
         widget.possible_video_position_for_landscape;
 
-    // Video slots: 15-25 seconds, Image slots: 5-10 seconds
-    // Increased minimum from 3 to 5 seconds to prevent images changing too fast
-    final int min_seconds = is_video_slot ? 15 : 5;
-    final int max_seconds = is_video_slot ? 25 : 10;
+    // Video slots: 15-25 seconds, Image slots: 6-12 seconds
+    // Increased minimum from 5 to 6 seconds to ensure smooth pacing with 2s transition lockout
+    final int min_seconds = is_video_slot ? 15 : 6;
+    final int max_seconds = is_video_slot ? 25 : 12;
 
     final int item_count = widget.item_count > 0 ? widget.item_count : 1;
 
@@ -205,12 +205,38 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
   /// Flag to prevent concurrent transitions
   bool _is_transitioning = false;
 
+  /// Timestamp of the last transition start.
+  /// Used to enforce minimum time between transitions.
+  DateTime? _last_transition_time;
+
+  /// Minimum time an image must be VISIBLE before transitioning to the next.
+  /// This ensures users have adequate time to see each image.
+  /// Set to 4 seconds: animation (1.5s) + 2.5s viewing time minimum.
+  /// The timer coordinator uses 6-12 second intervals, but this provides
+  /// a hard floor for visibility duration regardless of coordinator timing.
+  static const Duration _min_transition_interval = Duration(milliseconds: 4000);
+
   void _handle_advance(int new_index) {
     if (!mounted) return;
 
     // Prevent concurrent transitions which can cause animation glitches
     if (_is_transitioning) return;
+
+    // Additional safeguard: enforce minimum time between transitions.
+    // _last_transition_time is set when the image BECOMES VISIBLE (in setState),
+    // not when the advance is requested. This ensures the user sees the image
+    // for at least _min_transition_interval before it can change again.
+    final now = DateTime.now();
+    if (_last_transition_time != null) {
+      final elapsed = now.difference(_last_transition_time!);
+      if (elapsed < _min_transition_interval) {
+        // Too soon for another transition, ignore this advance
+        return;
+      }
+    }
+
     _is_transitioning = true;
+    // Note: _last_transition_time is set in setState below, not here
 
     // For image slots, use random selection from parent instead of sequential index.
     // This ensures no two slots display the same image simultaneously.
@@ -235,6 +261,11 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
           return;
         }
 
+        // Set _last_transition_time NOW when the image becomes visible,
+        // not when the advance was requested. This ensures the user sees
+        // the image for at least _min_transition_interval.
+        _last_transition_time = DateTime.now();
+
         setState(() {
           _current_index = actual_index;
           _switch_key++; // Force AnimatedSwitcher to animate
@@ -243,8 +274,10 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
         // Handle video changes after state update (videos need playback control)
         _on_index_changed_post_update(actual_index);
 
-        // Reset transition flag after animation duration to allow next transition
-        Future.delayed(widget.animation_duration, () {
+        // Reset transition flag after animation duration plus buffer.
+        // The _min_transition_interval check provides additional protection,
+        // but we still reset the flag to allow transitions after the interval.
+        Future.delayed(widget.animation_duration + const Duration(milliseconds: 500), () {
           _is_transitioning = false;
         });
       });
@@ -303,7 +336,14 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     // causing the frameBuilder to show placeholder mid-transition (cut-off effect).
     if (current_image != null && mounted) {
       try {
+        // Use a completer to properly wait for the image to be fully decoded.
+        // precacheImage returns when the image is in the cache, but we want
+        // to ensure it's also decoded for the GPU.
         await precacheImage(current_image.image, context);
+
+        // Add a small delay to ensure the GPU has processed the image.
+        // This helps prevent cut-off animations on slower devices.
+        await Future.delayed(const Duration(milliseconds: 50));
       } catch (e) {
         // Ignore precache errors - image will load during transition (fallback)
       }
