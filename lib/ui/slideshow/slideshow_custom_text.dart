@@ -24,7 +24,7 @@ Widget slideshow_custom_text(
 
   if (custom_style != null) {
     // Adjust font size for portrait/landscape if using custom style
-    final double size_multiplier = portrait ? 1.0 : 1.4;
+    final double size_multiplier = portrait ? 0.6 : 1.4;
     return Text(
       text,
       textAlign: TextAlign.center,
