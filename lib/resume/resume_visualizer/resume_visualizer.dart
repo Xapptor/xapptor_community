@@ -10,7 +10,7 @@ import 'package:xapptor_community/resume/resume_visualizer/populate_skills.dart'
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:xapptor_router/get_last_path_segment.dart';
+import 'package:xapptor_router/V2/get_last_path_segment_v2.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:xapptor_db/xapptor_db.dart';
 import 'package:xapptor_ui/values/ui.dart';
@@ -74,7 +74,7 @@ class _ResumeVisualizerState extends State<ResumeVisualizer> {
   String resume_id = "";
 
   fetch_resume() async {
-    resume_id = widget.resume_id ?? get_last_path_segment();
+    resume_id = widget.resume_id ?? get_last_path_segment_v2();
 
     DocumentSnapshot resume_doc = await XapptorDB.instance.collection("resumes").doc(resume_id).get();
 
