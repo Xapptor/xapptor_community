@@ -47,10 +47,6 @@ const int k_recording_start_delay_ms = 500;
 // CONFETTI CONSTANTS
 // =============================================================================
 
-/// Number of confetti particles to emit per burst.
-/// Kept low for memory efficiency on iOS Safari.
-const int k_confetti_particle_count = 50;
-
 /// Minimum confetti blast force.
 const double k_confetti_min_blast_force = 10;
 

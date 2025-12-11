@@ -336,6 +336,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     final name_text_size = portrait ? k_baby_name_text_size_portrait : k_baby_name_text_size_landscape;
     final date_text_size = portrait ? k_delivery_date_text_size_portrait : k_delivery_date_text_size_landscape;
 
+    final int k_confetti_particle_count = portrait ? 10 : 30;
+
     return Stack(
       children: [
         // Animated gradient background
@@ -364,8 +366,7 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
                   ),
 
                 // Main gender reveal title with glow effect
-                if (_show_gender_text)
-                  _buildGlowingTitle(text_size, portrait),
+                if (_show_gender_text) _buildGlowingTitle(text_size, portrait),
 
                 const SizedBox(height: 24),
 
@@ -499,8 +500,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
         _bounce_animation,
       ]),
       builder: (context, child) {
-        final scale = _text_scale_animation.value *
-            (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
+        final scale =
+            _text_scale_animation.value * (_text_scale_controller.isCompleted ? _bounce_animation.value : 1.0);
 
         return Transform.scale(
           scale: scale,
