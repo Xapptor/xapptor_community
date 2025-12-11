@@ -224,18 +224,32 @@ Widget _build_image_item({
   // This avoids double-resizing which can cause quality loss and aspect ratio issues.
   // The image.image provider already has the decode size constraints applied.
 
-  // Removed redundant ClipRRect - parent already clips
+  // Use a regular Image widget instead of FadeInImage.
+  // The parent AnimatedSwitcher handles the fade transition between images.
+  // Using FadeInImage here causes a conflict: when the image is cached,
+  // FadeInImage shows it instantly while AnimatedSwitcher expects to animate,
+  // resulting in abrupt/cut-off transitions.
   return Stack(
     alignment: Alignment.center,
     fit: StackFit.expand,
     children: [
-      FadeInImage(
-        placeholder: const AssetImage(
-          'assets/images/placeholder_gradient_64.jpg',
-        ),
+      Image(
         image: image.image,
         fit: BoxFit.cover,
         width: screen_width / number_of_columns,
+        // Prevent flickering by not showing error/loading frames
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded || frame != null) {
+            return child;
+          }
+          // Show placeholder while loading
+          return Image.asset(
+            'assets/images/placeholder_gradient_64.jpg',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+          );
+        },
       ),
       if (test_mode) _build_test_mode_overlay(test_mode_text, portrait),
     ],

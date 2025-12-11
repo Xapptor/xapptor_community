@@ -53,25 +53,33 @@ class SlideshowTimerCoordinator {
   /// [max_interval_seconds] - Maximum time between transitions
   /// [on_advance] - Callback when the slot should advance to the next item
   /// [item_count] - Total number of items in this slot's carousel
+  /// [initial_index] - Starting index for this slot (defaults to 0)
   String register_slot({
     required String slot_id,
     required int min_interval_seconds,
     required int max_interval_seconds,
     required void Function(int new_index) on_advance,
     required int item_count,
+    int initial_index = 0,
   }) {
+    // Use a random initial interval for each slot to stagger transitions.
+    // This prevents all slots from advancing at the same time.
     final int interval_seconds = _random_interval(
       min_interval_seconds,
       max_interval_seconds,
     );
 
+    // Add additional random offset (0 to max_interval) to stagger initial transitions
+    // This ensures slots don't all start transitioning at the same moment
+    final int stagger_offset = _random.nextInt(max_interval_seconds + 1);
+
     _slots[slot_id] = _SlotTiming(
       slot_id: slot_id,
       min_interval_seconds: min_interval_seconds,
       max_interval_seconds: max_interval_seconds,
-      next_transition: DateTime.now().add(Duration(seconds: interval_seconds)),
+      next_transition: DateTime.now().add(Duration(seconds: interval_seconds + stagger_offset)),
       on_advance: on_advance,
-      current_index: 0,
+      current_index: initial_index,
       item_count: item_count,
     );
 

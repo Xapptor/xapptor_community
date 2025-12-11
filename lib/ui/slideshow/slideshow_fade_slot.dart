@@ -148,28 +148,134 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
     final bool is_video_slot = widget.possible_video_position_for_portrait ||
         widget.possible_video_position_for_landscape;
 
-    // Video slots: 15-25 seconds, Image slots: 3-7 seconds
-    final int min_seconds = is_video_slot ? 15 : 3;
-    final int max_seconds = is_video_slot ? 25 : 7;
+    // Video slots: 15-25 seconds, Image slots: 5-10 seconds
+    // Increased minimum from 3 to 5 seconds to prevent images changing too fast
+    final int min_seconds = is_video_slot ? 15 : 5;
+    final int max_seconds = is_video_slot ? 25 : 10;
+
+    final int item_count = widget.item_count > 0 ? widget.item_count : 1;
+
+    // IMPORTANT: The coordinator tracks raw indices (0, 1, 2...).
+    // The view_offset is applied ONLY at image retrieval time in _build_image_item
+    // to ensure each view displays a different image.
+    // Starting all slots at index 0 is correct - they'll display different images
+    // because view_offset is added when getting the actual image.
 
     widget.timer_coordinator.register_slot(
       slot_id: _slot_id,
       min_interval_seconds: min_seconds,
       max_interval_seconds: max_seconds,
       on_advance: _handle_advance,
-      item_count: widget.item_count > 0 ? widget.item_count : 1,
+      item_count: item_count,
+      initial_index: 0, // All slots start at raw index 0
     );
   }
+
+  /// Flag to prevent concurrent transitions
+  bool _is_transitioning = false;
 
   void _handle_advance(int new_index) {
     if (!mounted) return;
 
-    setState(() {
-      _current_index = new_index;
-      _switch_key++; // Force AnimatedSwitcher to animate
-    });
+    // Prevent concurrent transitions which can cause animation glitches
+    if (_is_transitioning) return;
+    _is_transitioning = true;
 
-    _on_index_changed(new_index);
+    // Pre-load the image BEFORE updating state to avoid animation interruption.
+    // This ensures the image is ready when AnimatedSwitcher begins the transition.
+    _preload_image_for_index(new_index).then((_) {
+      if (!mounted) {
+        _is_transitioning = false;
+        return;
+      }
+
+      // Use WidgetsBinding to schedule the setState after the current frame
+      // This ensures proper frame timing for AnimatedSwitcher
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          _is_transitioning = false;
+          return;
+        }
+
+        setState(() {
+          _current_index = new_index;
+          _switch_key++; // Force AnimatedSwitcher to animate
+        });
+
+        // Handle video changes after state update (videos need playback control)
+        _on_index_changed_post_update(new_index);
+
+        // Reset transition flag after animation duration to allow next transition
+        Future.delayed(widget.animation_duration, () {
+          _is_transitioning = false;
+        });
+      });
+    });
+  }
+
+  /// Pre-loads the image for the given index before the transition starts.
+  /// This ensures smooth fade animations without interruption from lazy loading.
+  ///
+  /// IMPORTANT: The view_offset is applied at image retrieval time in _build_image_item,
+  /// NOT here. This method receives raw indices from the coordinator (0, 1, 2...).
+  /// We must apply the same view_offset here for preloading to match what will be displayed.
+  Future<void> _preload_image_for_index(int index) async {
+    final bool is_video_slot = widget.possible_video_position_for_portrait ||
+        widget.possible_video_position_for_landscape;
+
+    // Videos don't need preloading here (handled separately)
+    if (is_video_slot) return;
+
+    if (widget.on_lazy_load_request == null || widget.total_image_count <= 0) {
+      return;
+    }
+
+    // Calculate the view offset - must match _build_image_item calculation
+    final int views_per_column =
+        widget.slideshow_matrix[widget.column_index].length;
+    final int view_offset =
+        widget.column_index * views_per_column + widget.view_index;
+
+    // Apply view_offset to get the actual image index that will be displayed
+    final int effective_index = index + view_offset;
+
+    // Check if current image is loaded using the same effective_index
+    Image? current_image;
+    if (widget.get_image_by_index != null) {
+      current_image = widget.get_image_by_index!(
+        index: effective_index,
+        orientation: widget.slideshow_view_orientation,
+      );
+    }
+
+    // Load current image if not yet loaded
+    if (current_image == null) {
+      await widget.on_lazy_load_request!(
+        index: effective_index % widget.total_image_count,
+        is_video: false,
+        is_portrait: false,
+        orientation: widget.slideshow_view_orientation,
+      );
+    }
+
+    // Also preload the NEXT image (fire-and-forget)
+    final int next_effective_index = effective_index + 1;
+    widget.on_lazy_load_request!(
+      index: next_effective_index % widget.total_image_count,
+      is_video: false,
+      is_portrait: false,
+      orientation: widget.slideshow_view_orientation,
+    );
+  }
+
+  /// Called after state update for video playback control
+  void _on_index_changed_post_update(int index) {
+    final bool is_video_slot = widget.possible_video_position_for_portrait ||
+        widget.possible_video_position_for_landscape;
+
+    if (is_video_slot) {
+      _handle_video_change(index);
+    }
   }
 
   Future<void> _on_index_changed(int index) async {
@@ -244,49 +350,14 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
       ..play();
   }
 
+  /// Handles image loading for the initial display (called from initState).
+  /// For subsequent transitions, _preload_image_for_index is used instead
+  /// to ensure images are loaded BEFORE the animation starts.
   Future<void> _handle_image_change(int index) async {
-    if (widget.on_lazy_load_request == null || widget.total_image_count <= 0) {
-      return;
-    }
-
-    // Calculate the view offset for this specific view
-    final int views_per_column =
-        widget.slideshow_matrix[widget.column_index].length;
-    final int view_offset =
-        widget.column_index * views_per_column + widget.view_index;
-
-    // Calculate the effective index with view offset
-    final int effective_index = index + view_offset;
-
-    // Check if current image is loaded
-    Image? current_image;
-    if (widget.get_image_by_index != null) {
-      current_image = widget.get_image_by_index!(
-        index: effective_index,
-        orientation: widget.slideshow_view_orientation,
-      );
-    }
-
-    // Load current image if not yet loaded
-    if (current_image == null) {
-      await widget.on_lazy_load_request!(
-        index: effective_index % widget.total_image_count,
-        is_video: false,
-        is_portrait: false,
-        orientation: widget.slideshow_view_orientation,
-      );
-      // Force rebuild after loading
-      if (mounted) setState(() {});
-    }
-
-    // Preload next image (fire-and-forget)
-    final int next_effective_index = effective_index + 1;
-    widget.on_lazy_load_request!(
-      index: next_effective_index % widget.total_image_count,
-      is_video: false,
-      is_portrait: false,
-      orientation: widget.slideshow_view_orientation,
-    );
+    // Image preloading is now handled by _preload_image_for_index
+    // which is called before setState to avoid animation interruption.
+    // This method is kept for initial load in initState.
+    await _preload_image_for_index(index);
   }
 
   @override
@@ -311,6 +382,17 @@ class _SlideshowFadeSlotState extends State<SlideshowFadeSlot> {
               duration: widget.animation_duration,
               switchInCurve: widget.animation_curve,
               switchOutCurve: widget.animation_curve,
+              // Custom layoutBuilder ensures both old and new widgets fill the space
+              // during the crossfade transition
+              layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+                return Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    ...previousChildren,
+                    if (currentChild != null) currentChild,
+                  ],
+                );
+              },
               transitionBuilder: (Widget child, Animation<double> animation) {
                 return FadeTransition(
                   opacity: animation,
