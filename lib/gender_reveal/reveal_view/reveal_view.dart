@@ -474,14 +474,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
             // Camera preview (only show during reveal if user should record)
             // IMPORTANT: Keep widget mounted until recording is fully complete to avoid
             // race conditions where dispose() is called before video is saved.
-            // We use Offstage to hide visually while keeping the widget alive.
+            // We pass show_share_options to hide the content while keeping the widget alive.
             // - Don't show if user already has a reaction for this event
+            // NOTE: Do NOT wrap Positioned in Offstage - it breaks Stack positioning.
+            // Instead, the hiding logic is inside _build_camera_preview.
             if (should_show_camera && !reaction_recording_complete)
-              Offstage(
-                // Hide visually when share options appear, but keep mounted
-                offstage: show_share_options,
-                child: _build_camera_preview(portrait, camera_size),
-              ),
+              _build_camera_preview(portrait, camera_size, hide_visually: show_share_options),
 
             // Show "Reaction Recorded" indicator when recording is complete or user has existing reaction
             if (reaction_recording_complete || user_has_existing_reaction) _build_reaction_recorded_indicator(portrait),
@@ -632,8 +630,28 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     );
   }
 
-  Widget _build_camera_preview(bool portrait, double size) {
+  /// Builds the camera preview widget.
+  ///
+  /// [hide_visually] - When true, hides the content using Offstage while keeping
+  /// the widget mounted for recording to complete. This avoids race conditions
+  /// where the recorder is disposed before the video is saved.
+  ///
+  /// IMPORTANT: The Offstage is applied to the CONTENT, not the Positioned widget.
+  /// Wrapping Positioned in Offstage breaks Stack positioning because Positioned
+  /// must be a direct child of Stack.
+  Widget _build_camera_preview(bool portrait, double size, {bool hide_visually = false}) {
     final safe_top = MediaQuery.of(context).padding.top;
+
+    // Build the recorder widget once (same for both orientations)
+    final recorder_widget = RevealReactionRecorder(
+      enable_recording: is_user_logged_in,
+      show_preview: true,
+      accent_color: baby_gender == 'boy' ? widget.boy_color : widget.girl_color,
+      login_prompt_text: _login_prompt_text,
+      on_login_prompt: _navigate_to_login,
+      on_recording_complete: on_reaction_recording_complete,
+    );
+
     // Position differently for portrait vs landscape
     if (portrait) {
       // Portrait: Top center
@@ -641,16 +659,12 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
         top: safe_top + 16,
         left: 0,
         right: 0,
-        child: Center(
-          child: SizedBox(
-            width: size,
-            child: RevealReactionRecorder(
-              enable_recording: is_user_logged_in,
-              show_preview: true,
-              accent_color: baby_gender == 'boy' ? widget.boy_color : widget.girl_color,
-              login_prompt_text: _login_prompt_text,
-              on_login_prompt: _navigate_to_login,
-              on_recording_complete: on_reaction_recording_complete,
+        child: Offstage(
+          offstage: hide_visually,
+          child: Center(
+            child: SizedBox(
+              width: size,
+              child: recorder_widget,
             ),
           ),
         ),
@@ -660,15 +674,11 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
       return Positioned(
         top: safe_top + 16,
         right: 16,
-        child: SizedBox(
-          width: size,
-          child: RevealReactionRecorder(
-            enable_recording: is_user_logged_in,
-            show_preview: true,
-            accent_color: baby_gender == 'boy' ? widget.boy_color : widget.girl_color,
-            login_prompt_text: _login_prompt_text,
-            on_login_prompt: _navigate_to_login,
-            on_recording_complete: on_reaction_recording_complete,
+        child: Offstage(
+          offstage: hide_visually,
+          child: SizedBox(
+            width: size,
+            child: recorder_widget,
           ),
         ),
       );
