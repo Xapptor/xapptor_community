@@ -38,10 +38,13 @@ const int k_confetti_emission_duration_seconds = 8;
 // =============================================================================
 
 /// Duration of reaction video recording (in seconds).
-const int k_reaction_recording_duration_seconds = 10;
+/// Set to 9 seconds (1 second shorter than animation) to ensure recording
+/// completes before animation ends, avoiding race conditions.
+const int k_reaction_recording_duration_seconds = 9;
 
 /// Delay before starting recording to allow camera initialization (in milliseconds).
-const int k_recording_start_delay_ms = 500;
+/// This delay allows the camera preview to stabilize before recording begins.
+const int k_recording_start_delay_ms = 300;
 
 // =============================================================================
 // CONFETTI CONSTANTS
@@ -99,7 +102,20 @@ const double k_delivery_date_text_size_landscape = 24.0;
 // =============================================================================
 
 /// Delay before showing share options after reveal animation (in milliseconds).
+/// This gives the recording time to finalize if it's still in progress.
 const int k_share_options_delay_ms = 500;
 
 /// Duration of share options fade in (in milliseconds).
 const int k_share_options_fade_duration_ms = 800;
+
+// =============================================================================
+// RESOURCE OPTIMIZATION CONSTANTS
+// =============================================================================
+
+/// Progress update interval for recording indicator (in milliseconds).
+/// Higher values reduce CPU usage from setState calls.
+const int k_progress_update_interval_ms = 200;
+
+/// Delay before stopping side confetti emitters after share options appear (ms).
+/// This staggers heavy operations to reduce simultaneous resource usage.
+const int k_confetti_reduction_delay_ms = 300;

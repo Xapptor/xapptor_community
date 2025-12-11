@@ -472,10 +472,16 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
             ),
 
             // Camera preview (only show during reveal if user should record)
-            // - Hide when share options appear or recording completes
+            // IMPORTANT: Keep widget mounted until recording is fully complete to avoid
+            // race conditions where dispose() is called before video is saved.
+            // We use Offstage to hide visually while keeping the widget alive.
             // - Don't show if user already has a reaction for this event
-            if (should_show_camera && !show_share_options && !reaction_recording_complete)
-              _build_camera_preview(portrait, camera_size),
+            if (should_show_camera && !reaction_recording_complete)
+              Offstage(
+                // Hide visually when share options appear, but keep mounted
+                offstage: show_share_options,
+                child: _build_camera_preview(portrait, camera_size),
+              ),
 
             // Show "Reaction Recorded" indicator when recording is complete or user has existing reaction
             if (reaction_recording_complete || user_has_existing_reaction) _build_reaction_recorded_indicator(portrait),

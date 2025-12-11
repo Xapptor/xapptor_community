@@ -32,6 +32,10 @@ mixin RevealViewStateMixin on State<RevealView> {
   String? reaction_upload_error;
   bool reaction_recording_complete = false;
 
+  // Coordination state - tracks if we're waiting for recording to finish before showing share options
+  bool _animation_finished = false;
+  bool _waiting_for_recording_to_show_share = false;
+
   // Existing reaction state - tracks if user already has a reaction for this event
   bool user_has_existing_reaction = false;
   String? existing_reaction_url;
@@ -131,14 +135,33 @@ mixin RevealViewStateMixin on State<RevealView> {
   }
 
   /// Called when the reveal animation completes.
+  /// Coordinates with recording completion to ensure video is saved before UI transitions.
   void on_animation_complete() {
     if (!mounted) return;
+
     setState(() {
       animation_complete = true;
+      _animation_finished = true;
     });
 
-    // Show share options after a brief delay
-    Future.delayed(const Duration(milliseconds: 300), () {
+    // Check if we need to wait for recording to complete
+    // If user is logged in and recording hasn't completed yet, wait for it
+    if (is_user_logged_in && !reaction_recording_complete && !user_has_existing_reaction) {
+      debugPrint('RevealViewState: Animation complete, waiting for recording to finish...');
+      _waiting_for_recording_to_show_share = true;
+      // Don't show share options yet - on_reaction_recording_complete will trigger it
+    } else {
+      // No recording in progress or user not logged in - show share options after delay
+      _show_share_options_with_delay();
+    }
+  }
+
+  /// Shows share options after a brief delay.
+  /// Called either directly from on_animation_complete or after recording completes.
+  void _show_share_options_with_delay() {
+    // Slightly longer delay (500ms) to ensure smooth transition and give
+    // any pending operations time to complete
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       setState(() {
         show_share_options = true;
@@ -151,17 +174,24 @@ mixin RevealViewStateMixin on State<RevealView> {
   void on_reaction_recording_complete(String? video_path, String format) {
     if (!mounted) return;
 
+    debugPrint('RevealViewState: Recording complete - path: $video_path, format: $format');
+
     setState(() {
       reaction_video_path = video_path;
       reaction_video_format = format;
       reaction_recording_complete = true;
     });
 
-    debugPrint('RevealViewState: Recording complete - path: $video_path, format: $format');
-
     // Auto-upload if user is logged in and video was recorded
     if (video_path != null && is_user_logged_in) {
       _upload_reaction_video(video_path);
+    }
+
+    // If animation already finished and we were waiting for recording, show share options now
+    if (_waiting_for_recording_to_show_share && _animation_finished) {
+      debugPrint('RevealViewState: Recording finished, now showing share options');
+      _waiting_for_recording_to_show_share = false;
+      _show_share_options_with_delay();
     }
   }
 
@@ -261,6 +291,8 @@ mixin RevealViewStateMixin on State<RevealView> {
       animation_complete = false;
       show_share_options = false;
       reaction_recording_complete = false;
+      _animation_finished = false;
+      _waiting_for_recording_to_show_share = false;
     });
   }
 

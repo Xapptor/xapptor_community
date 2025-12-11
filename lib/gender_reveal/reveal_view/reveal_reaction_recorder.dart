@@ -63,14 +63,31 @@ class RevealReactionRecorder extends StatefulWidget {
   State<RevealReactionRecorder> createState() => _RevealReactionRecorderState();
 }
 
+/// Recording lifecycle states to prevent race conditions
+enum _RecordingState {
+  idle,
+  initializing,
+  ready,
+  recording,
+  stopping,
+  completed,
+  disposed,
+}
+
 class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   List<CameraDescription> _cameras = [];
   CameraController? _controller;
 
   bool _camera_initialized = false;
   bool _camera_initialization_attempted = false;
-  bool _is_recording = false;
-  bool _recording_complete = false;
+
+  // State machine for recording lifecycle - prevents race conditions
+  _RecordingState _recording_state = _RecordingState.idle;
+
+  // Legacy flags kept for UI (derived from state machine)
+  bool get _is_recording => _recording_state == _RecordingState.recording;
+  bool get _recording_complete =>
+      _recording_state == _RecordingState.completed || _recording_state == _RecordingState.disposed;
 
   Timer? _recording_timer;
   Timer? _start_delay_timer;
@@ -85,6 +102,9 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
 
   // Track the actual format used for recording
   String _actual_recording_format = 'mp4'; // 'mp4' or 'webm'
+
+  // Flag to track if callback was already fired (prevents double-callbacks)
+  bool _callback_fired = false;
 
   @override
   void initState() {
@@ -108,11 +128,14 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   /// Initialize camera with front-facing preference and low resolution.
   Future<void> _initialize_camera() async {
     if (_camera_initialization_attempted) return;
+    if (_recording_state == _RecordingState.disposed) return;
+
     _camera_initialization_attempted = true;
+    _recording_state = _RecordingState.initializing;
 
     try {
       _cameras = await availableCameras();
-      if (_cameras.isEmpty || !mounted) return;
+      if (_cameras.isEmpty || !mounted || _recording_state == _RecordingState.disposed) return;
 
       // Prefer front camera for selfie-style reaction
       CameraDescription selected_camera = _cameras.first;
@@ -134,11 +157,14 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
 
       await _controller!.initialize();
 
-      if (!mounted) return;
+      if (!mounted || _recording_state == _RecordingState.disposed) return;
 
       setState(() {
         _camera_initialized = true;
+        _recording_state = _RecordingState.ready;
       });
+
+      debugPrint('RevealReactionRecorder: Camera initialized, state=$_recording_state');
 
       // Auto-start recording if enabled (with small delay for stability)
       if (widget.enable_recording) {
@@ -149,8 +175,10 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
       }
     } on CameraException catch (e) {
       debugPrint('RevealReactionRecorder: Camera error: ${e.code} - ${e.description}');
+      _recording_state = _RecordingState.idle;
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error initializing camera: $e');
+      _recording_state = _RecordingState.idle;
     }
   }
 
@@ -158,9 +186,15 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
   /// On web with MP4 support (Chrome 126+), uses native MediaRecorder.
   /// Otherwise, uses the camera package's recorder.
   Future<void> _start_recording() async {
+    // State machine guard - only start from ready state
+    if (_recording_state != _RecordingState.ready) {
+      debugPrint('RevealReactionRecorder: Cannot start recording, state=$_recording_state');
+      return;
+    }
     if (!mounted || !_camera_initialized || _controller == null) return;
-    if (_is_recording || _recording_complete) return;
     if (!widget.enable_recording) return;
+
+    debugPrint('RevealReactionRecorder: Starting recording...');
 
     try {
       // On web with MP4 support, use native MediaRecorder for iOS-compatible videos
@@ -180,22 +214,23 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
         await _controller!.startVideoRecording();
       }
 
-      if (!mounted) return;
+      if (!mounted || _recording_state == _RecordingState.disposed) return;
 
       setState(() {
-        _is_recording = true;
+        _recording_state = _RecordingState.recording;
         _recording_progress = 0.0;
       });
 
+      debugPrint('RevealReactionRecorder: Recording started, format=$_actual_recording_format');
       widget.on_recording_started?.call();
 
-      // Start progress timer
+      // Start progress timer - update less frequently to reduce CPU usage from setState
       final total_ms = widget.recording_duration.inMilliseconds;
-      const update_interval = 100; // Update every 100ms
+      const update_interval = k_progress_update_interval_ms;
       _progress_timer = Timer.periodic(
         const Duration(milliseconds: update_interval),
         (timer) {
-          if (!mounted) {
+          if (!mounted || _recording_state == _RecordingState.disposed) {
             timer.cancel();
             return;
           }
@@ -206,14 +241,26 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
         },
       );
 
-      // Schedule recording stop (only if not using web native recorder, which handles its own duration)
-      if (!kIsWeb || !_use_native_video_recorder || _web_video_recorder == null) {
-        _recording_timer = Timer(widget.recording_duration, _stop_recording);
-      }
+      // Always set our own recording timer for consistent behavior
+      // The web native recorder also has one, but we need ours as a backup
+      // and to ensure _stop_recording is called even if web recorder fails
+      _recording_timer = Timer(widget.recording_duration, _stop_recording);
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error starting recording: $e');
-      widget.on_recording_complete?.call(null, _actual_recording_format);
+      _recording_state = _RecordingState.ready;
+      _fire_callback_once(null);
     }
+  }
+
+  /// Fire the completion callback exactly once to prevent double-callbacks
+  void _fire_callback_once(String? video_path) {
+    if (_callback_fired) {
+      debugPrint('RevealReactionRecorder: Callback already fired, skipping');
+      return;
+    }
+    _callback_fired = true;
+    debugPrint('RevealReactionRecorder: Firing callback with path=$video_path, format=$_actual_recording_format');
+    widget.on_recording_complete?.call(video_path, _actual_recording_format);
   }
 
   /// Start recording using native web MediaRecorder (for MP4 on Chrome).
@@ -264,10 +311,25 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
 
   /// Stop video recording and save the file.
   Future<void> _stop_recording() async {
+    // State machine guard - only stop from recording state
+    if (_recording_state != _RecordingState.recording) {
+      debugPrint('RevealReactionRecorder: Cannot stop recording, state=$_recording_state');
+      return;
+    }
+
+    debugPrint('RevealReactionRecorder: Stopping recording...');
+
+    // Transition to stopping state to prevent re-entry
+    _recording_state = _RecordingState.stopping;
+
     _progress_timer?.cancel();
     _recording_timer?.cancel();
 
-    if (!mounted || _controller == null || !_is_recording) return;
+    if (_controller == null) {
+      _recording_state = _RecordingState.completed;
+      _fire_callback_once(null);
+      return;
+    }
 
     try {
       String? video_path;
@@ -280,22 +342,31 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
         video_path = video_file.path;
       }
 
-      if (!mounted) return;
+      debugPrint('RevealReactionRecorder: Recording stopped, path=$video_path');
 
-      setState(() {
-        _is_recording = false;
-        _recording_complete = true;
-        _recording_progress = 1.0;
-      });
+      // Only update state if still mounted and not disposed
+      if (mounted && _recording_state != _RecordingState.disposed) {
+        setState(() {
+          _recording_state = _RecordingState.completed;
+          _recording_progress = 1.0;
+        });
+      } else {
+        _recording_state = _RecordingState.completed;
+      }
 
-      widget.on_recording_complete?.call(video_path, _actual_recording_format);
+      _fire_callback_once(video_path);
     } catch (e) {
       debugPrint('RevealReactionRecorder: Error stopping recording: $e');
-      setState(() {
-        _is_recording = false;
-        _recording_complete = true;
-      });
-      widget.on_recording_complete?.call(null, _actual_recording_format);
+
+      if (mounted && _recording_state != _RecordingState.disposed) {
+        setState(() {
+          _recording_state = _RecordingState.completed;
+        });
+      } else {
+        _recording_state = _RecordingState.completed;
+      }
+
+      _fire_callback_once(null);
     }
   }
 
@@ -323,31 +394,74 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
 
   @override
   void dispose() {
+    debugPrint('RevealReactionRecorder: dispose() called, state=$_recording_state');
+
+    // Cancel all timers first
     _recording_timer?.cancel();
     _start_delay_timer?.cancel();
     _progress_timer?.cancel();
-    _stop_recording_if_needed();
+
+    // Mark as disposed early to prevent any async operations from continuing
+    final was_recording = _recording_state == _RecordingState.recording;
+    final was_stopping = _recording_state == _RecordingState.stopping;
+    _recording_state = _RecordingState.disposed;
+
+    // If we were recording or stopping, we need to finalize synchronously
+    if (was_recording || was_stopping) {
+      debugPrint('RevealReactionRecorder: Finalizing recording during dispose...');
+      _finalize_recording_on_dispose();
+    }
+
+    // Dispose video recorder
     _dispose_video_recorder();
+
+    // Dispose camera controller
     _controller?.dispose();
+    _controller = null;
+
     super.dispose();
   }
 
-  Future<void> _stop_recording_if_needed() async {
-    if (_is_recording && _controller != null) {
+  /// Finalize recording during dispose - runs synchronously to ensure callback fires
+  void _finalize_recording_on_dispose() {
+    // Try to stop recording and get video synchronously if possible
+    // For web native recorder, the data might already be available
+    if (kIsWeb && _web_video_recorder != null) {
       try {
-        String? video_path;
-        if (kIsWeb && _web_video_recorder != null) {
-          video_path = await (_web_video_recorder as video_recorder.WebVideoRecorder).stop_recording();
-        } else {
-          final XFile video_file = await _controller!.stopVideoRecording();
-          video_path = video_file.path;
+        final recorder = _web_video_recorder as video_recorder.WebVideoRecorder;
+        // If recorder has already stopped and has a URL, use it
+        if (recorder.recorded_video_url != null) {
+          debugPrint('RevealReactionRecorder: Using existing video URL from web recorder');
+          _fire_callback_once(recorder.recorded_video_url);
+          return;
         }
-        // Call the callback with the video path so it's not lost on dispose
-        widget.on_recording_complete?.call(video_path, _actual_recording_format);
+        // Otherwise try to stop it (this might not work if already stopping)
+        recorder.stop_recording().then((url) {
+          _fire_callback_once(url);
+        }).catchError((e) {
+          debugPrint('RevealReactionRecorder: Error stopping web recorder during dispose: $e');
+          _fire_callback_once(null);
+        });
       } catch (e) {
-        // Still call callback with null on error
-        widget.on_recording_complete?.call(null, _actual_recording_format);
+        debugPrint('RevealReactionRecorder: Error accessing web recorder during dispose: $e');
+        _fire_callback_once(null);
       }
+    } else if (_controller != null) {
+      // For camera package, try to stop recording
+      try {
+        _controller!.stopVideoRecording().then((file) {
+          _fire_callback_once(file.path);
+        }).catchError((e) {
+          debugPrint('RevealReactionRecorder: Error stopping camera recording during dispose: $e');
+          _fire_callback_once(null);
+        });
+      } catch (e) {
+        debugPrint('RevealReactionRecorder: Error stopping recording during dispose: $e');
+        _fire_callback_once(null);
+      }
+    } else {
+      // No recorder available, just fire callback
+      _fire_callback_once(null);
     }
   }
 
@@ -385,10 +499,13 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
         child: Stack(
           children: [
             // Camera preview or placeholder
+            // RepaintBoundary isolates the camera's frequent frame updates
             if (_camera_initialized && _controller != null)
-              AspectRatio(
-                aspectRatio: _controller!.value.aspectRatio,
-                child: CameraPreview(_controller!),
+              RepaintBoundary(
+                child: AspectRatio(
+                  aspectRatio: _controller!.value.aspectRatio,
+                  child: CameraPreview(_controller!),
+                ),
               )
             else
               _build_camera_placeholder(),
@@ -442,26 +559,12 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Pulsing red dot
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.5, end: 1.0),
-                      duration: const Duration(milliseconds: 500),
-                      builder: (context, value, child) {
-                        return Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: widget.accent_color.withAlpha((255 * value).round()),
-                            shape: BoxShape.circle,
-                          ),
-                        );
-                      },
-                      onEnd: () {
-                        // Restart animation
-                        if (mounted && _is_recording) {
-                          setState(() {});
-                        }
-                      },
+                    // Pulsing red dot - uses RepaintBoundary to isolate repaints
+                    RepaintBoundary(
+                      child: _PulsingDot(
+                        color: widget.accent_color,
+                        isAnimating: _is_recording,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     const Text(
@@ -575,6 +678,75 @@ class _RevealReactionRecorderState extends State<RevealReactionRecorder> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Efficient pulsing dot widget that manages its own animation.
+/// Uses SingleTickerProviderStateMixin to avoid rebuilding parent widget.
+class _PulsingDot extends StatefulWidget {
+  final Color color;
+  final bool isAnimating;
+
+  const _PulsingDot({
+    required this.color,
+    required this.isAnimating,
+  });
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+
+    if (widget.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_PulsingDot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isAnimating && !oldWidget.isAnimating) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.isAnimating && oldWidget.isAnimating) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: widget.color.withAlpha((255 * _animation.value).round()),
+            shape: BoxShape.circle,
+          ),
+        );
+      },
     );
   }
 }

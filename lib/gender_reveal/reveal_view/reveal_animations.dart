@@ -89,31 +89,67 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   Timer? _name_reveal_timer;
   Timer? _animation_complete_timer;
 
-  bool get _is_boy => widget.gender.toLowerCase() == 'boy';
-  Color get _reveal_color => _is_boy ? widget.boy_color : widget.girl_color;
-  String get _reveal_text => _is_boy ? widget.boy_text : widget.girl_text;
+  // Cached values to avoid recalculation on every build
+  late final bool _is_boy;
+  late final Color _reveal_color;
+  late final String _reveal_text;
+  late final List<Color> _confetti_colors;
+  String? _cached_formatted_date;
+  String? _cached_on_the_way_text;
 
   /// Formats the delivery date as "Month Year" (e.g., "January 2026" / "Enero 2026").
+  /// Cached to avoid repeated DateFormat parsing.
   String? get _formatted_delivery_date {
+    if (_cached_formatted_date != null) return _cached_formatted_date;
     if (widget.baby_delivery_date == null) return null;
     final date = widget.baby_delivery_date!.toDate();
     final formatted = DateFormat.yMMMM(widget.locale).format(date);
-    if (formatted.isEmpty) return formatted;
-    return formatted[0].toUpperCase() + formatted.substring(1);
+    if (formatted.isEmpty) {
+      _cached_formatted_date = formatted;
+      return formatted;
+    }
+    _cached_formatted_date = formatted[0].toUpperCase() + formatted.substring(1);
+    return _cached_formatted_date;
   }
 
   /// Gets the "on the way" text with the baby name replaced.
+  /// Cached to avoid repeated string operations.
   String get _on_the_way_text {
-    if (widget.baby_name == null || widget.baby_name!.isEmpty) return '';
-    return widget.baby_on_the_way_text.replaceAll('{name}', widget.baby_name!);
+    if (_cached_on_the_way_text != null) return _cached_on_the_way_text!;
+    if (widget.baby_name == null || widget.baby_name!.isEmpty) {
+      _cached_on_the_way_text = '';
+      return '';
+    }
+    _cached_on_the_way_text = widget.baby_on_the_way_text.replaceAll('{name}', widget.baby_name!);
+    return _cached_on_the_way_text!;
   }
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize cached values once to avoid recalculation on every build
+    _is_boy = widget.gender.toLowerCase() == 'boy';
+    _reveal_color = _is_boy ? widget.boy_color : widget.girl_color;
+    _reveal_text = _is_boy ? widget.boy_text : widget.girl_text;
+    _confetti_colors = _build_confetti_colors();
+
     initializeDateFormatting(widget.locale);
     _initialize_controllers();
     _start_animation_sequence();
+  }
+
+  /// Build confetti colors once during initialization.
+  /// This avoids expensive HSLColor conversions on every build.
+  List<Color> _build_confetti_colors() {
+    final base_color = _is_boy ? widget.boy_color : widget.girl_color;
+    return [
+      base_color,
+      base_color.withAlpha(200),
+      HSLColor.fromColor(base_color).withLightness(0.7).toColor(),
+      HSLColor.fromColor(base_color).withLightness(0.5).toColor(),
+      Colors.white,
+    ];
   }
 
   void _initialize_controllers() {
@@ -250,11 +286,19 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     super.didUpdateWidget(oldWidget);
     // Performance optimization: Stop animations when share options appear
     if (widget.reduce_confetti && !oldWidget.reduce_confetti) {
-      // Stop bounce animation to save CPU
+      // Stop bounce animation to save CPU immediately
       _bounce_controller.stop();
-      // Stop side confetti emitters to reduce GPU load
-      _left_confetti_controller.stop();
-      _right_confetti_controller.stop();
+
+      // Stagger side confetti stops to spread out resource release
+      // This prevents a sudden GPU/memory spike from releasing all at once
+      Future.delayed(const Duration(milliseconds: k_confetti_reduction_delay_ms), () {
+        if (!mounted) return;
+        _left_confetti_controller.stop();
+      });
+      Future.delayed(const Duration(milliseconds: k_confetti_reduction_delay_ms * 2), () {
+        if (!mounted) return;
+        _right_confetti_controller.stop();
+      });
     }
   }
 
@@ -276,29 +320,13 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     super.dispose();
   }
 
-  List<Color> _get_confetti_colors() {
-    if (_is_boy) {
-      return [
-        widget.boy_color,
-        widget.boy_color.withAlpha(200),
-        HSLColor.fromColor(widget.boy_color).withLightness(0.7).toColor(),
-        HSLColor.fromColor(widget.boy_color).withLightness(0.5).toColor(),
-        Colors.white,
-      ];
-    } else {
-      return [
-        widget.girl_color,
-        widget.girl_color.withAlpha(200),
-        HSLColor.fromColor(widget.girl_color).withLightness(0.7).toColor(),
-        HSLColor.fromColor(widget.girl_color).withLightness(0.5).toColor(),
-        Colors.white,
-      ];
-    }
-  }
+
+  // Reusable random instance for confetti shape generation
+  // Creating Random() for every particle is expensive
+  static final math.Random _confetti_random = math.Random();
 
   Path _draw_confetti_shape(Size size) {
-    final random = math.Random();
-    final shape_type = random.nextInt(3);
+    final shape_type = _confetti_random.nextInt(3);
 
     switch (shape_type) {
       case 0:
@@ -443,60 +471,66 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
           ),
         ),
 
-        // Confetti - Center
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _center_confetti_controller,
-            blastDirection: math.pi / 2,
-            blastDirectionality: BlastDirectionality.explosive,
-            maxBlastForce: k_confetti_max_blast_force,
-            minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.06 : 0.03,
-            numberOfParticles:
-                widget.reduce_confetti ? (particle_count_top * 0.4).round() : (particle_count_top * 0.7).round(),
-            gravity: 0.15,
-            shouldLoop: true,
-            colors: _get_confetti_colors(),
-            createParticlePath: _draw_confetti_shape,
+        // Confetti - Center (wrapped in RepaintBoundary to isolate GPU repaints)
+        RepaintBoundary(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _center_confetti_controller,
+              blastDirection: math.pi / 2,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: k_confetti_max_blast_force,
+              minBlastForce: k_confetti_min_blast_force,
+              emissionFrequency: widget.reduce_confetti ? 0.06 : 0.03,
+              numberOfParticles:
+                  widget.reduce_confetti ? (particle_count_top * 0.4).round() : (particle_count_top * 0.7).round(),
+              gravity: 0.15,
+              shouldLoop: true,
+              colors: _confetti_colors,
+              createParticlePath: _draw_confetti_shape,
+            ),
           ),
         ),
 
-        // Confetti - Left
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ConfettiWidget(
-            confettiController: _left_confetti_controller,
-            blastDirection: -math.pi / 4,
-            blastDirectionality: BlastDirectionality.explosive,
-            maxBlastForce: k_confetti_max_blast_force * 0.8,
-            minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
-            numberOfParticles:
-                widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
-            gravity: 0.12,
-            shouldLoop: true,
-            colors: _get_confetti_colors(),
-            createParticlePath: _draw_confetti_shape,
+        // Confetti - Left (wrapped in RepaintBoundary to isolate GPU repaints)
+        RepaintBoundary(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ConfettiWidget(
+              confettiController: _left_confetti_controller,
+              blastDirection: -math.pi / 4,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: k_confetti_max_blast_force * 0.8,
+              minBlastForce: k_confetti_min_blast_force,
+              emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
+              numberOfParticles:
+                  widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
+              gravity: 0.12,
+              shouldLoop: true,
+              colors: _confetti_colors,
+              createParticlePath: _draw_confetti_shape,
+            ),
           ),
         ),
 
-        // Confetti - Right
-        Align(
-          alignment: Alignment.centerRight,
-          child: ConfettiWidget(
-            confettiController: _right_confetti_controller,
-            blastDirection: -3 * math.pi / 4,
-            blastDirectionality: BlastDirectionality.explosive,
-            maxBlastForce: k_confetti_max_blast_force * 0.8,
-            minBlastForce: k_confetti_min_blast_force,
-            emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
-            numberOfParticles:
-                widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
-            gravity: 0.12,
-            shouldLoop: true,
-            colors: _get_confetti_colors(),
-            createParticlePath: _draw_confetti_shape,
+        // Confetti - Right (wrapped in RepaintBoundary to isolate GPU repaints)
+        RepaintBoundary(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: ConfettiWidget(
+              confettiController: _right_confetti_controller,
+              blastDirection: -3 * math.pi / 4,
+              blastDirectionality: BlastDirectionality.explosive,
+              maxBlastForce: k_confetti_max_blast_force * 0.8,
+              minBlastForce: k_confetti_min_blast_force,
+              emissionFrequency: widget.reduce_confetti ? 0.10 : 0.05,
+              numberOfParticles:
+                  widget.reduce_confetti ? (particle_count_side * 0.2).round() : (particle_count_side * 0.35).round(),
+              gravity: 0.12,
+              shouldLoop: true,
+              colors: _confetti_colors,
+              createParticlePath: _draw_confetti_shape,
+            ),
           ),
         ),
       ],

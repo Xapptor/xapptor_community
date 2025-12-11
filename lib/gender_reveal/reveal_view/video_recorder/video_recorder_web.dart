@@ -181,7 +181,20 @@ class WebVideoRecorder {
   }
 
   /// Stop recording and return the blob URL of the recorded video.
+  /// If already stopped, returns the existing video URL.
+  /// If a stop is already in progress, waits for that to complete.
   Future<String?> stop_recording() async {
+    // If we already have a recorded URL, return it immediately
+    if (_recorded_video_url != null) {
+      return _recorded_video_url;
+    }
+
+    // If a stop is already in progress, wait for it
+    if (_stop_completer != null && !_stop_completer!.isCompleted) {
+      return _stop_completer!.future;
+    }
+
+    // If not recording, nothing to do
     if (!_is_recording || _media_recorder == null) {
       return _recorded_video_url;
     }
@@ -194,7 +207,9 @@ class WebVideoRecorder {
       _is_recording = false;
     } catch (e) {
       _is_recording = false;
-      _stop_completer?.complete(null);
+      if (!_stop_completer!.isCompleted) {
+        _stop_completer!.complete(null);
+      }
     }
 
     return _stop_completer?.future;
@@ -202,7 +217,9 @@ class WebVideoRecorder {
 
   void _finish_recording() {
     if (_recorded_chunks.isEmpty) {
-      _stop_completer?.complete(null);
+      if (_stop_completer != null && !_stop_completer!.isCompleted) {
+        _stop_completer!.complete(null);
+      }
       _stop_completer = null;
       return;
     }
@@ -210,7 +227,10 @@ class WebVideoRecorder {
     // Create blob from recorded chunks
     final blob = html.Blob(_recorded_chunks, _mime_type);
     _recorded_video_url = html.Url.createObjectUrlFromBlob(blob);
-    _stop_completer?.complete(_recorded_video_url);
+
+    if (_stop_completer != null && !_stop_completer!.isCompleted) {
+      _stop_completer!.complete(_recorded_video_url);
+    }
     _stop_completer = null;
   }
 
