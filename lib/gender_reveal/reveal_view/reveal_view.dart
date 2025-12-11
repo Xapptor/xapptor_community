@@ -245,8 +245,11 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     if (!_sound_effect_ready || _audio_player == null) return;
 
     try {
-      // Seek to start in case it was played before (for replay)
+      // Stop any current playback first
+      await _audio_player!.stop();
+      // Seek to start for replay
       await _audio_player!.seek(Duration.zero);
+      // Play the sound effect
       await _audio_player!.play();
       debugPrint('RevealView: Playing reveal sound effect');
     } catch (e) {
