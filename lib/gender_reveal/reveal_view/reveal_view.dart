@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -157,9 +158,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     if (widget.background_images_storage_path == null) return;
     if (_background_image_loading) return;
 
-    setState(() {
-      _background_image_loading = true;
-    });
+    _background_image_loading = true;
 
     try {
       // Get the storage reference from the gs:// path
@@ -170,6 +169,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
       if (list_result.items.isEmpty) {
         debugPrint('RevealView: No background images found in storage path');
+        _background_image_loading = false;
         return;
       }
 
@@ -182,6 +182,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
       if (!mounted) return;
 
+      // Single setState with all state updates batched
       setState(() {
         _background_image_url = download_url;
         _background_image_loading = false;
@@ -190,11 +191,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
       debugPrint('RevealView: Background image loaded: $download_url');
     } catch (e) {
       debugPrint('RevealView: Error loading background image: $e');
-      if (mounted) {
-        setState(() {
-          _background_image_loading = false;
-        });
-      }
+      _background_image_loading = false;
     }
   }
 
@@ -203,9 +200,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
     if (widget.sound_effects_storage_path == null) return;
     if (_sound_effect_loading) return;
 
-    setState(() {
-      _sound_effect_loading = true;
-    });
+    _sound_effect_loading = true;
 
     try {
       // Get the storage reference from the gs:// path
@@ -216,6 +211,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
       if (list_result.items.isEmpty) {
         debugPrint('RevealView: No sound effects found in storage path');
+        _sound_effect_loading = false;
         return;
       }
 
@@ -234,6 +230,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
       if (!mounted) return;
 
+      // Single setState with all state updates batched
       setState(() {
         _sound_effect_url = download_url;
         _sound_effect_loading = false;
@@ -243,11 +240,7 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
       debugPrint('RevealView: Sound effect loaded and ready: $download_url');
     } catch (e) {
       debugPrint('RevealView: Error loading sound effect: $e');
-      if (mounted) {
-        setState(() {
-          _sound_effect_loading = false;
-        });
-      }
+      _sound_effect_loading = false;
     }
   }
 
@@ -443,17 +436,17 @@ class _RevealViewState extends State<RevealView> with RevealViewStateMixin, Reve
 
   Widget _build_background_image() {
     return Positioned.fill(
-      child: Image.network(
-        _background_image_url!,
+      child: CachedNetworkImage(
+        imageUrl: _background_image_url!,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
+        // Use memory cache for instant replay
+        memCacheHeight: 1920,
+        memCacheWidth: 1080,
+        errorWidget: (context, url, error) {
           debugPrint('RevealView: Error displaying background image: $error');
           return const SizedBox.shrink();
         },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const SizedBox.shrink();
-        },
+        placeholder: (context, url) => const SizedBox.shrink(),
       ),
     );
   }

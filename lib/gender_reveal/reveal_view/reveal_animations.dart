@@ -246,6 +246,19 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
   }
 
   @override
+  void didUpdateWidget(RevealAnimations oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Performance optimization: Stop animations when share options appear
+    if (widget.reduce_confetti && !oldWidget.reduce_confetti) {
+      // Stop bounce animation to save CPU
+      _bounce_controller.stop();
+      // Stop side confetti emitters to reduce GPU load
+      _left_confetti_controller.stop();
+      _right_confetti_controller.stop();
+    }
+  }
+
+  @override
   void dispose() {
     _gender_reveal_timer?.cancel();
     _name_reveal_timer?.cancel();
@@ -336,8 +349,8 @@ class _RevealAnimationsState extends State<RevealAnimations> with TickerProvider
     final name_text_size = portrait ? k_baby_name_text_size_portrait : k_baby_name_text_size_landscape;
     final date_text_size = portrait ? k_delivery_date_text_size_portrait : k_delivery_date_text_size_landscape;
 
-    final int particle_count_top = portrait ? 14 : 40;
-    final int particle_count_side = portrait ? 10 : 30;
+    final int particle_count_top = portrait ? 14 : 34;
+    final int particle_count_side = portrait ? 10 : 26;
 
     return Stack(
       children: [
